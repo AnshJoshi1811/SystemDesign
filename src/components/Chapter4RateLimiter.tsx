@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { RateLimiterAlgo, RateLimiterRequestLog } from '../types';
 import { 
   Gauge, 
@@ -256,7 +256,7 @@ export const Chapter4RateLimiter: React.FC<Chapter4RateLimiterProps> = ({ isDark
       
       {/* Chapter 4 Header Banner */}
       <div className={`border rounded-2xl p-6 shadow-xl space-y-3 ${
-        isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'
+        isDarkMode ? 'bg-[#1c1c1e] border-slate-800' : 'bg-white border-slate-200'
       }`}>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center space-x-3">
@@ -324,7 +324,7 @@ export const Chapter4RateLimiter: React.FC<Chapter4RateLimiterProps> = ({ isDark
             const latestLog = requestLogs[0];
             return (
               <div className={`p-4 rounded-3xl border space-y-3 shadow-md ${
-                isDarkMode ? 'bg-slate-900/90 border-slate-800' : 'bg-white border-slate-200'
+                isDarkMode ? 'bg-[#1c1c1e]/90 border-slate-800' : 'bg-white border-slate-200'
               }`}>
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-b pb-2.5 border-slate-200 dark:border-slate-800">
                   <div className="flex items-center space-x-2">
@@ -429,7 +429,7 @@ export const Chapter4RateLimiter: React.FC<Chapter4RateLimiterProps> = ({ isDark
           
           {/* Algorithm Selector Bar */}
           <div className={`p-4 rounded-2xl border space-y-3 ${
-            isDarkMode ? 'bg-slate-900/90 border-slate-800' : 'bg-white border-slate-200 shadow-sm'
+            isDarkMode ? 'bg-[#1c1c1e]/90 border-slate-800' : 'bg-white border-slate-200 shadow-sm'
           }`}>
             <div className="flex items-center justify-between">
               <span className={`text-xs font-mono font-bold uppercase ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
@@ -476,7 +476,7 @@ export const Chapter4RateLimiter: React.FC<Chapter4RateLimiterProps> = ({ isDark
             
             {/* Left Column: Configuration Controls */}
             <div className={`p-5 rounded-2xl border space-y-4 ${
-              isDarkMode ? 'bg-slate-900/90 border-slate-800' : 'bg-white border-slate-200 shadow-sm'
+              isDarkMode ? 'bg-[#1c1c1e]/90 border-slate-800' : 'bg-white border-slate-200 shadow-sm'
             }`}>
               <div className="flex items-center space-x-2 border-b pb-2 border-slate-200 dark:border-slate-800">
                 <Sliders className="w-4 h-4 text-amber-500" />
@@ -566,7 +566,7 @@ export const Chapter4RateLimiter: React.FC<Chapter4RateLimiterProps> = ({ isDark
                       onChange={(e) => setCustomUserId(e.target.value)}
                       placeholder="User Key (e.g. user_101)..."
                       className={`flex-1 border rounded-lg px-2.5 py-1.5 text-xs font-mono focus:outline-none focus:border-amber-500 ${
-                        isDarkMode ? 'bg-slate-900 border-slate-700 text-white' : 'bg-white border-slate-300 text-slate-900'
+                        isDarkMode ? 'bg-[#1c1c1e] border-slate-700 text-white' : 'bg-white border-slate-300 text-slate-900'
                       }`}
                     />
                     <button
@@ -617,7 +617,7 @@ export const Chapter4RateLimiter: React.FC<Chapter4RateLimiterProps> = ({ isDark
 
             {/* Middle Column: Live Visual Representation of Algorithm State */}
             <div className={`p-5 rounded-2xl border flex flex-col justify-between space-y-4 ${
-              isDarkMode ? 'bg-slate-900/90 border-slate-800' : 'bg-white border-slate-200 shadow-sm'
+              isDarkMode ? 'bg-[#1c1c1e]/90 border-slate-800' : 'bg-white border-slate-200 shadow-sm'
             }`}>
               <div className="flex items-center justify-between border-b pb-2 border-slate-200 dark:border-slate-800">
                 <div className="flex items-center space-x-2">
@@ -752,7 +752,7 @@ export const Chapter4RateLimiter: React.FC<Chapter4RateLimiterProps> = ({ isDark
                     ) : (
                       logs.map((ts, idx) => (
                         <div key={idx} className={`p-1.5 rounded flex justify-between items-center text-[10px] ${
-                          isDarkMode ? 'bg-slate-900 text-slate-300' : 'bg-white text-slate-800 shadow-xs'
+                          isDarkMode ? 'bg-[#1c1c1e] text-slate-300' : 'bg-white text-slate-800 shadow-xs'
                         }`}>
                           <span>Log #{idx + 1}</span>
                           <span className="font-bold text-cyan-600 dark:text-cyan-400">{new Date(ts).toLocaleTimeString()}</span>
@@ -807,7 +807,7 @@ export const Chapter4RateLimiter: React.FC<Chapter4RateLimiterProps> = ({ isDark
 
             {/* Right Column: Real-Time Request Stream Log */}
             <div className={`p-5 rounded-2xl border flex flex-col justify-between space-y-3 ${
-              isDarkMode ? 'bg-slate-900/90 border-slate-800' : 'bg-white border-slate-200 shadow-sm'
+              isDarkMode ? 'bg-[#1c1c1e]/90 border-slate-800' : 'bg-white border-slate-200 shadow-sm'
             }`}>
               <div className="flex items-center justify-between border-b pb-2 border-slate-200 dark:border-slate-800">
                 <div className="flex items-center space-x-2">
@@ -882,7 +882,7 @@ export const Chapter4RateLimiter: React.FC<Chapter4RateLimiterProps> = ({ isDark
             
             {/* 1. Token Bucket */}
             <div className={`p-5 rounded-2xl border space-y-3 ${
-              isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200 shadow-sm'
+              isDarkMode ? 'bg-[#1c1c1e] border-slate-800' : 'bg-white border-slate-200 shadow-sm'
             }`}>
               <div className="flex items-center space-x-2">
                 <span className="p-2 bg-amber-500/10 text-amber-500 rounded-lg font-bold font-mono text-xs">01</span>
@@ -899,7 +899,7 @@ export const Chapter4RateLimiter: React.FC<Chapter4RateLimiterProps> = ({ isDark
 
             {/* 2. Leaky Bucket */}
             <div className={`p-5 rounded-2xl border space-y-3 ${
-              isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200 shadow-sm'
+              isDarkMode ? 'bg-[#1c1c1e] border-slate-800' : 'bg-white border-slate-200 shadow-sm'
             }`}>
               <div className="flex items-center space-x-2">
                 <span className="p-2 bg-blue-500/10 text-blue-500 rounded-lg font-bold font-mono text-xs">02</span>
@@ -916,7 +916,7 @@ export const Chapter4RateLimiter: React.FC<Chapter4RateLimiterProps> = ({ isDark
 
             {/* 3. Fixed Window Counter */}
             <div className={`p-5 rounded-2xl border space-y-3 ${
-              isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200 shadow-sm'
+              isDarkMode ? 'bg-[#1c1c1e] border-slate-800' : 'bg-white border-slate-200 shadow-sm'
             }`}>
               <div className="flex items-center space-x-2">
                 <span className="p-2 bg-purple-500/10 text-purple-500 rounded-lg font-bold font-mono text-xs">03</span>
@@ -933,7 +933,7 @@ export const Chapter4RateLimiter: React.FC<Chapter4RateLimiterProps> = ({ isDark
 
             {/* 4. Sliding Window Log */}
             <div className={`p-5 rounded-2xl border space-y-3 ${
-              isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200 shadow-sm'
+              isDarkMode ? 'bg-[#1c1c1e] border-slate-800' : 'bg-white border-slate-200 shadow-sm'
             }`}>
               <div className="flex items-center space-x-2">
                 <span className="p-2 bg-cyan-500/10 text-cyan-500 rounded-lg font-bold font-mono text-xs">04</span>
@@ -951,7 +951,7 @@ export const Chapter4RateLimiter: React.FC<Chapter4RateLimiterProps> = ({ isDark
           </div>
 
           <div className={`p-5 rounded-2xl border space-y-3 ${
-            isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200 shadow-sm'
+            isDarkMode ? 'bg-[#1c1c1e] border-slate-800' : 'bg-white border-slate-200 shadow-sm'
           }`}>
             <div className="flex items-center space-x-2">
               <span className="p-2 bg-indigo-500/10 text-indigo-500 rounded-lg font-bold font-mono text-xs">Production Note</span>
@@ -974,7 +974,7 @@ export const Chapter4RateLimiter: React.FC<Chapter4RateLimiterProps> = ({ isDark
       {/* VIEW 3: SYSTEM DESIGN ARCHITECTURE & PLACEMENT */}
       {activeTab === 'concepts' && (
         <div className={`p-6 rounded-2xl border space-y-6 ${
-          isDarkMode ? 'bg-slate-900 border-slate-800 text-slate-200' : 'bg-white border-slate-200 text-slate-800 shadow-sm'
+          isDarkMode ? 'bg-[#1c1c1e] border-slate-800 text-slate-200' : 'bg-white border-slate-200 text-slate-800 shadow-sm'
         }`}>
           <div className="space-y-2">
             <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>

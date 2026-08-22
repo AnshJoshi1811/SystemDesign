@@ -1,0 +1,36 @@
+﻿@import "tailwindcss";
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+  font-family: 'Inter', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body { margin: 0; background: #f5f5f4; }
+* { box-sizing: border-box; }
+*:focus-visible { outline: 2px solid #f59e0b; outline-offset: 2px; }
+
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
+* { scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.08) transparent; }
+*::-webkit-scrollbar { width: 4px; height: 4px; }
+*::-webkit-scrollbar-track { background: transparent; }
+*::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 2px; }
+
+/* Flatten dated gradients on chapter hero banners */
+.sd-app .rounded-3xl.shadow-xl,
+.sd-app .rounded-3xl.border.shadow-xl {
+  background-image: none !important;
+  box-shadow: 0 1px 0 0 rgba(255,255,255,0.06), inset 0 0 0 1px rgba(255,255,255,0.04) !important;
+}
+
+.rounded-3xl { border-radius: 12px !important; }
+.rounded-2xl { border-radius: 10px !important; }
+.rounded-xl  { border-radius: 8px !important; }
+
+.sd-app h1 { letter-spacing: -0.03em; }
+.sd-app h2 { letter-spacing: -0.02em; }
+

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+﻿import React, { useState, useEffect, useRef } from 'react';
 import {
   Link2,
   Server,
@@ -511,8 +511,8 @@ export const Chapter8UrlShortener: React.FC<Chapter8UrlShortenerProps> = ({ isDa
       {/* CHAPTER HERO BANNER */}
       <div className={`p-6 sm:p-8 rounded-3xl border shadow-xl relative overflow-hidden transition-all ${
         isDarkMode
-          ? 'bg-gradient-to-br from-slate-900 via-indigo-950/80 to-slate-950 border-slate-800 text-white'
-          : 'bg-gradient-to-br from-amber-500/10 via-orange-500/5 to-indigo-500/10 border-slate-200 text-slate-900'
+          ? 'bg-[#161616] border-white/[0.08] text-white'
+          : 'bg-white border-slate-200 text-slate-900'
       }`}>
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2 max-w-3xl">
@@ -556,7 +556,7 @@ export const Chapter8UrlShortener: React.FC<Chapter8UrlShortenerProps> = ({ isDa
 
       {/* ARCHITECT DIAGNOSIS & LESSON BOX */}
       <div className={`p-5 rounded-3xl border space-y-3 ${
-        isDarkMode ? 'bg-slate-900/90 border-slate-800' : 'bg-white border-slate-200 shadow-xs'
+        isDarkMode ? 'bg-[#1c1c1e]/90 border-slate-800' : 'bg-white border-slate-200 shadow-xs'
       }`}>
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-center space-x-3">
@@ -684,7 +684,7 @@ export const Chapter8UrlShortener: React.FC<Chapter8UrlShortenerProps> = ({ isDa
 
           {/* LEFT 2 COLUMNS: ARCHITECTURE CANVAS */}
           <div className={`lg:col-span-2 p-6 rounded-3xl border relative min-h-[520px] flex flex-col justify-between ${
-            isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200 shadow-xs'
+            isDarkMode ? 'bg-[#1c1c1e] border-slate-800' : 'bg-white border-slate-200 shadow-xs'
           }`}>
             <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-800">
               <div className="flex items-center space-x-2">
@@ -717,7 +717,7 @@ export const Chapter8UrlShortener: React.FC<Chapter8UrlShortenerProps> = ({ isDa
                     onChange={(e) => setInputLongUrl(e.target.value)}
                     placeholder="Enter long target URL..."
                     className={`w-full px-3 py-2 rounded-xl text-xs font-mono border focus:outline-hidden ${
-                      isDarkMode ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-900'
+                      isDarkMode ? 'bg-[#1c1c1e] border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-900'
                     }`}
                   />
                 </div>
@@ -859,7 +859,7 @@ export const Chapter8UrlShortener: React.FC<Chapter8UrlShortenerProps> = ({ isDa
 
           {/* RIGHT 1 COLUMN: TOOLBOX & ARCHITECTURE TOGGLES */}
           <div className={`p-6 rounded-3xl border space-y-5 ${
-            isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200 shadow-xs'
+            isDarkMode ? 'bg-[#1c1c1e] border-slate-800' : 'bg-white border-slate-200 shadow-xs'
           }`}>
             <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
               <div className="flex items-center space-x-2">
@@ -976,7 +976,7 @@ export const Chapter8UrlShortener: React.FC<Chapter8UrlShortenerProps> = ({ isDa
       {/* TAB 2: BASE62 & ENCODING PLAYGROUND */}
       {activeTab === 'base62' && (
         <div className={`p-6 rounded-3xl border space-y-6 ${
-          isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'
+          isDarkMode ? 'bg-[#1c1c1e] border-slate-800' : 'bg-white border-slate-200'
         }`}>
           <div className="flex items-center space-x-3 pb-4 border-b border-slate-200 dark:border-slate-800">
             <div className="p-2.5 bg-indigo-500/10 text-indigo-500 rounded-2xl border border-indigo-500/20">
@@ -1012,7 +1012,7 @@ export const Chapter8UrlShortener: React.FC<Chapter8UrlShortenerProps> = ({ isDa
                       setBase62InputStr(encodeBase62(val));
                     }}
                     className={`w-full px-3 py-2 rounded-xl text-xs font-mono border focus:outline-hidden ${
-                      isDarkMode ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-900'
+                      isDarkMode ? 'bg-[#1c1c1e] border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-900'
                     }`}
                   />
                 </div>
@@ -1034,7 +1034,7 @@ export const Chapter8UrlShortener: React.FC<Chapter8UrlShortenerProps> = ({ isDa
                       setBase62InputNum(decodeBase62(str));
                     }}
                     className={`w-full px-3 py-2 rounded-xl text-xs font-mono font-bold border focus:outline-hidden ${
-                      isDarkMode ? 'bg-slate-900 border-slate-800 text-amber-400' : 'bg-white border-slate-200 text-amber-600'
+                      isDarkMode ? 'bg-[#1c1c1e] border-slate-800 text-amber-400' : 'bg-white border-slate-200 text-amber-600'
                     }`}
                   />
                 </div>
@@ -1131,7 +1131,7 @@ export const Chapter8UrlShortener: React.FC<Chapter8UrlShortenerProps> = ({ isDa
       {/* TAB 3: COLLISION LABORATORY & KGS LAB */}
       {activeTab === 'collision' && (
         <div className={`p-6 rounded-3xl border space-y-6 ${
-          isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'
+          isDarkMode ? 'bg-[#1c1c1e] border-slate-800' : 'bg-white border-slate-200'
         }`}>
           <div className="flex items-center space-x-3 pb-4 border-b border-slate-200 dark:border-slate-800">
             <div className="p-2.5 bg-rose-500/10 text-rose-500 rounded-2xl border border-rose-500/20">
@@ -1187,10 +1187,10 @@ export const Chapter8UrlShortener: React.FC<Chapter8UrlShortenerProps> = ({ isDa
               Bloom filter cheaply answers "definitely not present" so we skip database collision lookups for most new codes. "Maybe present" still requires DB verification.
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 font-mono text-[11px]">
-              <div className={`p-2 rounded-lg border ${isDarkMode ? 'bg-slate-900 border-slate-800 text-slate-300' : 'bg-white border-slate-200 text-slate-700'}`}>
+              <div className={`p-2 rounded-lg border ${isDarkMode ? 'bg-[#1c1c1e] border-slate-800 text-slate-300' : 'bg-white border-slate-200 text-slate-700'}`}>
                 Bloom checks: <strong>{bloomFilterChecks}</strong>
               </div>
-              <div className={`p-2 rounded-lg border ${isDarkMode ? 'bg-slate-900 border-slate-800 text-slate-300' : 'bg-white border-slate-200 text-slate-700'}`}>
+              <div className={`p-2 rounded-lg border ${isDarkMode ? 'bg-[#1c1c1e] border-slate-800 text-slate-300' : 'bg-white border-slate-200 text-slate-700'}`}>
                 DB reads bypassed: <strong>{bloomFilterBypassReads}</strong>
               </div>
             </div>
@@ -1202,7 +1202,7 @@ export const Chapter8UrlShortener: React.FC<Chapter8UrlShortenerProps> = ({ isDa
       {/* TAB 4: REDIRECT LAB - 301 VS 302 */}
       {activeTab === 'redirect' && (
         <div className={`p-6 rounded-3xl border space-y-6 ${
-          isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'
+          isDarkMode ? 'bg-[#1c1c1e] border-slate-800' : 'bg-white border-slate-200'
         }`}>
           <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-800">
             <div className="flex items-center space-x-3">
@@ -1316,7 +1316,7 @@ export const Chapter8UrlShortener: React.FC<Chapter8UrlShortenerProps> = ({ isDa
       {/* TAB 5: REQUEST CONSOLE & ASYNC ANALYTICS */}
       {activeTab === 'analytics' && (
         <div className={`p-6 rounded-3xl border space-y-6 ${
-          isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'
+          isDarkMode ? 'bg-[#1c1c1e] border-slate-800' : 'bg-white border-slate-200'
         }`}>
           <div className="flex items-center space-x-3 pb-4 border-b border-slate-200 dark:border-slate-800">
             <div className="p-2.5 bg-slate-800 text-white rounded-2xl border border-slate-700">
@@ -1385,7 +1385,7 @@ export const Chapter8UrlShortener: React.FC<Chapter8UrlShortenerProps> = ({ isDa
       {/* TAB 6: ARCHITECT CHALLENGE & QUIZ */}
       {activeTab === 'quiz' && (
         <div className={`p-6 rounded-3xl border space-y-6 ${
-          isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'
+          isDarkMode ? 'bg-[#1c1c1e] border-slate-800' : 'bg-white border-slate-200'
         }`}>
           <div className="flex items-center space-x-3 pb-4 border-b border-slate-200 dark:border-slate-800">
             <div className="p-2.5 bg-amber-500/10 text-amber-500 rounded-2xl border border-amber-500/20">
@@ -1413,7 +1413,7 @@ export const Chapter8UrlShortener: React.FC<Chapter8UrlShortenerProps> = ({ isDa
                   key={idx}
                   onClick={() => alert(idx === currentQuiz.correct ? "✅ Correct! " + currentQuiz.explanation : "❌ Incorrect. Try again!")}
                   className={`w-full p-3 rounded-xl border text-left font-mono text-xs transition-all ${
-                    isDarkMode ? 'bg-slate-900 border-slate-800 text-slate-300 hover:border-amber-500/50' : 'bg-white border-slate-200 text-slate-800 hover:border-amber-500/50'
+                    isDarkMode ? 'bg-[#1c1c1e] border-slate-800 text-slate-300 hover:border-amber-500/50' : 'bg-white border-slate-200 text-slate-800 hover:border-amber-500/50'
                   }`}
                 >
                   {opt}

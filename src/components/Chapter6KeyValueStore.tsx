@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import {
   Database,
   Server,
@@ -568,8 +568,8 @@ export const Chapter6KeyValueStore: React.FC<Chapter6KeyValueStoreProps> = ({ is
       {/* CHAPTER TOP HERO BANNER */}
       <div className={`p-6 sm:p-8 rounded-3xl border shadow-xl relative overflow-hidden transition-all ${
         isDarkMode
-          ? 'bg-gradient-to-br from-slate-900 via-indigo-950/80 to-slate-950 border-slate-800 text-white'
-          : 'bg-gradient-to-br from-amber-500/10 via-orange-500/5 to-indigo-500/10 border-slate-200 text-slate-900'
+          ? 'bg-[#161616] border-white/[0.08] text-white'
+          : 'bg-white border-slate-200 text-slate-900'
       }`}>
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2 max-w-3xl">
@@ -590,7 +590,9 @@ export const Chapter6KeyValueStore: React.FC<Chapter6KeyValueStoreProps> = ({ is
           </div>
 
           {/* Stage Progression Pills (1 to 10) */}
-          <div className="flex flex-wrap items-center gap-1.5 shrink-0 bg-slate-950/60 backdrop-blur-md p-2.5 rounded-2xl border border-amber-500/20 max-w-xs sm:max-w-none">
+          <div className={`flex flex-wrap items-center gap-1.5 shrink-0 p-2.5 rounded-2xl border max-w-xs sm:max-w-none ${
+            isDarkMode ? 'bg-slate-950/60 backdrop-blur-md border-amber-500/20' : 'bg-slate-100 border-slate-300'
+          }`}>
             {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((stg) => (
               <button
                 key={stg}
@@ -613,7 +615,7 @@ export const Chapter6KeyValueStore: React.FC<Chapter6KeyValueStoreProps> = ({ is
 
       {/* MENTOR / PRINCIPAL ENGINEER DIAGNOSIS BAR */}
       <div className={`p-5 rounded-3xl border space-y-4 ${
-        isDarkMode ? 'bg-slate-900/90 border-slate-800' : 'bg-white border-slate-200 shadow-xs'
+        isDarkMode ? 'bg-[#1c1c1e]/90 border-slate-800' : 'bg-white border-slate-200 shadow-xs'
       }`}>
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-center space-x-3">
@@ -741,7 +743,7 @@ export const Chapter6KeyValueStore: React.FC<Chapter6KeyValueStoreProps> = ({ is
           
           {/* CENTER 2 COLUMNS: INTERACTIVE TOPOLOGY & RING */}
           <div className={`lg:col-span-2 p-6 rounded-3xl border relative min-h-[520px] flex flex-col justify-between ${
-            isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200 shadow-xs'
+            isDarkMode ? 'bg-[#1c1c1e] border-slate-800' : 'bg-white border-slate-200 shadow-xs'
           }`}>
             <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-800">
               <div className="flex items-center space-x-2">
@@ -892,7 +894,7 @@ export const Chapter6KeyValueStore: React.FC<Chapter6KeyValueStoreProps> = ({ is
 
           {/* RIGHT 1 COLUMN: CLUSTER EXPLORER & NODE INSPECTOR */}
           <div className={`p-6 rounded-3xl border space-y-5 ${
-            isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200 shadow-xs'
+            isDarkMode ? 'bg-[#1c1c1e] border-slate-800' : 'bg-white border-slate-200 shadow-xs'
           }`}>
             <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
               <div className="flex items-center space-x-2">
@@ -1038,7 +1040,7 @@ export const Chapter6KeyValueStore: React.FC<Chapter6KeyValueStoreProps> = ({ is
       {/* TAB 2: QUORUM CONSISTENCY LAB (W + R > N) */}
       {activeTab === 'quorum' && (
         <div className={`p-6 rounded-3xl border space-y-6 ${
-          isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'
+          isDarkMode ? 'bg-[#1c1c1e] border-slate-800' : 'bg-white border-slate-200'
         }`}>
           <div className="flex items-center space-x-3 pb-4 border-b border-slate-200 dark:border-slate-800">
             <div className="p-2.5 bg-indigo-500/10 text-indigo-500 rounded-2xl border border-indigo-500/20">
@@ -1151,7 +1153,7 @@ export const Chapter6KeyValueStore: React.FC<Chapter6KeyValueStoreProps> = ({ is
       {/* TAB 3: VECTOR CLOCKS & CONFLICT LAB */}
       {activeTab === 'conflicts' && (
         <div className={`p-6 rounded-3xl border space-y-6 ${
-          isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'
+          isDarkMode ? 'bg-[#1c1c1e] border-slate-800' : 'bg-white border-slate-200'
         }`}>
           <div className="flex items-center space-x-3 pb-4 border-b border-slate-200 dark:border-slate-800">
             <div className="p-2.5 bg-purple-500/10 text-purple-500 rounded-2xl border border-purple-500/20">
@@ -1177,7 +1179,7 @@ export const Chapter6KeyValueStore: React.FC<Chapter6KeyValueStoreProps> = ({ is
                 value={valBranchA}
                 onChange={(e) => setValBranchA(e.target.value)}
                 className={`w-full p-2.5 rounded-xl border text-xs font-mono ${
-                  isDarkMode ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-900'
+                  isDarkMode ? 'bg-[#1c1c1e] border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-900'
                 }`}
               />
               <p className="text-[10px] text-slate-500 font-mono">User A added [Laptop] on US-East data center.</p>
@@ -1196,7 +1198,7 @@ export const Chapter6KeyValueStore: React.FC<Chapter6KeyValueStoreProps> = ({ is
                 value={valBranchB}
                 onChange={(e) => setValBranchB(e.target.value)}
                 className={`w-full p-2.5 rounded-xl border text-xs font-mono ${
-                  isDarkMode ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-900'
+                  isDarkMode ? 'bg-[#1c1c1e] border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-900'
                 }`}
               />
               <p className="text-[10px] text-slate-500 font-mono">User B added [Headphones] on EU-West data center simultaneously.</p>
@@ -1226,7 +1228,7 @@ export const Chapter6KeyValueStore: React.FC<Chapter6KeyValueStoreProps> = ({ is
       {/* TAB 4: MERKLE TREES & ANTI-ENTROPY LAB */}
       {activeTab === 'merkle' && (
         <div className={`p-6 rounded-3xl border space-y-6 ${
-          isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'
+          isDarkMode ? 'bg-[#1c1c1e] border-slate-800' : 'bg-white border-slate-200'
         }`}>
           <div className="flex items-center space-x-3 pb-4 border-b border-slate-200 dark:border-slate-800">
             <div className="p-2.5 bg-emerald-500/10 text-emerald-500 rounded-2xl border border-emerald-500/20">
@@ -1309,7 +1311,7 @@ export const Chapter6KeyValueStore: React.FC<Chapter6KeyValueStoreProps> = ({ is
       {/* TAB 5: OPERATION LOGS */}
       {activeTab === 'logs' && (
         <div className={`p-6 rounded-3xl border space-y-4 ${
-          isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'
+          isDarkMode ? 'bg-[#1c1c1e] border-slate-800' : 'bg-white border-slate-200'
         }`}>
           <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
             <div className="flex items-center space-x-2">
@@ -1354,7 +1356,7 @@ export const Chapter6KeyValueStore: React.FC<Chapter6KeyValueStoreProps> = ({ is
       {/* TAB 6: ARCHITECT STAGE QUIZ */}
       {activeTab === 'quiz' && (
         <div className={`p-6 rounded-3xl border space-y-6 ${
-          isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'
+          isDarkMode ? 'bg-[#1c1c1e] border-slate-800' : 'bg-white border-slate-200'
         }`}>
           <div className="flex items-center space-x-3 pb-4 border-b border-slate-200 dark:border-slate-800">
             <div className="p-2.5 bg-amber-500/10 text-amber-500 rounded-2xl border border-amber-500/20">
