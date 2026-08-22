@@ -103,6 +103,23 @@ export const Module2VirtualNodes: React.FC<Module2VirtualNodesProps> = ({ isDark
     return computeDistributionStats(updatedServers, keysList, ringNodesForStats);
   }, [servers, activeVNodeCount, keysList, ringNodesForStats]);
 
+  // Baseline stats at V=1 for live comparison
+  const baselineVnodesList = useMemo(() => generateVirtualNodes(servers, 1, 'murmur3'), [servers]);
+  const baselineKeys = useMemo(() => {
+    const rawKeys = generateSampleKeys(keyCountPreset, 'VNodeDataKey');
+    const ringNodes = baselineVnodesList.map((vn) => ({ id: vn.id, physicalServerId: vn.physicalServerId, angle: vn.angle, hashValue: vn.hashValue }));
+    return assignKeysToRingNodes(rawKeys, ringNodes);
+  }, [keyCountPreset, baselineVnodesList]);
+  const baselineStats = useMemo(() => {
+    const s1 = servers.map((s) => ({ ...s, vnodesCount: 1 }));
+    const rn = baselineVnodesList.map((vn) => ({ id: vn.id, physicalServerId: vn.physicalServerId, angle: vn.angle }));
+    return computeDistributionStats(s1, baselineKeys, rn);
+  }, [servers, baselineKeys, baselineVnodesList]);
+
+  const improvementPct = baselineStats.stdDeviation > 0
+    ? Math.round((1 - stats.stdDeviation / baselineStats.stdDeviation) * 100)
+    : 0;
+
   // Handle Server Add/Remove
   const handleAddPhysicalServer = () => {
     if (servers.length >= 8) return;
@@ -127,21 +144,61 @@ export const Module2VirtualNodes: React.FC<Module2VirtualNodesProps> = ({ isDark
     <div className="space-y-6 max-w-6xl mx-auto">
       
       {/* Module Title Header */}
-      <div className={`border rounded-2xl p-5 sm:p-6 space-y-2 shadow-xl ${
+      <div className={`border rounded-2xl p-5 sm:p-6 space-y-4 ${
         isDarkMode ? 'bg-[#1c1c1e] border-slate-800' : 'bg-white border-slate-200'
       }`}>
-        <div className="flex items-center space-x-3">
-          <span className="px-3 py-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-mono text-xs rounded-full border border-emerald-500/20 font-semibold">
-            Module 2 — Advanced Solution
-          </span>
-          <span className={`text-xs ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Virtual Nodes (VNodes)</span>
+        <div>
+          <div className="flex items-center space-x-3 mb-2">
+            <span className="px-2.5 py-1 bg-emerald-500/10 text-emerald-600 text-xs rounded-full border border-emerald-500/20 font-medium">
+              Chapter 5 — Module 2
+            </span>
+            <span className={`text-xs ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Virtual Nodes (VNodes)</span>
+          </div>
+          <h2 className={`text-xl sm:text-2xl font-bold tracking-tight mb-1 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+            Virtual Nodes & Uniform Load Balancing
+          </h2>
+          <p className={`text-sm leading-relaxed ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>
+            Each physical server is assigned <strong>V virtual tokens</strong> spread across the ring. More tokens = more uniform key distribution = lower standard deviation.
+          </p>
         </div>
-        <h2 className={`text-xl sm:text-2xl font-bold tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
-          Virtual Nodes & Uniform Load Balancing
-        </h2>
-        <p className={`text-xs max-w-3xl leading-relaxed ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>
-          Each physical server is chopped into <span className="text-emerald-600 dark:text-emerald-400 font-semibold">V virtual tokens</span> interleaved across the ring. Adjust the slider to observe how higher VNode counts smooth out load imbalance and lower Standard Deviation (σ)!
-        </p>
+
+        {/* ── Live σ comparison: V=1 vs current V ── */}
+        <div className="grid grid-cols-2 gap-3">
+          <div className={`p-3.5 rounded-xl border space-y-1 ${
+            isDarkMode ? 'bg-slate-950 border-slate-800' : 'bg-slate-50 border-slate-200'
+          }`}>
+            <div className={`text-[10px] font-medium uppercase tracking-wider ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+              Without VNodes (V = 1)
+            </div>
+            <div className="flex items-end gap-1.5">
+              <span className="text-2xl font-bold text-rose-500">{baselineStats.stdDeviation}</span>
+              <span className={`text-xs pb-0.5 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>σ deviation</span>
+            </div>
+            <div className={`text-xs ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+              Max imbalance: <span className="text-rose-500 font-medium">{baselineStats.maxLoadRatio}×</span>
+            </div>
+          </div>
+
+          <div className={`p-3.5 rounded-xl border space-y-1 relative ${
+            isDarkMode ? 'bg-slate-950 border-emerald-500/30' : 'bg-emerald-50/50 border-emerald-200'
+          }`}>
+            <div className={`text-[10px] font-medium uppercase tracking-wider text-emerald-600`}>
+              With VNodes (V = {activeVNodeCount})
+            </div>
+            <div className="flex items-end gap-1.5">
+              <span className="text-2xl font-bold text-emerald-600">{stats.stdDeviation}</span>
+              <span className={`text-xs pb-0.5 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>σ deviation</span>
+            </div>
+            <div className="text-xs text-emerald-600">
+              Max imbalance: <span className="font-medium">{stats.maxLoadRatio}×</span>
+              {improvementPct > 0 && (
+                <span className="ml-2 px-1.5 py-0.5 bg-emerald-500/15 rounded text-emerald-600 font-bold">
+                  ↓ {improvementPct}% better
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Control Toolbar Panel */}

@@ -152,16 +152,55 @@ export const HashRingCanvas: React.FC<HashRingCanvasProps> = ({
         {/* Ambient Ring Background Glow */}
         <circle cx={center} cy={center} r={radius * 1.2} fill="url(#ringGlow)" />
 
-        {/* Base Hash Ring Axis */}
+        {/* ── Ownership arc segments: colored by the server that owns each arc ── */}
+        {(() => {
+          const sorted = [...displayNodes].sort((a, b) => a.angle - b.angle);
+          if (sorted.length < 2) return null;
+          return sorted.map((node, i) => {
+            const nextNode = sorted[(i + 1) % sorted.length];
+            // The arc from node.angle → nextNode.angle is owned by nextNode (clockwise lookup)
+            let sweep = nextNode.angle - node.angle;
+            if (sweep <= 0) sweep += 360;
+            // Only draw if arc is big enough to be visible
+            if (sweep < 1) return null;
+            return (
+              <path
+                key={`arc-${node.id}`}
+                d={describeArc(node.angle, nextNode.angle, radius)}
+                fill="none"
+                stroke={nextNode.color}
+                strokeWidth={showVNodes ? 3 : 5}
+                strokeLinecap="butt"
+                opacity={showVNodes ? 0.55 : 0.7}
+              />
+            );
+          });
+        })()}
+
+        {/* Base Hash Ring (thin guide circle drawn on top of arc segments) */}
         <circle
           cx={center}
           cy={center}
           r={radius}
           fill="none"
-          stroke={isDarkMode ? "#334155" : "#cbd5e1"}
-          strokeWidth="6"
-          strokeDasharray="4 4"
+          stroke={isDarkMode ? "rgba(148,163,184,0.15)" : "rgba(100,116,139,0.2)"}
+          strokeWidth="1"
         />
+
+        {/* Cardinal tick marks at 90°, 180°, 270° */}
+        {[90, 180, 270].map((deg) => {
+          const outer = polarToCartesian(deg, radius + 10);
+          const inner = polarToCartesian(deg, radius - 10);
+          return (
+            <line
+              key={deg}
+              x1={inner.x} y1={inner.y}
+              x2={outer.x} y2={outer.y}
+              stroke={isDarkMode ? "rgba(148,163,184,0.25)" : "rgba(100,116,139,0.3)"}
+              strokeWidth="1"
+            />
+          );
+        })}
 
         {/* 0 / 2^32 Marker at top */}
         <g transform={`translate(${center}, ${center - radius - 20})`}>
@@ -170,16 +209,16 @@ export const HashRingCanvas: React.FC<HashRingCanvasProps> = ({
             y="-12"
             width="64"
             height="20"
-            rx="6"
-            fill={isDarkMode ? "#0f172a" : "#ffffff"}
-            stroke={isDarkMode ? "#475569" : "#cbd5e1"}
+            rx="4"
+            fill={isDarkMode ? "#1c1c1e" : "#ffffff"}
+            stroke={isDarkMode ? "#334155" : "#e2e8f0"}
             strokeWidth="1"
           />
           <text
             textAnchor="middle"
             y="2"
-            fill={isDarkMode ? "#94a3b8" : "#475569"}
-            fontSize="10"
+            fill={isDarkMode ? "#64748b" : "#64748b"}
+            fontSize="9"
             fontWeight="bold"
             fontFamily="monospace"
           >
@@ -270,18 +309,24 @@ export const HashRingCanvas: React.FC<HashRingCanvasProps> = ({
           const isHovered = hoveredNode?.id === node.id;
           const physicalServer = servers.find((s) => s.id === node.serverId);
 
+          // Label positioned outside the ring, pushed away from center
+          const labelDist = radius + nodeRadius + (showVNodes ? 12 : 20);
+          const labelPos = polarToCartesian(node.angle, labelDist);
+          const isTopHalf = node.angle > 270 || node.angle < 90;
+
           return (
             <g key={node.id} className="cursor-pointer">
-              {/* Outer halo */}
-              <circle
-                cx={pos.x}
-                cy={pos.y}
-                r={nodeRadius + (isHovered ? 6 : 2)}
-                fill={node.color}
-                fillOpacity={showVNodes ? 0.3 : 0.2}
-                stroke={node.color}
-                strokeWidth={isHovered ? 2 : 1}
-              />
+              {/* Outer halo — only on hover or physical servers */}
+              {(!showVNodes || isHovered) && (
+                <circle
+                  cx={pos.x}
+                  cy={pos.y}
+                  r={nodeRadius + (isHovered ? 5 : 3)}
+                  fill={node.color}
+                  fillOpacity={0.18}
+                  stroke="none"
+                />
+              )}
 
               {/* Core Node Circle */}
               <circle
@@ -289,8 +334,8 @@ export const HashRingCanvas: React.FC<HashRingCanvasProps> = ({
                 cy={pos.y}
                 r={nodeRadius}
                 fill={node.color}
-                stroke={isDarkMode ? "#0f172a" : "#ffffff"}
-                strokeWidth={showVNodes ? 1 : 2}
+                stroke={isDarkMode ? "#111113" : "#ffffff"}
+                strokeWidth={showVNodes ? 1.5 : 2.5}
                 onMouseDown={() => interactive && onServerDrag && setDraggingServerId(node.serverId)}
                 onClick={() => physicalServer && onServerSelect && onServerSelect(physicalServer)}
                 onMouseEnter={() =>
@@ -298,23 +343,28 @@ export const HashRingCanvas: React.FC<HashRingCanvasProps> = ({
                     id: node.id,
                     type: node.isVNode ? 'vnode' : 'server',
                     label: node.label,
-                    details: `Angle: ${node.angle.toFixed(1)}° | Server: ${physicalServer?.name || node.serverId}`,
+                    details: `${node.angle.toFixed(1)}° | ${physicalServer?.name || node.serverId}`,
                     angle: node.angle,
                   })
                 }
                 onMouseLeave={() => setHoveredNode(null)}
               />
 
-              {/* Node Label Text (Physical servers or major vnodes) */}
-              {(!showVNodes || vnodes.length <= 20) && (
+              {/* Physical server labels: always visible, outside ring */}
+              {!showVNodes && (
                 <text
-                  x={pos.x}
-                  y={pos.y + (node.angle > 90 && node.angle < 270 ? 22 : -18)}
-                  textAnchor="middle"
-                  fill={isDarkMode ? "#f8fafc" : "#0f172a"}
-                  fontSize={showVNodes ? "10" : "12"}
-                  fontWeight="bold"
-                  className="pointer-events-none font-mono"
+                  x={labelPos.x}
+                  y={labelPos.y + 4}
+                  textAnchor={
+                    node.angle > 15 && node.angle < 165 ? 'start'
+                    : node.angle > 195 && node.angle < 345 ? 'end'
+                    : 'middle'
+                  }
+                  fill={node.color}
+                  fontSize="11"
+                  fontWeight="700"
+                  fontFamily="'Inter', system-ui, sans-serif"
+                  className="pointer-events-none"
                 >
                   {node.label}
                 </text>
@@ -325,29 +375,27 @@ export const HashRingCanvas: React.FC<HashRingCanvasProps> = ({
 
         {/* Center Ring Info Summary */}
         <g transform={`translate(${center}, ${center})`}>
-          <text
-            textAnchor="middle"
-            y="-10"
-            fill={isDarkMode ? "#94a3b8" : "#64748b"}
-            fontSize="12"
-            fontWeight="medium"
-          >
-            {showVNodes ? `${vnodes.length} Virtual Nodes` : `${servers.length} Physical Servers`}
+          <text textAnchor="middle" y="-14" fill={isDarkMode ? "#94a3b8" : "#6b7280"} fontSize="11" fontFamily="'Inter',system-ui,sans-serif">
+            {showVNodes ? `${vnodes.length} virtual tokens` : `${servers.length} servers`}
           </text>
-          <text
-            textAnchor="middle"
-            y="12"
-            fill={isDarkMode ? "#38bdf8" : "#2563eb"}
-            fontSize="18"
-            fontWeight="bold"
-            className="font-mono"
-          >
-            {keys.length} Keys
+          <text textAnchor="middle" y="8" fill={isDarkMode ? "#f8fafc" : "#0f172a"} fontSize="22" fontWeight="700" fontFamily="'Inter',system-ui,sans-serif">
+            {keys.length}
+          </text>
+          <text textAnchor="middle" y="24" fill={isDarkMode ? "#94a3b8" : "#6b7280"} fontSize="11" fontFamily="'Inter',system-ui,sans-serif">
+            keys
           </text>
         </g>
       </svg>
 
-      {/* Hover Info Card */}
+      {/* ── Server color legend below the canvas ── */}
+      <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5 mt-3 px-2">
+        {servers.map((s) => (
+          <div key={s.id} className="flex items-center gap-1.5 text-[11px] font-medium" style={{ color: s.color }}>
+            <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: s.color }} />
+            <span className={isDarkMode ? 'text-slate-300' : 'text-slate-700'}>{s.name}</span>
+          </div>
+        ))}
+      </div>
       <AnimatePresence>
         {hoveredNode && (
           <motion.div
