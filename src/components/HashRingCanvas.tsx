@@ -1,6 +1,8 @@
-﻿import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { PhysicalServer, VirtualNode, HashKey } from '../types';
 import { motion, AnimatePresence } from 'motion/react';
+
+export const MAX_VNODE_DOTS = 200;
 
 interface HashRingCanvasProps {
   servers: PhysicalServer[];
@@ -37,10 +39,14 @@ export const HashRingCanvas: React.FC<HashRingCanvasProps> = ({
 }) => {
   const [hoveredNode, setHoveredNode] = useState<{ id: string; type: 'server' | 'vnode' | 'key'; label: string; details: string; angle: number } | null>(null);
   const [draggingServerId, setDraggingServerId] = useState<string | null>(null);
+  const dragRef = useRef<{ serverId: string; startX: number; startY: number; moved: boolean } | null>(null);
+  const suppressClickRef = useRef(false);
 
   const center = size / 2;
   const radius = size * 0.38;
   const nodeRadius = showVNodes ? (vnodes.length > 60 ? 4 : 7) : 13;
+  // Above this many ring tokens, individual dots become noise (and slow): draw only the coloured ownership arcs.
+  const drawNodeDots = !showVNodes || vnodes.length <= MAX_VNODE_DOTS;
   const keyRadius = 5;
 
   // Converts angle in degrees to SVG (x, y) coordinates
@@ -77,33 +83,60 @@ export const HashRingCanvas: React.FC<HashRingCanvasProps> = ({
     ].join(' ');
   };
 
-  // Handle ring click to place a key
+  // Pointer position in viewBox units (the SVG may be scaled down on narrow screens).
+  const toLocal = (e: React.PointerEvent<SVGSVGElement> | React.MouseEvent<SVGSVGElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const scale = rect.width > 0 ? size / rect.width : 1;
+    return { x: (e.clientX - rect.left) * scale, y: (e.clientY - rect.top) * scale };
+  };
+
+  // Handle ring click to place a key (clicks on key/server dots stop propagation before reaching here)
   const handleSvgClick = (e: React.MouseEvent<SVGSVGElement>) => {
-    if (draggingServerId) return;
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    
-    // Check if click was near the ring radius
-    const distFromCenter = Math.sqrt(Math.pow(x - center, 2) + Math.pow(y - center, 2));
-    if (Math.abs(distFromCenter - radius) < 40 && onRingClick) {
-      const clickAngle = cartesianToAngle(x, y);
-      onRingClick(clickAngle);
+    if (suppressClickRef.current) {
+      // This click is the tail end of a drag — not a request to place a key.
+      suppressClickRef.current = false;
+      return;
     }
+    if (!onRingClick) return;
+    const { x, y } = toLocal(e);
+    const distFromCenter = Math.hypot(x - center, y - center);
+    if (Math.abs(distFromCenter - radius) < 40) onRingClick(cartesianToAngle(x, y));
   };
 
-  // Handle server node dragging on SVG
-  const handleMouseMove = (e: React.MouseEvent<SVGSVGElement>) => {
-    if (!draggingServerId || !onServerDrag) return;
-    const rect = e.currentTarget.getBoundingClientRect();
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
-    const newAngle = cartesianToAngle(mouseX, mouseY);
-    onServerDrag(draggingServerId, newAngle);
+  // Drag with mouse, pen or touch. A drag only "counts" once the pointer moves a few pixels,
+  // so a plain tap on a server still behaves like a click.
+  const handleNodePointerDown = (e: React.PointerEvent<SVGCircleElement>, serverId: string) => {
+    if (!interactive || !onServerDrag) return;
+    dragRef.current = { serverId, startX: e.clientX, startY: e.clientY, moved: false };
   };
 
-  const handleMouseUp = () => {
-    setDraggingServerId(null);
+  const handlePointerMove = (e: React.PointerEvent<SVGSVGElement>) => {
+    const drag = dragRef.current;
+    if (!drag || !onServerDrag) return;
+    if (!drag.moved) {
+      if (Math.hypot(e.clientX - drag.startX, e.clientY - drag.startY) < 4) return;
+      // Real drag started: keep receiving moves even if the pointer leaves the dot.
+      drag.moved = true;
+      e.currentTarget.setPointerCapture?.(e.pointerId);
+      setDraggingServerId(drag.serverId);
+    }
+    const { x, y } = toLocal(e);
+    onServerDrag(drag.serverId, cartesianToAngle(x, y));
+  };
+
+  const endDrag = (e: React.PointerEvent<SVGSVGElement>) => {
+    const drag = dragRef.current;
+    if (!drag) return;
+    dragRef.current = null;
+    if (drag.moved) {
+      // The browser fires a click right after pointerup; swallow it so a drag never places a key.
+      suppressClickRef.current = true;
+      setTimeout(() => {
+        suppressClickRef.current = false;
+      }, 0);
+      if (e.currentTarget.hasPointerCapture?.(e.pointerId)) e.currentTarget.releasePointerCapture(e.pointerId);
+      setDraggingServerId(null);
+    }
   };
 
   // Decide whether to render physical server nodes or virtual nodes
@@ -131,11 +164,14 @@ export const HashRingCanvas: React.FC<HashRingCanvasProps> = ({
         width={size}
         height={size}
         viewBox={`0 0 ${size} ${size}`}
-        className="overflow-visible cursor-pointer"
+        className={`overflow-visible w-full h-auto ${onRingClick ? 'cursor-pointer' : ''}`}
+        style={{ maxWidth: size }}
+        role="img"
+        aria-label={`Hash ring with ${showVNodes ? `${vnodes.length} virtual nodes` : `${servers.length} servers`} and ${keys.length} keys. Each key belongs to the first node clockwise from it.`}
         onClick={handleSvgClick}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
+        onPointerMove={handlePointerMove}
+        onPointerUp={endDrag}
+        onPointerCancel={endDrag}
       >
         <defs>
           <radialGradient id="ringGlow" cx="50%" cy="50%" r="50%">
@@ -156,22 +192,36 @@ export const HashRingCanvas: React.FC<HashRingCanvasProps> = ({
         {(() => {
           const sorted = [...displayNodes].sort((a, b) => a.angle - b.angle);
           if (sorted.length < 2) return null;
-          return sorted.map((node, i) => {
+          // The arc from node.angle → nextNode.angle is owned by nextNode (clockwise lookup).
+          // Merge consecutive arcs with the same owner so a ring with many tokens stays cheap to draw.
+          const segments: { key: string; start: number; end: number; color: string }[] = [];
+          sorted.forEach((node, i) => {
             const nextNode = sorted[(i + 1) % sorted.length];
-            // The arc from node.angle → nextNode.angle is owned by nextNode (clockwise lookup)
-            let sweep = nextNode.angle - node.angle;
+            const last = segments[segments.length - 1];
+            if (last && last.color === nextNode.color && last.end === node.angle) {
+              last.end = nextNode.angle;
+            } else {
+              segments.push({ key: `arc-${node.id}`, start: node.angle, end: nextNode.angle, color: nextNode.color });
+            }
+          });
+          return segments.map((seg) => {
+            let sweep = seg.end - seg.start;
             if (sweep <= 0) sweep += 360;
-            // Only draw if arc is big enough to be visible
-            if (sweep < 1) return null;
+            if (sweep < 0.5) return null;
+            // A full-circle arc can't be drawn with one SVG arc command; split it in two.
+            const d =
+              sweep >= 359.5
+                ? `${describeArc(seg.start, seg.start + 180, radius)} ${describeArc(seg.start + 180, seg.start + 359.9, radius)}`
+                : describeArc(seg.start, seg.end, radius);
             return (
               <path
-                key={`arc-${node.id}`}
-                d={describeArc(node.angle, nextNode.angle, radius)}
+                key={seg.key}
+                d={d}
                 fill="none"
-                stroke={nextNode.color}
-                strokeWidth={showVNodes ? 3 : 5}
+                stroke={seg.color}
+                strokeWidth={showVNodes ? 4 : 5}
                 strokeLinecap="butt"
-                opacity={showVNodes ? 0.55 : 0.7}
+                opacity={showVNodes ? 0.65 : 0.7}
               />
             );
           });
@@ -205,10 +255,10 @@ export const HashRingCanvas: React.FC<HashRingCanvasProps> = ({
         {/* 0 / 2^32 Marker at top */}
         <g transform={`translate(${center}, ${center - radius - 20})`}>
           <rect
-            x="-32"
-            y="-12"
-            width="64"
-            height="20"
+            x="-36"
+            y="-13"
+            width="72"
+            height="22"
             rx="4"
             fill={isDarkMode ? "#1c1c1e" : "#ffffff"}
             stroke={isDarkMode ? "#334155" : "#e2e8f0"}
@@ -216,9 +266,9 @@ export const HashRingCanvas: React.FC<HashRingCanvasProps> = ({
           />
           <text
             textAnchor="middle"
-            y="2"
-            fill={isDarkMode ? "#64748b" : "#64748b"}
-            fontSize="9"
+            y="3"
+            fill={isDarkMode ? "#94a3b8" : "#475569"}
+            fontSize="11"
             fontWeight="bold"
             fontFamily="monospace"
           >
@@ -287,8 +337,12 @@ export const HashRingCanvas: React.FC<HashRingCanvasProps> = ({
               fill={k.isMoved ? '#ef4444' : assignedServer?.color || (isDarkMode ? '#38bdf8' : '#2563eb')}
               stroke={isLookup ? '#ffffff' : isDarkMode ? '#090d16' : '#ffffff'}
               strokeWidth={isLookup ? 2.5 : 1}
-              className="transition-all duration-300 cursor-pointer hover:scale-150"
-              onClick={() => onKeySelect && onKeySelect(k)}
+              className={`transition-all duration-300 ${onKeySelect ? 'cursor-pointer' : ''}`}
+              onClick={(e) => {
+                // Selecting an existing key must not also place a new key on the ring.
+                e.stopPropagation();
+                onKeySelect?.(k);
+              }}
               onMouseEnter={() =>
                 setHoveredNode({
                   id: k.id,
@@ -304,7 +358,7 @@ export const HashRingCanvas: React.FC<HashRingCanvasProps> = ({
         })}
 
         {/* Render Server / VNode Positions */}
-        {displayNodes.map((node) => {
+        {drawNodeDots && displayNodes.map((node) => {
           const pos = polarToCartesian(node.angle, radius);
           const isHovered = hoveredNode?.id === node.id;
           const physicalServer = servers.find((s) => s.id === node.serverId);
@@ -315,7 +369,7 @@ export const HashRingCanvas: React.FC<HashRingCanvasProps> = ({
           const isTopHalf = node.angle > 270 || node.angle < 90;
 
           return (
-            <g key={node.id} className="cursor-pointer">
+            <g key={node.id} className={interactive && onServerDrag ? (draggingServerId === node.serverId ? 'cursor-grabbing' : 'cursor-grab') : ''}>
               {/* Outer halo — only on hover or physical servers */}
               {(!showVNodes || isHovered) && (
                 <circle
@@ -336,8 +390,17 @@ export const HashRingCanvas: React.FC<HashRingCanvasProps> = ({
                 fill={node.color}
                 stroke={isDarkMode ? "#111113" : "#ffffff"}
                 strokeWidth={showVNodes ? 1.5 : 2.5}
-                onMouseDown={() => interactive && onServerDrag && setDraggingServerId(node.serverId)}
-                onClick={() => physicalServer && onServerSelect && onServerSelect(physicalServer)}
+                style={interactive && onServerDrag ? { touchAction: 'none' } : undefined}
+                onPointerDown={(e) => handleNodePointerDown(e, node.serverId)}
+                onClick={(e) => {
+                  // Clicking a server is never a request to place a key.
+                  e.stopPropagation();
+                  if (suppressClickRef.current) {
+                    suppressClickRef.current = false;
+                    return;
+                  }
+                  if (physicalServer && onServerSelect) onServerSelect(physicalServer);
+                }}
                 onMouseEnter={() =>
                   setHoveredNode({
                     id: node.id,
@@ -390,12 +453,17 @@ export const HashRingCanvas: React.FC<HashRingCanvasProps> = ({
       {/* ── Server color legend below the canvas ── */}
       <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5 mt-3 px-2">
         {servers.map((s) => (
-          <div key={s.id} className="flex items-center gap-1.5 text-[11px] font-medium" style={{ color: s.color }}>
+          <div key={s.id} className="flex items-center gap-1.5 text-xs font-medium">
             <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: s.color }} />
             <span className={isDarkMode ? 'text-slate-300' : 'text-slate-700'}>{s.name}</span>
           </div>
         ))}
       </div>
+      {!drawNodeDots && (
+        <p className={`mt-1 text-xs text-center ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+          {vnodes.length} tokens is too many to draw as dots — the ring colours still show which server owns every arc.
+        </p>
+      )}
       <AnimatePresence>
         {hoveredNode && (
           <motion.div

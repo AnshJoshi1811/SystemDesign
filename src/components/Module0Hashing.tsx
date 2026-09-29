@@ -1,35 +1,107 @@
-﻿import React, { useState } from 'react';
-import { HashKey, PhysicalServer } from '../types';
-import { hashToKey, assignKeysTraditional, getDefaultServers, generateSampleKeys } from '../lib/hash';
+import React, { useState } from 'react';
+import { HashKey, PhysicalServer, Ch5Part } from '../types';
+import { hashToKey, assignKeysTraditional, getDefaultServers, generateSampleKeys, makeServer } from '../lib/hash';
 import { HashRingCanvas } from './HashRingCanvas';
+import { usePersistentState } from '../lib/usePersistentState';
+import { LessonGoal, Takeaway, Term, Quiz, QuizQuestion } from './learn/LearningKit';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   ArrowRight,
-  ArrowLeft,
   Cpu,
   Plus,
   Minus,
   Hash,
   RotateCw,
   AlertTriangle,
-  CheckCircle2,
   ChevronRight,
   ChevronLeft,
-  Sparkles,
   Server,
-  Layers,
 } from 'lucide-react';
-
-import { Ch5Part } from '../types';
 
 interface Module0HashingProps {
   isDarkMode?: boolean;
   onNavigateModule?: (part: Ch5Part) => void;
 }
 
+const SECTION_GOALS: Record<number, { goal: React.ReactNode; why: React.ReactNode }> = {
+  1: {
+    goal: 'A hash function turns any key into a fixed-size number — the same key always gives the same number.',
+    why: 'That determinism is what lets every client independently agree on where a key lives, without asking a directory.',
+  },
+  2: {
+    goal: 'All possible hash values form a range from 0 to 2^32 − 1. Joining the two ends turns that line into a ring.',
+    why: 'On a ring there is no "end": walking clockwise from any point always reaches another point. The next part relies on that.',
+  },
+  3: {
+    goal: 'The simplest way to spread keys over N servers is server = hash(key) % N.',
+    why: 'It balances well while N stays fixed. Watch the buckets — then see what happens when N changes.',
+  },
+  4: {
+    goal: 'Changing N by one server makes hash(key) % N give a different answer for most keys.',
+    why: 'Every key that changes server is a cache miss or a data move. This is the rehashing problem consistent hashing solves.',
+  },
+};
+
+const QUIZ: QuizQuestion[] = [
+  {
+    question: 'A cache cluster uses server = hash(key) % 4. One server is added (N = 5). Roughly what fraction of keys now map to a different server?',
+    options: [
+      {
+        text: 'About 80% — most keys move',
+        correct: true,
+        why: 'A key stays put only if hash % 4 and hash % 5 happen to agree, which is true for about 1 in 5 keys. So ~4/5 move, even though the new server should only take 1/5 of the data.',
+      },
+      {
+        text: 'About 20% — only the new server’s share',
+        why: '20% is what an ideal scheme would move (the new server’s fair share). Modulo moves far more, because changing N changes the remainder for almost every key.',
+      },
+      {
+        text: 'None — existing keys keep their server until they expire',
+        why: 'The formula is re-evaluated on every lookup, so as soon as N changes, clients start asking a different server for most keys.',
+      },
+    ],
+  },
+  {
+    question: 'Why must the hash function be deterministic for sharding to work?',
+    options: [
+      {
+        text: 'So every client computes the same server for the same key without coordinating',
+        correct: true,
+        why: 'Routing works only because hash("User123") is the same on every machine, every time.',
+      },
+      {
+        text: 'So that hash values are evenly spread',
+        why: 'Even spread (uniformity) is a separate property. A deterministic hash can still be badly skewed.',
+      },
+      {
+        text: 'So that the hash value can be reversed back into the key',
+        why: 'Sharding never needs to reverse a hash — it only needs a stable number to pick a server.',
+      },
+    ],
+  },
+  {
+    question: 'In the modulo scheme, server 1 of 4 crashes and N becomes 3. Which keys are affected?',
+    options: [
+      {
+        text: 'Most keys, including many that were on healthy servers',
+        correct: true,
+        why: 'The formula changed from % 4 to % 3 for everyone, so keys on servers 0, 2 and 3 also get new homes — a storm of cache misses.',
+      },
+      {
+        text: 'Only the keys that were on server 1',
+        why: 'That is what we would like to happen, and it is exactly what consistent hashing achieves. Modulo cannot, because N is part of every key’s formula.',
+      },
+      {
+        text: 'No keys — the remaining servers already hold copies',
+        why: 'Plain modulo sharding keeps each key on one server; there are no copies to fall back on.',
+      },
+    ],
+  },
+];
+
 export const Module0Hashing: React.FC<Module0HashingProps> = ({ isDarkMode = false, onNavigateModule }) => {
   // Section Step Navigation: 1 = Hash Function, 2 = Geometry, 3 = Modulo Sharding, 4 = Rehash Crisis
-  const [activeSection, setActiveSection] = useState<number>(1);
+  const [activeSection, setActiveSection] = usePersistentState<number>('chapter5:module0:section', 1);
 
   // Section 1 State
   const [inputKey, setInputKey] = useState<string>('User123');
@@ -49,7 +121,7 @@ export const Module0Hashing: React.FC<Module0HashingProps> = ({ isDarkMode = fal
   const [keys, setKeys] = useState<HashKey[]>(() =>
     assignKeysTraditional(generateSampleKeys(20, 'DataKey'), getDefaultServers())
   );
-  const [rehashStats, setRehashStats] = useState<{ total: number; moved: number; pct: number } | null>(null);
+  const [rehashStats, setRehashStats] = useState<{ total: number; moved: number; pct: number; from: number; to: number } | null>(null);
   const [isAnimatingRehash, setIsAnimatingRehash] = useState(false);
 
   // Compute current single key hash for Section 1
@@ -70,21 +142,9 @@ export const Module0Hashing: React.FC<Module0HashingProps> = ({ isDarkMode = fal
 
     setIsAnimatingRehash(true);
 
-    let newServers: PhysicalServer[];
-    if (delta > 0) {
-      const nextId = `S${servers.length}`;
-      const newServer: PhysicalServer = {
-        id: nextId,
-        name: `Server ${servers.length}`,
-        color: ['#3B82F6', '#10B981', '#8B5CF6', '#F59E0B', '#EC4899', '#06B6D4', '#F97316', '#84CC16'][servers.length] || '#06B6D4',
-        hashValue: hashToKey(`Server_${servers.length}`).hashValue,
-        angle: hashToKey(`Server_${servers.length}`).angle,
-        vnodesCount: 1,
-      };
-      newServers = [...servers, newServer];
-    } else {
-      newServers = servers.slice(0, servers.length - 1);
-    }
+    // Modulo servers are indexed 0..N-1, so adding appends the next index and removing drops the last.
+    const newServers: PhysicalServer[] =
+      delta > 0 ? [...servers, makeServer(servers.length)] : servers.slice(0, servers.length - 1);
 
     const remappedKeys = assignKeysTraditional(keys, newServers);
     const movedCount = remappedKeys.filter((k) => k.isMoved).length;
@@ -96,6 +156,8 @@ export const Module0Hashing: React.FC<Module0HashingProps> = ({ isDarkMode = fal
       total: keys.length,
       moved: movedCount,
       pct: movedPct,
+      from: servers.length,
+      to: newServers.length,
     });
 
     setTimeout(() => {
@@ -145,7 +207,7 @@ export const Module0Hashing: React.FC<Module0HashingProps> = ({ isDarkMode = fal
                   <Icon className="w-3.5 h-3.5" />
                 </span>
                 <div className="text-left">
-                  <span className="block text-[10px] opacity-75 uppercase">{sec.label}</span>
+                  <span className="block text-xs opacity-75 uppercase">{sec.label}</span>
                   <span className="font-bold font-sans text-xs">{sec.title}</span>
                 </div>
               </button>
@@ -165,6 +227,8 @@ export const Module0Hashing: React.FC<Module0HashingProps> = ({ isDarkMode = fal
           />
         </div>
       </div>
+
+      <LessonGoal goal={SECTION_GOALS[activeSection]?.goal} why={SECTION_GOALS[activeSection]?.why} />
 
       {/* SECTION VIEW CONTAINER (Single-Page View Per Section) */}
       <AnimatePresence mode="wait">
@@ -190,8 +254,8 @@ export const Module0Hashing: React.FC<Module0HashingProps> = ({ isDarkMode = fal
                     <Hash className="w-6 h-6" />
                   </div>
                   <div>
-                    <span className="text-[10px] font-mono uppercase text-blue-600 dark:text-blue-400 font-bold tracking-wider">
-                      Module 0 — Section 1 of 4
+                    <span className="text-xs font-mono uppercase text-blue-600 dark:text-blue-400 font-bold tracking-wider">
+                      Step 1 of 4
                     </span>
                     <h3 className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
                       The Hash Engine & Integer Mapping
@@ -293,7 +357,7 @@ export const Module0Hashing: React.FC<Module0HashingProps> = ({ isDarkMode = fal
                   <div className={`text-center p-3 rounded-xl border w-full sm:w-auto ${
                     isDarkMode ? 'bg-[#1c1c1e] border-slate-800' : 'bg-white border-slate-200'
                   }`}>
-                    <span className={`text-[10px] uppercase font-mono block ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Input String</span>
+                    <span className={`text-xs uppercase font-mono block ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Input String</span>
                     <span className="text-base font-bold text-amber-600 dark:text-amber-400 font-mono truncate max-w-[130px] inline-block">
                       {inputKey || 'User123'}
                     </span>
@@ -302,7 +366,7 @@ export const Module0Hashing: React.FC<Module0HashingProps> = ({ isDarkMode = fal
                   <ArrowRight className="w-5 h-5 text-blue-500 shrink-0 hidden sm:block animate-pulse" />
 
                   <div className="text-center p-3 bg-blue-50 dark:bg-blue-950/60 rounded-xl border border-blue-200 dark:border-blue-800/60 w-full sm:w-auto">
-                    <span className="text-[10px] uppercase font-mono text-blue-600 dark:text-blue-300 block">32-Bit Hash Engine</span>
+                    <span className="text-xs uppercase font-mono text-blue-600 dark:text-blue-300 block">32-Bit Hash Engine</span>
                     <span className="text-xs font-bold text-blue-700 dark:text-blue-400 font-mono">{algo.toUpperCase()}</span>
                   </div>
 
@@ -311,12 +375,12 @@ export const Module0Hashing: React.FC<Module0HashingProps> = ({ isDarkMode = fal
                   <div className={`text-center p-3 rounded-xl border w-full sm:w-auto ${
                     isDarkMode ? 'bg-[#1c1c1e] border-slate-800' : 'bg-white border-slate-200'
                   }`}>
-                    <span className={`text-[10px] uppercase font-mono block ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>32-bit Hash Value</span>
+                    <span className={`text-xs uppercase font-mono block ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>32-bit Hash Value</span>
                     <div className="space-y-0.5">
                       <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400 font-mono block">
                         {currentComputedHash.hashHex}
                       </span>
-                      <span className={`text-[10px] font-mono block ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                      <span className={`text-xs font-mono block ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
                         {currentComputedHash.hashValue.toLocaleString()} ({currentComputedHash.angle.toFixed(1)}°)
                       </span>
                     </div>
@@ -387,8 +451,8 @@ export const Module0Hashing: React.FC<Module0HashingProps> = ({ isDarkMode = fal
                     <RotateCw className="w-6 h-6" />
                   </div>
                   <div>
-                    <span className="text-[10px] font-mono uppercase text-emerald-600 dark:text-emerald-400 font-bold tracking-wider">
-                      Module 0 — Section 2 of 4
+                    <span className="text-xs font-mono uppercase text-emerald-600 dark:text-emerald-400 font-bold tracking-wider">
+                      Step 2 of 4
                     </span>
                     <h3 className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
                       Hash Space Geometry — Line to Ring
@@ -439,7 +503,7 @@ export const Module0Hashing: React.FC<Module0HashingProps> = ({ isDarkMode = fal
                               className="absolute transform -translate-x-1/2 flex flex-col items-center group cursor-pointer"
                             >
                               <div className="w-3.5 h-7 bg-blue-500 dark:bg-cyan-400 rounded-full border border-white shadow-lg group-hover:scale-125 transition-transform" />
-                              <span className={`text-[10px] font-mono font-bold mt-1 px-1.5 py-0.5 rounded border whitespace-nowrap ${
+                              <span className={`text-xs font-mono font-bold mt-1 px-1.5 py-0.5 rounded border whitespace-nowrap ${
                                 isDarkMode ? 'bg-[#1c1c1e]/90 text-cyan-300 border-slate-800' : 'bg-white text-blue-700 border-slate-300 shadow-sm'
                               }`}>
                                 {hk.keyString}
@@ -449,10 +513,18 @@ export const Module0Hashing: React.FC<Module0HashingProps> = ({ isDarkMode = fal
                         })}
                       </div>
 
-                      <p className={`text-center text-xs max-w-lg mx-auto ${
-                        isDarkMode ? 'text-slate-400' : 'text-slate-600'
+                      <p className={`text-center text-sm max-w-lg mx-auto leading-relaxed ${
+                        isDarkMode ? 'text-slate-300' : 'text-slate-600'
                       }`}>
-                        In 1D linear integer space, 0 and 2^32-1 are at opposite ends. By wrapping the line into a closed circle ring, 0 and 2^32-1 meet at the top (12 o'clock), forming a continuous wrap-around hash space!
+                        This line is the{' '}
+                        <Term term="hash space">
+                          Every value the hash function can output. For a 32-bit hash that is 0 to 2^32 − 1 (about 4.3 billion values).
+                        </Term>
+                        : 0 on the left, 2^32 − 1 on the right. Bend it so both ends meet at the top (12 o'clock) and you get a{' '}
+                        <Term term="hash ring">
+                          The hash space with its two ends joined. Moving clockwise past 2^32 − 1 wraps back to 0, so every point has a "next" point.
+                        </Term>
+                        . Press the button above to bend it.
                       </p>
                     </motion.div>
                   ) : (
@@ -462,7 +534,7 @@ export const Module0Hashing: React.FC<Module0HashingProps> = ({ isDarkMode = fal
                       animate={{ opacity: 1, rotate: 0 }}
                       exit={{ opacity: 0, rotate: 90 }}
                       transition={{ duration: 0.5, type: 'spring' }}
-                      className="w-full flex justify-center"
+                      className="w-full flex flex-col items-center gap-3"
                     >
                       <HashRingCanvas
                         servers={servers}
@@ -471,6 +543,10 @@ export const Module0Hashing: React.FC<Module0HashingProps> = ({ isDarkMode = fal
                         interactive={false}
                         isDarkMode={isDarkMode}
                       />
+                      <p className={`text-center text-sm max-w-lg leading-relaxed ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>
+                        Same keys, same hash values — only the shape changed. 0 and 2^32 − 1 now sit side by side at the top. The
+                        coloured dots are servers hashed onto the same ring; Part 2 uses them.
+                      </p>
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -523,8 +599,8 @@ export const Module0Hashing: React.FC<Module0HashingProps> = ({ isDarkMode = fal
                     <Server className="w-6 h-6" />
                   </div>
                   <div>
-                    <span className="text-[10px] font-mono uppercase text-amber-600 dark:text-amber-400 font-bold tracking-wider">
-                      Module 0 — Section 3 of 4
+                    <span className="text-xs font-mono uppercase text-amber-600 dark:text-amber-400 font-bold tracking-wider">
+                      Step 3 of 4
                     </span>
                     <h3 className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
                       Traditional Modulo Sharding
@@ -548,6 +624,20 @@ export const Module0Hashing: React.FC<Module0HashingProps> = ({ isDarkMode = fal
                   </button>
                 </div>
               </div>
+
+              {keys[0] && (
+                <div className={`p-3 rounded-xl border text-sm leading-relaxed ${
+                  isDarkMode ? 'bg-slate-950 border-slate-800 text-slate-300' : 'bg-slate-50 border-slate-200 text-slate-700'
+                }`}>
+                  <strong className={isDarkMode ? 'text-white' : 'text-slate-900'}>Worked example: </strong>
+                  <span className="font-mono">{keys[0].keyString}</span> hashes to{' '}
+                  <span className="font-mono">{keys[0].hashValue.toLocaleString()}</span>, and{' '}
+                  <span className="font-mono">
+                    {keys[0].hashValue.toLocaleString()} % {servers.length} = {keys[0].hashValue % servers.length}
+                  </span>
+                  , so it lives on <strong>Server {keys[0].hashValue % servers.length}</strong>. Every key below was placed the same way.
+                </div>
+              )}
 
               {/* Server Buckets Display */}
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
@@ -592,7 +682,7 @@ export const Module0Hashing: React.FC<Module0HashingProps> = ({ isDarkMode = fal
                               }`}
                             >
                               <span className="truncate">{k.keyString}</span>
-                              <span className={`text-[10px] ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                              <span className={`text-xs ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
                                 {k.hashHex.slice(0, 6)}
                               </span>
                             </div>
@@ -651,8 +741,8 @@ export const Module0Hashing: React.FC<Module0HashingProps> = ({ isDarkMode = fal
                     <AlertTriangle className="w-6 h-6" />
                   </div>
                   <div>
-                    <span className="text-[10px] font-mono uppercase text-red-600 dark:text-red-400 font-bold tracking-wider">
-                      Module 0 — Section 4 of 4
+                    <span className="text-xs font-mono uppercase text-red-600 dark:text-red-400 font-bold tracking-wider">
+                      Step 4 of 4
                     </span>
                     <h3 className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
                       The Resharding Crisis (Scale Failure)
@@ -701,23 +791,29 @@ export const Module0Hashing: React.FC<Module0HashingProps> = ({ isDarkMode = fal
                   <div className="flex items-center space-x-3">
                     <AlertTriangle className="w-6 h-6 text-red-600 dark:text-red-400 shrink-0 animate-bounce" />
                     <div>
-                      <h4 className="text-sm font-bold text-red-700 dark:text-red-300">Resharding Collision Detected!</h4>
-                      <p className={`text-xs ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>
-                        Changing cluster size changed the modulo base <code className="text-red-600 dark:text-red-400 font-mono font-bold">N</code>.
+                      <h4 className="text-sm font-bold text-red-700 dark:text-red-300">
+                        N went from {rehashStats.from} to {rehashStats.to}: {rehashStats.pct}% of keys changed server
+                      </h4>
+                      <p className={`text-sm ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>
+                        Keys highlighted red below moved. Ideally only about{' '}
+                        {Math.round(100 / Math.max(rehashStats.from, rehashStats.to))}% (one server’s share) would move — modulo moved
+                        far more because <code className="font-mono">% N</code> changed for every key.
                       </p>
                     </div>
                   </div>
 
                   <div className="flex items-center space-x-6 font-mono text-right">
                     <div>
-                      <span className={`text-[10px] uppercase block ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Keys Moved</span>
+                      <span className={`text-xs uppercase block ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Keys moved</span>
                       <span className="text-base font-bold text-red-600 dark:text-red-400">
                         {rehashStats.moved} / {rehashStats.total}
                       </span>
                     </div>
                     <div>
-                      <span className={`text-[10px] uppercase block ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Cache Thrash</span>
-                      <span className="text-lg font-bold text-red-600 dark:text-red-400">{rehashStats.pct}%</span>
+                      <span className={`text-xs uppercase block ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Ideal</span>
+                      <span className="text-base font-bold text-emerald-600 dark:text-emerald-400">
+                        ~{Math.round(rehashStats.total / Math.max(rehashStats.from, rehashStats.to))}
+                      </span>
                     </div>
                   </div>
                 </motion.div>
@@ -769,7 +865,7 @@ export const Module0Hashing: React.FC<Module0HashingProps> = ({ isDarkMode = fal
                             }`}
                           >
                             <span className="truncate">{k.keyString}</span>
-                            <span className={`text-[10px] ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                            <span className={`text-xs ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
                               {k.hashHex.slice(0, 6)}
                             </span>
                           </div>
@@ -780,20 +876,13 @@ export const Module0Hashing: React.FC<Module0HashingProps> = ({ isDarkMode = fal
                 })}
               </div>
 
-              {/* Learn Outcome Box */}
-              <div className={`p-4 border rounded-xl space-y-1.5 text-xs leading-relaxed ${
-                isDarkMode
-                  ? 'bg-amber-950/20 border-amber-500/20 text-slate-300'
-                  : 'bg-amber-50 border-amber-200 text-slate-700'
-              }`}>
-                <div className="flex items-center space-x-2 text-amber-700 dark:text-amber-400 font-bold">
-                  <CheckCircle2 className="w-4 h-4" />
-                  <span>Key Takeaway — The Need for Consistent Hashing</span>
-                </div>
-                <p>
-                  Because traditional sharding relies on <code className="text-amber-800 dark:text-amber-300 font-mono font-bold">hash(key) % N</code>, adding or removing 1 server alters the modulo base for ALL keys, invalidating ~80-90% of cached items. This leads to Module 1 — <strong className="text-blue-600 dark:text-cyan-300">Consistent Hashing Ring</strong>.
-                </p>
-              </div>
+              <Takeaway>
+                With <code className="font-mono">hash(key) % N</code>, N is part of every key’s address, so changing the server count by one
+                re-homes roughly N/(N+1) of all keys (about 80% going from 4 to 5 servers), not just the new server’s fair share. Consistent
+                hashing removes N from the formula so only about k/n keys move.
+              </Takeaway>
+
+              <Quiz persistKey="chapter5:quiz:module0" questions={QUIZ} />
             </div>
 
             {/* Bottom Footer Action Controls */}
@@ -818,7 +907,7 @@ export const Module0Hashing: React.FC<Module0HashingProps> = ({ isDarkMode = fal
                 }}
                 className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-all shadow-md flex items-center space-x-2"
               >
-                <span>Ready for Module 1 (Consistent Ring)</span>
+                <span>Next part: The hash ring</span>
                 <ChevronRight className="w-4 h-4" />
               </button>
             </div>

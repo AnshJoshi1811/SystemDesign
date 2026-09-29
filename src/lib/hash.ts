@@ -128,23 +128,44 @@ export function generateVirtualNodes(
   return vnodes.sort((a, b) => a.angle - b.angle);
 }
 
+export type RingNode = { id: string; physicalServerId: string; angle: number; hashValue: number };
+
+/** One ring point per physical server (the basic, no-virtual-node ring), sorted clockwise. */
+export function serversToRingNodes(servers: PhysicalServer[]): RingNode[] {
+  return servers
+    .map((s) => ({ id: s.id, physicalServerId: s.id, angle: s.angle, hashValue: s.hashValue }))
+    .sort((a, b) => a.angle - b.angle);
+}
+
+/** Virtual nodes as ring nodes (generateVirtualNodes already returns them sorted). */
+export function vnodesToRingNodes(vnodes: VirtualNode[]): RingNode[] {
+  return vnodes.map((vn) => ({ id: vn.id, physicalServerId: vn.physicalServerId, angle: vn.angle, hashValue: vn.hashValue }));
+}
+
+/** Index of the first node clockwise from `angle` (binary search; wraps to 0). */
+function clockwiseIndex(sortedRingNodes: { angle: number }[], angle: number): number {
+  let lo = 0;
+  let hi = sortedRingNodes.length;
+  while (lo < hi) {
+    const mid = (lo + hi) >>> 1;
+    if (sortedRingNodes[mid].angle >= angle) hi = mid;
+    else lo = mid + 1;
+  }
+  return lo === sortedRingNodes.length ? 0 : lo;
+}
+
 /**
  * Perform clockwise lookup on ring of VirtualNodes / Physical Server Nodes
  */
 export function assignKeysToRingNodes(
   keys: HashKey[],
-  sortedRingNodes: { id: string; physicalServerId: string; angle: number; hashValue: number }[]
+  sortedRingNodes: RingNode[]
 ): HashKey[] {
   if (sortedRingNodes.length === 0) return keys;
 
   return keys.map((key) => {
-    // Find first node clockwise whose angle >= key.angle
-    let targetNode = sortedRingNodes.find((node) => node.angle >= key.angle);
-    
-    // If no node has angle >= key.angle, it wraps around to the first node (smallest angle)
-    if (!targetNode) {
-      targetNode = sortedRingNodes[0];
-    }
+    // First node clockwise whose angle >= key.angle; past the last node it wraps to the smallest angle.
+    const targetNode = sortedRingNodes[clockwiseIndex(sortedRingNodes, key.angle)];
 
     const previousServerId = key.assignedServerId;
     const isMoved = previousServerId !== undefined && previousServerId !== targetNode.physicalServerId;
@@ -240,8 +261,8 @@ export function computeDistributionStats(
   const variance = counts.reduce((acc, count) => acc + Math.pow(count - mean, 2), 0) / (servers.length || 1);
   const stdDeviation = Math.sqrt(variance);
 
-  const maxCount = Math.max(...counts, 0);
-  const minCount = Math.min(...counts, 0);
+  const maxCount = counts.length ? Math.max(...counts) : 0;
+  const minCount = counts.length ? Math.min(...counts) : 0;
 
   // Calculate arc sizes if ring nodes provided
   const arcMap = new Map<string, number>();
@@ -261,7 +282,7 @@ export function computeDistributionStats(
 
   const distribution: DistributionStats[] = servers.map((s) => {
     const keyCount = serverMap.get(s.id) || 0;
-    const arcDeg = arcMap.get(s.id) || (360 / servers.length);
+    const arcDeg = sortedRingNodes && sortedRingNodes.length > 0 ? arcMap.get(s.id) || 0 : 360 / servers.length;
     return {
       serverId: s.id,
       serverName: s.name,
@@ -298,13 +319,56 @@ export function generateSampleKeys(count: number, prefix = 'User'): HashKey[] {
 }
 
 /**
+ * Server number `idx` with a deterministic ring position: hash("Server_<idx>").
+ * The same idx always lands at the same place, so demos are reproducible.
+ */
+export function makeServer(idx: number, vnodesCount = 1): PhysicalServer {
+  const { hashValue, angle } = hashToKey(`Server_${idx}`);
+  return {
+    id: `S${idx}`,
+    name: `Server ${idx}`,
+    color: SERVER_COLORS[idx % SERVER_COLORS.length],
+    hashValue,
+    angle,
+    vnodesCount,
+  };
+}
+
+/**
  * Default initial server setup (4 physical servers)
  */
 export function getDefaultServers(): PhysicalServer[] {
-  return [
-    { id: 'S0', name: 'Server 0', color: SERVER_COLORS[0], hashValue: murmur3Hash('Server_0'), angle: (murmur3Hash('Server_0') / HASH_SPACE_MAX) * 360, vnodesCount: 1 },
-    { id: 'S1', name: 'Server 1', color: SERVER_COLORS[1], hashValue: murmur3Hash('Server_1'), angle: (murmur3Hash('Server_1') / HASH_SPACE_MAX) * 360, vnodesCount: 1 },
-    { id: 'S2', name: 'Server 2', color: SERVER_COLORS[2], hashValue: murmur3Hash('Server_2'), angle: (murmur3Hash('Server_2') / HASH_SPACE_MAX) * 360, vnodesCount: 1 },
-    { id: 'S3', name: 'Server 3', color: SERVER_COLORS[3], hashValue: murmur3Hash('Server_3'), angle: (murmur3Hash('Server_3') / HASH_SPACE_MAX) * 360, vnodesCount: 1 },
-  ];
+  return [0, 1, 2, 3].map((i) => makeServer(i));
+}
+
+/** Standard deviation expressed as % of the mean load (coefficient of variation) — the unit the book uses. */
+export function stdDevPercentOfMean(stdDeviation: number, totalKeys: number, serverCount: number): number {
+  const mean = totalKeys / (serverCount || 1);
+  return mean > 0 ? Number(((stdDeviation / mean) * 100).toFixed(1)) : 0;
+}
+
+/** σ of each server's share of the hash space (arc), as % of the mean share. Independent of how many keys you test. */
+export function arcSharePercentOfMean(stats: ComparativeMetrics): number {
+  const shares = stats.distribution.map((d) => d.arcCoveragePercentage);
+  const n = shares.length || 1;
+  const mean = 100 / n;
+  const variance = shares.reduce((acc, s) => acc + Math.pow(s - mean, 2), 0) / n;
+  return Number(((Math.sqrt(variance) / mean) * 100).toFixed(1));
+}
+
+/** Strip any previous assignment so a fresh mapping does not report "moved" keys. */
+export function clearAssignments(keys: HashKey[]): HashKey[] {
+  return keys.map(({ assignedServerId, assignedVNodeId, previousServerId, isMoved, ...rest }) => rest);
+}
+
+/** How many of `keys` change server when the modulo cluster goes from `before` to `after`. */
+export function countMovedTraditional(keys: HashKey[], before: PhysicalServer[], after: PhysicalServer[]): number {
+  const placed = assignKeysTraditional(clearAssignments(keys), before);
+  return assignKeysTraditional(placed, after).filter((k) => k.isMoved).length;
+}
+
+/** How many of `keys` change server when the ring goes from `before` to `after` nodes. */
+export function countMovedRing(keys: HashKey[], before: RingNode[], after: RingNode[]): number {
+  const placed = assignKeysToRingNodes(clearAssignments(keys), before);
+  return assignKeysToRingNodes(placed, after).filter((k) => k.isMoved).length;
 }
