@@ -61,7 +61,7 @@ export const Chapter1Workspace: React.FC = () => {
   const i = Math.min(Math.max(0, stage), N - 1);
   const content = ALL_STAGES[i];
   const meta = STAGE_META[i];
-  const after = hasFix(i) ? !!afterMap[i] : true;
+  const after = hasFix(i) ? afterMap[i] ?? true : true; // open on this stage's own design
   const level = levelFor(i, after);
   const inputs: Inputs = inputsMap[i] ?? { ...meta.defaults, cacheHit: 80 };
   const arch = useMemo(() => buildArch(level, inputs.websPerDc), [level, inputs.websPerDc]);
@@ -309,7 +309,7 @@ export const Chapter1Workspace: React.FC = () => {
               <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
                 <div className="flex items-center gap-2.5">
                   <span className={`h-2.5 w-2.5 rounded-full ${health === 'ok' ? 'bg-emerald-500' : health === 'degraded' ? 'bg-amber-500' : 'bg-rose-500'}`} />
-                  <h2 className="font-semibold text-slate-900 dark:text-white">Live architecture</h2>
+                  <h2 className="font-semibold text-slate-900 dark:text-white">Stage {i + 1}: {content.title}</h2>
                   <span
                     className={`rounded-md px-2 py-0.5 text-xs font-medium ${
                       health === 'ok'
@@ -338,8 +338,8 @@ export const Chapter1Workspace: React.FC = () => {
                       label="Architecture version"
                       value={after ? 'after' : 'before'}
                       options={[
-                        { value: 'before', label: 'Before fix' },
-                        { value: 'after', label: 'After fix' },
+                        { value: 'before', label: meta.toggle?.[0] ?? 'Before' },
+                        { value: 'after', label: meta.toggle?.[1] ?? 'After' },
                       ]}
                       onChange={(v) => setAfter(v === 'after')}
                     />
@@ -359,7 +359,7 @@ export const Chapter1Workspace: React.FC = () => {
                   tone={health === 'ok' ? 'success' : health === 'outage' ? 'danger' : 'warning'}
                   title={health === 'ok' ? 'The architecture absorbed the failure' : sim.headline}
                 >
-                  <FailureSummary sim={sim} after={after} stage={i} />
+                  <FailureSummary sim={sim} after={after} stage={i} withLabel={meta.toggle?.[1]} withoutLabel={meta.toggle?.[0]} />
                 </Callout>
               )}
 
@@ -389,7 +389,7 @@ export const Chapter1Workspace: React.FC = () => {
                         </StepBtn>
                       </div>
                     ) : (
-                      <p className="text-xs text-slate-500 dark:text-slate-400">Needs a load balancer (stage 3).</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">Needs a load balancer in front of the web servers.</p>
                     )}
                   </Control>
                 </div>
@@ -483,19 +483,20 @@ export const Chapter1Workspace: React.FC = () => {
 
 // ---------------------------------------------------------------------------
 
-const FailureSummary: React.FC<{ sim: ReturnType<typeof simulate>; after: boolean; stage: number }> = ({ sim, after, stage }) => {
+const FailureSummary: React.FC<{ sim: ReturnType<typeof simulate>; after: boolean; stage: number; withLabel?: string; withoutLabel?: string }> = ({ sim, after, stage, withLabel, withoutLabel }) => {
   const parts: string[] = [];
   parts.push(`${(sim.success * 100).toFixed(sim.success === 1 ? 0 : 1)}% of requests succeed, API latency ${sim.apiMs} ms.`);
   if (sim.writesPaused) parts.push('Writes are paused while a replica is promoted to master.');
-  if (sim.promoted) parts.push('A replica was promoted to master; reads continue on the other replica.');
+  if (sim.promoted) parts.push('A replica was promoted to master and writes are flowing again.');
   if (sim.loggedOutPct > 0) parts.push(`${Math.round(sim.loggedOutPct)}% of users were logged out: their sessions lived on the lost server.`);
   if (sim.backlog > 0) parts.push(`Queue backlog: ${Math.round(sim.backlog).toLocaleString()} jobs, draining in the background.`);
   if (sim.staticMs > 200) parts.push(`Static files take ${sim.staticMs} ms to load.`);
   return (
     <>
       {parts.join(' ')}
-      {hasFix(stage) && !after && sim.success < 1 && <> Now switch to <strong>After fix</strong>.</>}
-      {hasFix(stage) && after && sim.success < 0.99 && <> Better than before, but not solved yet: the next stage tackles what is left.</>}
+      {hasFix(stage) && !after && sim.success < 1 && <> Now switch to <strong>{withLabel ?? 'the fixed design'}</strong> and see the same failure.</>}
+      {hasFix(stage) && after && !sim.writesPaused && sim.success < 0.99 && <> Better than before, but not solved yet: the next stage tackles what is left.</>}
+      {hasFix(stage) && after && withoutLabel && <> Switch to <strong>{withoutLabel}</strong> to see what happens without this stage's fix.</>}
     </>
   );
 };
@@ -698,7 +699,7 @@ const TechStack: React.FC<{ arch: ReturnType<typeof buildArch>; selected: string
                 onClick={() => onSelect(first)}
                 className={`cursor-pointer align-top transition-colors hover:bg-slate-50 dark:hover:bg-white/[0.03] ${selKind === kind ? 'bg-indigo-50/60 dark:bg-indigo-400/[0.06]' : ''}`}
               >
-                <td className="whitespace-nowrap py-2.5 pr-4 font-medium text-slate-900 dark:text-white">{KIND_NAME[kind]}</td>
+                <td className="whitespace-nowrap py-2.5 pr-4 font-medium text-slate-900 dark:text-white">{kind === 'master' && !arch.f.replicas ? 'Database' : KIND_NAME[kind]}</td>
                 <td className="py-2">
                   <div className="flex flex-wrap gap-1.5">
                     {TECH[kind].map((t, k) => (

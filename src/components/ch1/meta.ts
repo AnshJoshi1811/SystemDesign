@@ -48,6 +48,8 @@ export interface Experiment {
 }
 
 export interface StageMeta {
+  /** Labels for the comparison toggle: [previous design, this stage's design]. */
+  toggle?: [string, string];
   minutes: number;
   keyNode: string;
   experiments: Experiment[];
@@ -66,24 +68,28 @@ export const STAGE_META: StageMeta[] = [
     defaults: { rps: 100, readPct: 85, websPerDc: 1 },
   },
   {
+    toggle: ['One server', 'Separate DB'],
     minutes: 10,
     keyNode: 'db',
     experiments: [{ id: 'spike', label: 'Traffic spike (5×)', description: 'Traffic jumps five-fold. Who runs out of room first?', action: { scenario: 'spike' } }],
     defaults: { rps: 200, readPct: 85, websPerDc: 1 },
   },
   {
+    toggle: ['No load balancer', 'Load balancer'],
     minutes: 12,
     keyNode: 'lb-1',
     experiments: [{ id: 'crash-web', label: 'Crash a web server', description: 'Web server 1 dies in the middle of the day.', action: { crash: 'web-1-1' } }],
     defaults: { rps: 350, readPct: 85, websPerDc: 3 },
   },
   {
+    toggle: ['No replicas', 'Replicas'],
     minutes: 15,
     keyNode: 'db',
     experiments: [{ id: 'crash-db', label: 'Crash the database', description: 'The database server fails.', action: { crash: 'db' } }],
     defaults: { rps: 700, readPct: 85, websPerDc: 3 },
   },
   {
+    toggle: ['No cache', 'Cache'],
     minutes: 12,
     keyNode: 'cache',
     experiments: [
@@ -92,6 +98,7 @@ export const STAGE_META: StageMeta[] = [
     defaults: { rps: 600, readPct: 85, websPerDc: 3 },
   },
   {
+    toggle: ['No CDN', 'CDN'],
     minutes: 10,
     keyNode: 'cdn',
     experiments: [
@@ -100,6 +107,7 @@ export const STAGE_META: StageMeta[] = [
     defaults: { rps: 600, readPct: 85, websPerDc: 3 },
   },
   {
+    toggle: ['Sticky sessions', 'Stateless'],
     minutes: 12,
     keyNode: 'session',
     experiments: [
@@ -108,12 +116,14 @@ export const STAGE_META: StageMeta[] = [
     defaults: { rps: 600, readPct: 85, websPerDc: 3 },
   },
   {
+    toggle: ['One data center', 'Two data centers'],
     minutes: 12,
     keyNode: 'dns',
     experiments: [{ id: 'dc-down', label: 'Data center outage', description: 'The US-East data center loses power.', action: { scenario: 'dc-down' } }],
     defaults: { rps: 600, readPct: 85, websPerDc: 2 },
   },
   {
+    toggle: ['No queue', 'Message queue'],
     minutes: 12,
     keyNode: 'queue',
     experiments: [
@@ -122,6 +132,7 @@ export const STAGE_META: StageMeta[] = [
     defaults: { rps: 600, readPct: 85, websPerDc: 2 },
   },
   {
+    toggle: ['One master', 'Sharded'],
     minutes: 15,
     keyNode: 'shard-1',
     experiments: [

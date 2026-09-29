@@ -109,8 +109,15 @@ export function buildArch(level: number, websPerDc: number): Arch {
     dataRight.push({ id: 'workers', kind: 'workers', label: 'Workers', sub: 'Process jobs' });
   }
 
+  // With two data centers (and no sharding yet), data lives in both: master + replica in US-East, a replica in US-West.
+  if (f.multiDc && !f.shards) dbs[0] = { ...dbs[0], label: 'Master DB · US-East', dc: 1 };
   const replicas: ArchNode[] = !f.replicas
     ? []
+    : f.multiDc && !f.shards
+    ? [
+        { id: 'replica-1', kind: 'replica', label: 'Replica-1 · US-East', sub: 'Handles reads', dc: 1 },
+        { id: 'replica-2', kind: 'replica', label: 'Replica-2 · US-West', sub: 'Synced copy in West', dc: 2 },
+      ]
     : f.shards
     ? [
         { id: 'shard-1-r', kind: 'replica', label: 'Shard 1 · replica', sub: 'Handles reads' },
@@ -299,10 +306,12 @@ export function simulate(arch: Arch, inp: Inputs, fail: Failures, now: number): 
     groups.forEach(({ master, reps }) => {
       let masterUp = !isDown(master.id) && nodes[master.id].status !== 'down';
       let liveReps = reps.filter((r) => !isDown(r.id) && nodes[r.id].status !== 'down');
-      if (!masterUp && !f.shards && fail.masterDownAt !== null) {
-        if (now - fail.masterDownAt < FAILOVER_MS && liveReps.length) {
+      // A data center outage takes the US-East master with it, which triggers the same failover as a crash.
+      const downAt = fail.masterDownAt ?? (dcDown && f.multiDc && master.dc === 1 ? fail.scenarioAt : null);
+      if (!masterUp && !f.shards && downAt !== null) {
+        if (now - downAt < FAILOVER_MS && liveReps.length) {
           writesPaused = true;
-          nodes[liveReps[0].id] = { status: 'promoting', load: 0.5, badge: `promoting… ${Math.ceil((FAILOVER_MS - (now - fail.masterDownAt)) / 1000)}s` };
+          nodes[liveReps[0].id] = { status: 'promoting', load: 0.5, badge: `promoting… ${Math.ceil((FAILOVER_MS - (now - downAt)) / 1000)}s` };
         } else if (liveReps.length) {
           promoted = true;
           masterUp = true;
@@ -321,12 +330,14 @@ export function simulate(arch: Arch, inp: Inputs, fail: Failures, now: number): 
       } else if (!masterUp || promoted) {
         nodes[master.id] = { status: 'down', load: 0, badge: 'down' };
       }
-      const readers = liveReps.filter((r) => nodes[r.id].status !== 'promoting');
+      // A replica being promoted is still up and keeps serving reads.
+      const readers = liveReps;
       const readCap = readers.length * CAP.replica || (masterUp ? CAP.master : 0);
       const rl = readCap ? rShare / readCap : 0;
       readOk += Math.min(rShare, readCap);
       dbLoad = Math.max(dbLoad, rl);
       readers.forEach((r) => {
+        if (nodes[r.id].status === 'promoting') return;
         nodes[r.id] = { status: rl > 1 ? 'busy' : 'healthy', load: rl, badge: `R ${perSec(rShare / readers.length)}`, throughput: perSec(rShare / readers.length) };
       });
       reps.forEach((r) => {
