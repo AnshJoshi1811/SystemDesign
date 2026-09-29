@@ -47,7 +47,7 @@ export default function App() {
       <div className="sd-app min-h-screen flex flex-col bg-[#fafaf9] text-slate-900 dark:bg-[#0a0a0b] dark:text-slate-100">
         <Header view={view} onNavigate={go} isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />
 
-        <main key={`${view}-${resetCounter}`} className="max-w-[1280px] mx-auto w-full px-4 sm:px-6 lg:px-8 pt-8 pb-24 animate-[fadein_.2s_ease-out]">
+        <main key={`${view}-${resetCounter}`} className={`${view === 'chapter1' ? 'max-w-[1600px]' : 'max-w-[1280px]'} mx-auto w-full px-4 sm:px-6 lg:px-8 pt-8 pb-24 animate-[fadein_.2s_ease-out]`}>
           {view === 'home' && <Home lastChapter={lastChapter} />}
           {view === 'chapter1' && <Chapter1ScaleFromZero isDarkMode={isDarkMode} />}
           {view === 'chapter2' && <Chapter2Estimation isDarkMode={isDarkMode} />}

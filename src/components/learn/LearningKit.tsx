@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Target, Lightbulb, ArrowRight, CheckCircle2, XCircle, RotateCcw } from 'lucide-react';
 import { usePersistentState } from '../../lib/usePersistentState';
 
@@ -100,18 +100,24 @@ export interface QuizQuestion {
  * Multiple-choice check with inline feedback. Picking any option reveals its explanation;
  * wrong picks can be retried. Progress persists under `<persistKey>`.
  */
-export const Quiz: React.FC<{ persistKey: string; questions: QuizQuestion[]; title?: string; className?: string }> = ({
-  persistKey,
-  questions,
-  title = 'Check your understanding',
-  className = '',
-}) => {
+export const Quiz: React.FC<{
+  persistKey: string;
+  questions: QuizQuestion[];
+  title?: string;
+  className?: string;
+  /** Called with how many questions are solved, whenever that changes. */
+  onProgress?: (solved: number, total: number) => void;
+}> = ({ persistKey, questions, title = 'Check your understanding', className = '', onProgress }) => {
   // picks[q] = list of option indexes tried, in order
   const [picks, setPicks] = usePersistentState<number[][]>(persistKey, []);
   const [index, setIndex] = useState(() => {
     const firstOpen = questions.findIndex((q, i) => !(picks[i] ?? []).some((p) => q.options[p]?.correct));
     return firstOpen === -1 ? 0 : firstOpen;
   });
+  const solvedCount = questions.filter((qq, i) => (picks[i] ?? []).some((p) => qq.options[p]?.correct)).length;
+  useEffect(() => {
+    onProgress?.(solvedCount, questions.length);
+  }, [solvedCount, questions.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (questions.length === 0) return null;
   const q = questions[Math.min(index, questions.length - 1)];
