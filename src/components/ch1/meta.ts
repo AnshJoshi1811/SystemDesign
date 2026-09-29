@@ -137,6 +137,86 @@ export const STAGE_META: StageMeta[] = [
   },
 ];
 
+/** Plain-language name for each component type, used in the tech stack table. */
+export const KIND_NAME: Record<Kind, string> = {
+  dns: 'DNS',
+  cdn: 'CDN',
+  lb: 'Load balancer',
+  server: 'Single server',
+  web: 'Web servers',
+  cache: 'Cache',
+  session: 'Session store',
+  queue: 'Message queue',
+  workers: 'Workers',
+  master: 'Database (master)',
+  replica: 'Read replicas',
+};
+
+/** Technologies commonly used for each component in real systems. First entry = the usual default. */
+export const TECH: Record<Kind, { name: string; note: string }[]> = {
+  dns: [
+    { name: 'Amazon Route 53', note: 'Managed DNS with geo and latency-based routing (geoDNS) and health checks.' },
+    { name: 'Cloudflare DNS', note: 'Fast global DNS, often paired with Cloudflare’s CDN.' },
+    { name: 'Google Cloud DNS', note: 'Managed DNS for workloads on Google Cloud.' },
+  ],
+  cdn: [
+    { name: 'Cloudflare', note: 'Global edge network: CDN, DDoS protection and caching rules.' },
+    { name: 'Amazon CloudFront', note: 'AWS CDN; pulls from S3 or your servers as the origin.' },
+    { name: 'Akamai', note: 'One of the largest, longest-running CDNs, common in big enterprises.' },
+    { name: 'Fastly', note: 'CDN known for instant cache purges and edge logic.' },
+  ],
+  lb: [
+    { name: 'NGINX', note: 'Web server and reverse proxy; a very common software load balancer.' },
+    { name: 'AWS Elastic Load Balancing', note: 'Managed ALB (HTTP) and NLB (TCP) load balancers with health checks.' },
+    { name: 'HAProxy', note: 'High-performance open-source TCP/HTTP load balancer.' },
+    { name: 'Envoy', note: 'Modern proxy used in service meshes and by Kubernetes ingress controllers.' },
+  ],
+  server: [
+    { name: 'A cloud VM (AWS EC2, DigitalOcean)', note: 'One virtual machine running the app and the database, e.g. a LAMP stack.' },
+    { name: 'Heroku / Render', note: 'Platforms that run a small app for you without managing the machine.' },
+  ],
+  web: [
+    { name: 'Node.js (Express, NestJS)', note: 'JavaScript/TypeScript API servers; good for I/O-heavy APIs.' },
+    { name: 'Java (Spring Boot)', note: 'Widely used for large backend services.' },
+    { name: 'Python (Django, FastAPI)', note: 'Fast to build with; common for web apps and APIs.' },
+    { name: 'Go', note: 'Compiled, lightweight services with low memory use.' },
+    { name: 'Kubernetes / Amazon ECS', note: 'Run the web servers as containers and autoscale them.' },
+  ],
+  cache: [
+    { name: 'Redis', note: 'In-memory key-value store with TTLs and rich data types; the usual default.' },
+    { name: 'Memcached', note: 'Simple, very fast in-memory cache for plain key-value data.' },
+    { name: 'Amazon ElastiCache', note: 'Managed Redis or Memcached on AWS.' },
+  ],
+  session: [
+    { name: 'Redis', note: 'Session data with automatic expiry via TTL.' },
+    { name: 'Amazon DynamoDB', note: 'Managed NoSQL key-value store, as the book suggests for shared state.' },
+    { name: 'Apache Cassandra', note: 'Distributed NoSQL for very large, multi-data-center setups.' },
+  ],
+  queue: [
+    { name: 'Apache Kafka', note: 'Durable, high-throughput event log; consumers read at their own pace.' },
+    { name: 'RabbitMQ', note: 'Classic message broker with flexible routing and acknowledgements.' },
+    { name: 'Amazon SQS', note: 'Fully managed queue; nothing to operate.' },
+    { name: 'Google Cloud Pub/Sub', note: 'Managed publish/subscribe messaging on Google Cloud.' },
+  ],
+  workers: [
+    { name: 'Celery (Python)', note: 'Background job workers fed by a broker such as RabbitMQ or Redis.' },
+    { name: 'Sidekiq (Ruby) / BullMQ (Node.js)', note: 'Job workers backed by Redis.' },
+    { name: 'Kafka consumer groups', note: 'Several consumers share a topic’s partitions to process events in parallel.' },
+    { name: 'AWS Lambda', note: 'Serverless functions triggered by queue messages.' },
+  ],
+  master: [
+    { name: 'MySQL', note: 'The relational database the book uses in its examples.' },
+    { name: 'PostgreSQL', note: 'Feature-rich open-source relational database.' },
+    { name: 'Amazon Aurora / RDS', note: 'Managed MySQL/PostgreSQL with automatic failover.' },
+    { name: 'Vitess / Citus', note: 'Sharding layers for MySQL (Vitess) and PostgreSQL (Citus).' },
+  ],
+  replica: [
+    { name: 'MySQL replication', note: 'Built-in asynchronous primary → replica replication.' },
+    { name: 'PostgreSQL streaming replication', note: 'Replicas follow the primary’s write-ahead log.' },
+    { name: 'Aurora read replicas', note: 'Managed replicas that share storage with the primary.' },
+  ],
+};
+
 /** Short explanation per component kind, for the inspector. */
 export const COMPONENT_INFO: Record<Kind, { what: string; why: string; without: string }> = {
   dns: {

@@ -3,10 +3,7 @@ import {
   ArrowLeft,
   ArrowRight,
   Boxes,
-  FlaskConical,
-  Activity,
   BookOpen,
-  NotebookPen,
   Clock,
   RotateCcw,
   Check,
@@ -16,7 +13,6 @@ import {
   Flame,
   Wrench,
   CircleHelp,
-  FileText,
   Minus,
   Plus,
   Settings2,
@@ -28,23 +24,17 @@ import { WhatChanged, Quiz } from '../learn/LearningKit';
 import { Callout, Segmented } from '../lesson/blocks';
 import { useNav } from '../lesson/ChapterPlayer';
 import { STAGES, StageContent } from './content';
-import { FINAL_STAGE, STAGE_META, COMPONENT_INFO, Experiment } from './meta';
+import { FINAL_STAGE, STAGE_META, COMPONENT_INFO, TECH, KIND_NAME, Experiment } from './meta';
 import { buildArch, simulate, Inputs, Failures, CAP, FAILOVER_MS, ArchNode, NodeState, Kind } from './model';
 import { Diagram } from './Diagram';
 
 const ALL_STAGES: StageContent[] = [...STAGES, FINAL_STAGE];
 const N = ALL_STAGES.length;
 
-type Tab = 'architecture' | 'experiments' | 'observability' | 'concepts' | 'notes';
+type Tab = 'architecture' | 'concepts';
 type FlowStep = 'learn' | 'explore' | 'break' | 'fix' | 'check';
 type Flow = Record<FlowStep, boolean>;
 const EMPTY_FLOW: Flow = { learn: false, explore: false, break: false, fix: false, check: false };
-
-interface LogEvent {
-  t: number;
-  tone: 'info' | 'warn' | 'error' | 'success';
-  text: string;
-}
 
 const hasFix = (i: number) => i >= 1 && i <= 9;
 const levelFor = (i: number, after: boolean) => (i === 0 ? 1 : i === N - 1 ? 10 : after ? i + 1 : i);
@@ -61,11 +51,11 @@ const rpsToPos = (r: number) => Math.round((Math.log(r / 50) / Math.log(400)) * 
 export const Chapter1Workspace: React.FC = () => {
   const { resetChapter } = useNav();
   const [stage, setStage] = usePersistentState<number>('chapter1:stage', 0);
-  const [tab, setTab] = usePersistentState<Tab>('chapter1:tab', 'architecture');
+  const [storedTab, setTab] = usePersistentState<Tab>('chapter1:tab', 'architecture');
+  const tab: Tab = storedTab === 'concepts' ? 'concepts' : 'architecture';
   const [flows, setFlows] = usePersistentState<Record<number, Flow>>('chapter1:flow', {});
   const [afterMap, setAfterMap] = usePersistentState<Record<number, boolean>>('chapter1:after', {});
   const [inputsMap, setInputsMap] = usePersistentState<Record<number, Inputs>>('chapter1:inputs', {});
-  const [notes, setNotes] = usePersistentState<Record<number, string>>('chapter1:notes', {});
   const [pickerOpen, setPickerOpen] = useState(false);
 
   const i = Math.min(Math.max(0, stage), N - 1);
@@ -77,7 +67,6 @@ export const Chapter1Workspace: React.FC = () => {
   const arch = useMemo(() => buildArch(level, inputs.websPerDc), [level, inputs.websPerDc]);
 
   const [fail, setFail] = useState<Failures>(noFailures);
-  const [events, setEvents] = useState<LogEvent[]>([]);
   const [selected, setSelected] = useState<string | null>(meta.keyNode);
   const [now, setNow] = useState(Date.now());
 
@@ -107,25 +96,12 @@ export const Chapter1Workspace: React.FC = () => {
     }
   }, [doneCount, i]);
 
-  // Promotion finished: log it once.
-  const promotedOnce = React.useRef(false);
-  useEffect(() => {
-    if (sim.promoted && !promotedOnce.current) {
-      promotedOnce.current = true;
-      log('success', 'Replica-1 promoted to master. Writes are flowing again.');
-    }
-    if (!sim.promoted) promotedOnce.current = false;
-  }, [sim.promoted]); // eslint-disable-line react-hooks/exhaustive-deps
-
   const mark = (step: FlowStep) =>
     setFlows((prev) => (prev[i]?.[step] ? prev : { ...prev, [i]: { ...(prev[i] ?? EMPTY_FLOW), [step]: true } }));
-
-  const log = (tone: LogEvent['tone'], text: string) => setEvents((prev) => [{ t: Date.now(), tone, text }, ...prev].slice(0, 40));
 
   const goStage = (k: number) => {
     setStage(k);
     setFail(noFailures());
-    setEvents([]);
     setSelected(STAGE_META[k].keyNode);
     setPickerOpen(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -143,7 +119,6 @@ export const Chapter1Workspace: React.FC = () => {
       const masterCrashed = crashed.includes('db') && nextArch.f.replicas;
       return { ...prev, crashed, masterDownAt: masterCrashed ? Date.now() : null };
     });
-    log(v ? 'success' : 'info', v ? `Applied the fix: ${content.title.toLowerCase()}.` : 'Switched back to the architecture before the fix.');
     if (!nextArch.all.some((n) => n.id === selected)) setSelected(STAGE_META[i].keyNode);
   };
 
@@ -156,17 +131,10 @@ export const Chapter1Workspace: React.FC = () => {
       masterDownAt: id === 'db' && arch.f.replicas ? Date.now() : prev.masterDownAt,
     }));
     mark('break');
-    log('error', `${node.label} crashed.`);
   };
-  const recover = (id: string) => {
-    const node = arch.all.find((n) => n.id === id);
+  const recover = (id: string) =>
     setFail((prev) => ({ ...prev, crashed: prev.crashed.filter((c) => c !== id), masterDownAt: id === 'db' ? null : prev.masterDownAt }));
-    log('success', `${node?.label ?? id} recovered.`);
-  };
-  const clearFailures = () => {
-    setFail(noFailures());
-    log('info', 'All failures cleared.');
-  };
+  const clearFailures = () => setFail(noFailures());
 
   const runExperiment = (ex: Experiment) => {
     if ('crash' in ex.action) {
@@ -174,7 +142,6 @@ export const Chapter1Workspace: React.FC = () => {
     } else {
       setFail((prev) => ({ ...prev, scenario: (ex.action as { scenario: Failures['scenario'] }).scenario, scenarioAt: Date.now() }));
       mark('break');
-      log('warn', `Experiment started: ${ex.label}.`);
     }
     setTab('architecture');
   };
@@ -318,10 +285,7 @@ export const Chapter1Workspace: React.FC = () => {
           {(
             [
               ['architecture', 'Architecture', Boxes],
-              ['experiments', 'Experiments', FlaskConical],
-              ['observability', 'Observability', Activity],
               ['concepts', 'Concepts', BookOpen],
-              ['notes', 'Notes', NotebookPen],
             ] as [Tab, string, React.ComponentType<{ className?: string }>][]
           ).map(([id, label, Icon]) => (
             <button
@@ -358,7 +322,17 @@ export const Chapter1Workspace: React.FC = () => {
                     {health === 'ok' ? 'Running' : health === 'degraded' ? 'Degraded' : 'Outage'}
                   </span>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  {meta.experiments.map((ex) => (
+                    <button
+                      key={ex.id}
+                      onClick={() => runExperiment(ex)}
+                      title={ex.description}
+                      className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium text-rose-700 ring-1 ring-rose-200 hover:bg-rose-50 dark:text-rose-300 dark:ring-rose-400/30 dark:hover:bg-rose-400/10"
+                    >
+                      <Flame className="h-3.5 w-3.5" /> {ex.label}
+                    </button>
+                  ))}
                   {hasFix(i) && (
                     <Segmented
                       label="Architecture version"
@@ -440,140 +414,10 @@ export const Chapter1Workspace: React.FC = () => {
               onClose={() => setSelected(null)}
               onCrash={() => selNode && crash(selNode.id)}
               onRecover={() => selNode && recover(selNode.id)}
-              onLogs={() => openTab('observability')}
             />
+
+            <TechStack arch={arch} selected={selected} onSelect={select} />
           </div>
-        )}
-
-        {/* ---------- Experiments ---------- */}
-        {tab === 'experiments' && (
-          <section className="space-y-4">
-            <Callout tone="idea" title="How to use experiments">
-              {hasFix(i) ? (
-                <>
-                  Run the experiment on the <strong>Before fix</strong> architecture to see this stage&rsquo;s weak spot. Then switch to <strong>After fix</strong> and
-                  run it again.
-                </>
-              ) : i === 0 ? (
-                'Break the single server and watch what happens to every request.'
-              ) : (
-                'This is the full design. Click any component in the diagram and crash it from the inspector.'
-              )}
-            </Callout>
-            <div className="grid gap-3 md:grid-cols-2">
-              {meta.experiments.map((ex) => (
-                <div key={ex.id} className="flex flex-col justify-between gap-4 rounded-2xl bg-white p-5 ring-1 ring-slate-200 dark:bg-white/[0.03] dark:ring-white/10">
-                  <div>
-                    <p className="flex items-center gap-2 font-semibold text-slate-900 dark:text-white">
-                      <Flame className="h-4 w-4 text-rose-500" /> {ex.label}
-                    </p>
-                    <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">{ex.description}</p>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {hasFix(i) && (
-                      <button
-                        onClick={() => {
-                          if (after) setAfter(false);
-                          runExperiment(ex);
-                        }}
-                        className="rounded-lg bg-rose-600 px-4 py-2 text-sm font-medium text-white hover:bg-rose-500"
-                      >
-                        Run on Before fix
-                      </button>
-                    )}
-                    <button
-                      onClick={() => {
-                        if (hasFix(i) && !after) setAfter(true);
-                        runExperiment(ex);
-                      }}
-                      className={`rounded-lg px-4 py-2 text-sm font-medium ${
-                        hasFix(i) ? 'bg-white text-slate-800 ring-1 ring-slate-300 hover:bg-slate-50 dark:bg-white/[0.06] dark:text-slate-100 dark:ring-white/15' : 'bg-rose-600 text-white hover:bg-rose-500'
-                      }`}
-                    >
-                      {hasFix(i) ? 'Run on After fix' : 'Run experiment'}
-                    </button>
-                  </div>
-                </div>
-              ))}
-              {meta.experiments.length === 0 && (
-                <p className="text-sm text-slate-500 dark:text-slate-400">No scripted experiment here. Use “Crash this component” in the inspector.</p>
-              )}
-            </div>
-            <div className="rounded-2xl bg-white p-5 ring-1 ring-slate-200 dark:bg-white/[0.03] dark:ring-white/10">
-              <p className="text-sm font-semibold text-slate-900 dark:text-white">The weak spot at this stage</p>
-              <div className="mt-1 text-sm leading-relaxed text-slate-600 dark:text-slate-300">{content.weakSpot}</div>
-            </div>
-          </section>
-        )}
-
-        {/* ---------- Observability ---------- */}
-        {tab === 'observability' && (
-          <section className="space-y-5">
-            <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
-              <Metric label="Success rate" value={`${(sim.success * 100).toFixed(sim.success === 1 ? 0 : 1)}%`} tone={sim.success >= 0.99 ? 'good' : 'bad'} />
-              <Metric label="API latency" value={`${sim.apiMs} ms`} tone={sim.apiMs > 500 ? 'bad' : 'neutral'} />
-              <Metric label="Static files" value={`${sim.staticMs} ms`} tone={sim.staticMs > 200 ? 'bad' : 'neutral'} />
-              <Metric label="Users logged out" value={`${Math.round(sim.loggedOutPct)}%`} tone={sim.loggedOutPct > 0 ? 'bad' : 'neutral'} />
-              <Metric label="Monthly cost" value={`$${sim.cost.toLocaleString()}`} />
-            </div>
-            <div className="grid gap-5 lg:grid-cols-2">
-              <div className="rounded-2xl bg-white p-5 ring-1 ring-slate-200 dark:bg-white/[0.03] dark:ring-white/10">
-                <p className="mb-3 text-sm font-semibold text-slate-900 dark:text-white">Load per component</p>
-                <ul className="space-y-2.5">
-                  {arch.all
-                    .filter((n) => n.kind !== 'dns')
-                    .map((n) => {
-                      const s = sim.nodes[n.id];
-                      const pct = Math.min(100, Math.round((s?.load ?? 0) * 100));
-                      return (
-                        <li key={n.id}>
-                          <div className="flex justify-between text-xs">
-                            <span className="text-slate-700 dark:text-slate-200">{n.label}</span>
-                            <span className={`tabular-nums ${s?.status === 'down' ? 'text-rose-600 dark:text-rose-400' : 'text-slate-500 dark:text-slate-400'}`}>
-                              {s?.status === 'down' ? 'down' : `${pct}%`}
-                            </span>
-                          </div>
-                          <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-slate-100 dark:bg-white/10">
-                            <div
-                              className={`h-full rounded-full ${s?.status === 'down' ? 'bg-rose-500' : pct > 85 ? 'bg-amber-500' : 'bg-emerald-500'}`}
-                              style={{ width: `${s?.status === 'down' ? 100 : pct}%` }}
-                            />
-                          </div>
-                        </li>
-                      );
-                    })}
-                </ul>
-                <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">Numbers come from a simplified model to show direction, not real benchmarks.</p>
-              </div>
-              <div className="rounded-2xl bg-white p-5 ring-1 ring-slate-200 dark:bg-white/[0.03] dark:ring-white/10">
-                <p className="mb-3 text-sm font-semibold text-slate-900 dark:text-white">Event log</p>
-                {events.length === 0 ? (
-                  <p className="text-sm text-slate-500 dark:text-slate-400">Nothing has happened yet. Run an experiment or crash a component.</p>
-                ) : (
-                  <ol className="space-y-1.5 font-mono text-xs">
-                    {events.map((e, k) => (
-                      <li key={k} className="flex gap-3">
-                        <span className="text-slate-500 dark:text-slate-400 tabular-nums">{new Date(e.t).toLocaleTimeString()}</span>
-                        <span
-                          className={
-                            e.tone === 'error'
-                              ? 'text-rose-600 dark:text-rose-400'
-                              : e.tone === 'warn'
-                              ? 'text-amber-600 dark:text-amber-400'
-                              : e.tone === 'success'
-                              ? 'text-emerald-600 dark:text-emerald-400'
-                              : 'text-slate-600 dark:text-slate-300'
-                          }
-                        >
-                          {e.text}
-                        </span>
-                      </li>
-                    ))}
-                  </ol>
-                )}
-              </div>
-            </div>
-          </section>
         )}
 
         {/* ---------- Concepts ---------- */}
@@ -608,24 +452,6 @@ export const Chapter1Workspace: React.FC = () => {
           </section>
         )}
 
-        {/* ---------- Notes ---------- */}
-        {tab === 'notes' && (
-          <section className="rounded-2xl bg-white p-5 ring-1 ring-slate-200 dark:bg-white/[0.03] dark:ring-white/10">
-            <label htmlFor="ch1-notes" className="text-sm font-semibold text-slate-900 dark:text-white">
-              Your notes for “{content.title}”
-            </label>
-            <p className="text-xs text-slate-500 dark:text-slate-400">Saved in this browser as you type.</p>
-            <textarea
-              id="ch1-notes"
-              value={notes[i] ?? ''}
-              onChange={(e) => setNotes((prev) => ({ ...prev, [i]: e.target.value }))}
-              rows={10}
-              placeholder="What broke, what fixed it, and what would you say in an interview?"
-              className="mt-3 w-full rounded-xl bg-slate-50 p-3 text-sm text-slate-800 ring-1 ring-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-400 dark:bg-white/[0.03] dark:text-slate-100 dark:ring-white/10"
-            />
-          </section>
-        )}
-
         {/* ---------- Learning flow ---------- */}
         <FlowBar
           flow={effFlow}
@@ -634,7 +460,11 @@ export const Chapter1Workspace: React.FC = () => {
           onStep={(s) => {
             if (s === 'learn') openTab('concepts');
             else if (s === 'explore') openTab('architecture');
-            else if (s === 'break') openTab('experiments');
+            else if (s === 'break') {
+              openTab('architecture');
+              if (hasFix(i) && after) setAfter(false);
+              if (meta.experiments[0]) runExperiment(meta.experiments[0]);
+            }
             else if (s === 'fix') {
               if (hasFix(i)) {
                 openTab('architecture');
@@ -689,19 +519,6 @@ const StepBtn: React.FC<{ label: string; onClick: () => void; disabled?: boolean
   </button>
 );
 
-const Metric: React.FC<{ label: string; value: string; tone?: 'good' | 'bad' | 'neutral' }> = ({ label, value, tone = 'neutral' }) => (
-  <div className="rounded-2xl bg-white p-4 ring-1 ring-slate-200 dark:bg-white/[0.03] dark:ring-white/10">
-    <p className="text-xs text-slate-500 dark:text-slate-400">{label}</p>
-    <p
-      className={`mt-1 text-2xl font-semibold tabular-nums ${
-        tone === 'good' ? 'text-emerald-600 dark:text-emerald-400' : tone === 'bad' ? 'text-rose-600 dark:text-rose-400' : 'text-slate-900 dark:text-white'
-      }`}
-    >
-      {value}
-    </p>
-  </div>
-);
-
 // ---------------------------------------------------------------------------
 
 const STATUS_LABEL: Record<NodeState['status'], string> = { healthy: 'Healthy', busy: 'Overloaded', down: 'Down', promoting: 'Promoting', idle: 'Idle' };
@@ -722,9 +539,8 @@ const Inspector: React.FC<{
   onClose: () => void;
   onCrash: () => void;
   onRecover: () => void;
-  onLogs: () => void;
-}> = ({ node, state, crashed, count, onClose, onCrash, onRecover, onLogs }) => {
-  const [view, setView] = useState<'overview' | 'metrics' | 'config'>('overview');
+}> = ({ node, state, crashed, count, onClose, onCrash, onRecover }) => {
+  const [view, setView] = useState<'overview' | 'tech' | 'metrics' | 'config'>('overview');
   if (!node) {
     return (
       <aside className="rounded-2xl bg-white p-5 ring-1 ring-slate-200 dark:bg-white/[0.03] dark:ring-white/10">
@@ -771,8 +587,9 @@ const Inspector: React.FC<{
         {(
           [
             ['overview', 'Overview'],
+            ['tech', 'Tech'],
             ['metrics', 'Metrics'],
-            ['config', 'Configuration'],
+            ['config', 'Config'],
           ] as const
         ).map(([id, label]) => (
           <button
@@ -801,6 +618,22 @@ const Inspector: React.FC<{
             </InfoBox>
           </>
         )}
+        {view === 'tech' && (
+          <>
+            <p className="text-xs text-slate-500 dark:text-slate-400">What teams actually run for this component:</p>
+            <ul className="space-y-2">
+              {TECH[node.kind].map((t, k) => (
+                <li key={t.name} className="rounded-xl bg-slate-50 p-3 dark:bg-white/[0.04]">
+                  <p className="flex items-center gap-2 font-semibold text-slate-900 dark:text-white">
+                    {t.name}
+                    {k === 0 && <span className="rounded-md bg-indigo-50 px-1.5 py-0.5 text-[11px] font-medium text-indigo-700 dark:bg-indigo-400/15 dark:text-indigo-300">common pick</span>}
+                  </p>
+                  <p className="mt-0.5 text-slate-600 dark:text-slate-300">{t.note}</p>
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
         {view === 'metrics' && (
           <dl className="divide-y divide-slate-100 dark:divide-white/10">
             <Row k="Status" v={STATUS_LABEL[status]} />
@@ -820,21 +653,75 @@ const Inspector: React.FC<{
         )}
       </div>
 
-      <div className="mt-5 grid grid-cols-2 gap-2">
+      <div className="mt-5">
         {crashed ? (
-          <button onClick={onRecover} className="inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-600 px-3 py-2.5 text-sm font-medium text-white hover:bg-emerald-500">
-            <Wrench className="h-4 w-4" /> Recover
+          <button onClick={onRecover} className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-600 px-3 py-2.5 text-sm font-medium text-white hover:bg-emerald-500">
+            <Wrench className="h-4 w-4" /> Recover this component
           </button>
         ) : (
-          <button onClick={onCrash} className="inline-flex items-center justify-center gap-2 rounded-lg bg-indigo-600 px-3 py-2.5 text-sm font-medium text-white hover:bg-indigo-500">
-            <Zap className="h-4 w-4" /> Crash it
+          <button onClick={onCrash} className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-indigo-600 px-3 py-2.5 text-sm font-medium text-white hover:bg-indigo-500">
+            <Zap className="h-4 w-4" /> Crash this component
           </button>
         )}
-        <button onClick={onLogs} className="inline-flex items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-700 ring-1 ring-slate-300 hover:bg-slate-50 dark:text-slate-200 dark:ring-white/15 dark:hover:bg-white/[0.05]">
-          <FileText className="h-4 w-4" /> View logs
-        </button>
       </div>
     </aside>
+  );
+};
+
+/** One row per component type in the current architecture, with the technologies used for it in practice. */
+const TechStack: React.FC<{ arch: ReturnType<typeof buildArch>; selected: string | null; onSelect: (id: string) => void }> = ({ arch, selected, onSelect }) => {
+  const kinds: { kind: Kind; first: string }[] = [];
+  arch.all.forEach((n) => {
+    if (!kinds.some((k) => k.kind === n.kind)) kinds.push({ kind: n.kind, first: n.id });
+  });
+  const selKind = arch.all.find((n) => n.id === selected)?.kind;
+  return (
+    <section className="xl:col-span-2 rounded-2xl bg-white p-4 sm:p-5 ring-1 ring-slate-200 dark:bg-white/[0.03] dark:ring-white/10">
+      <div className="mb-3">
+        <h2 className="flex items-center gap-2 font-semibold text-slate-900 dark:text-white">
+          <Boxes className="h-4 w-4" /> Tech stack in the real world
+        </h2>
+        <p className="text-sm text-slate-500 dark:text-slate-400">What teams actually use for each piece of this architecture. Click a row to inspect that component.</p>
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="text-left text-xs text-slate-500 dark:text-slate-400">
+              <th className="py-2 pr-4 font-medium">Component</th>
+              <th className="py-2 font-medium">Common technologies</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100 dark:divide-white/10">
+            {kinds.map(({ kind, first }) => (
+              <tr
+                key={kind}
+                onClick={() => onSelect(first)}
+                className={`cursor-pointer align-top transition-colors hover:bg-slate-50 dark:hover:bg-white/[0.03] ${selKind === kind ? 'bg-indigo-50/60 dark:bg-indigo-400/[0.06]' : ''}`}
+              >
+                <td className="whitespace-nowrap py-2.5 pr-4 font-medium text-slate-900 dark:text-white">{KIND_NAME[kind]}</td>
+                <td className="py-2">
+                  <div className="flex flex-wrap gap-1.5">
+                    {TECH[kind].map((t, k) => (
+                      <span
+                        key={t.name}
+                        title={t.note}
+                        className={`rounded-md px-2 py-1 text-xs ${
+                          k === 0
+                            ? 'bg-indigo-600 font-medium text-white'
+                            : 'bg-slate-100 text-slate-700 dark:bg-white/[0.06] dark:text-slate-200'
+                        }`}
+                      >
+                        {t.name}
+                      </span>
+                    ))}
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
   );
 };
 
@@ -867,7 +754,7 @@ const Row: React.FC<{ k: string; v: string }> = ({ k, v }) => (
 const FLOW_STEPS: { id: FlowStep; title: string; desc: string; icon: React.ComponentType<{ className?: string }>; tone: string }[] = [
   { id: 'learn', title: 'Learn', desc: 'Read why this stage exists.', icon: BookOpen, tone: 'emerald' },
   { id: 'explore', title: 'Explore', desc: 'Click a component in the diagram.', icon: Search, tone: 'indigo' },
-  { id: 'break', title: 'Break it', desc: 'Run an experiment and see what fails.', icon: Flame, tone: 'amber' },
+  { id: 'break', title: 'Break it', desc: 'Press the red button above the diagram.', icon: Flame, tone: 'amber' },
   { id: 'fix', title: 'Fix it', desc: 'Apply the fix and run it again.', icon: Wrench, tone: 'violet' },
   { id: 'check', title: 'Check', desc: 'Answer the quick check.', icon: CircleHelp, tone: 'slate' },
 ];

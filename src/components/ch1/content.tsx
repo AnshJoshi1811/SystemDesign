@@ -25,8 +25,8 @@ export const STAGES: StageContent[] = [
     weakSpot: (
       <>
         The web app and the database compete for the same CPU and memory, and there is no spare machine: this server is a{' '}
-        <Term term="single point of failure (SPOF)">A part of a system that, if it fails, stops the entire system from working.</Term>. Run the experiment in
-        Experiments and every request fails.
+        <Term term="single point of failure (SPOF)">A part of a system that, if it fails, stops the entire system from working.</Term>. Crash it with the red
+        button above the diagram and every request fails.
       </>
     ),
     fix: 'Move the database onto its own server so the web tier and the data tier can grow separately.',
@@ -174,8 +174,8 @@ export const STAGES: StageContent[] = [
     reason: 'Memory is much faster than a database query, and fewer queries means the database tier needs fewer machines.',
     weakSpot: (
       <>
-        Static files still come from your web servers: they use web CPU and load slowly for users far away. Compare static-file latency with
-        API latency in Observability.
+        Static files still come from your web servers: they use web CPU and load slowly for users far away. The next stage tests
+        this with users on another continent.
       </>
     ),
     fix: 'Move static assets (images, JS, CSS, video) to a CDN.',
@@ -225,7 +225,7 @@ export const STAGES: StageContent[] = [
       {
         question: 'What does adding a CDN speed up?',
         options: [
-          { text: 'Static files, served from an edge server near the user instead of from your web servers.', correct: true, why: 'In Observability, API latency barely moves while static-file latency drops.' },
+          { text: 'Static files, served from an edge server near the user instead of from your web servers.', correct: true, why: 'API latency barely moves while static-file latency drops.' },
           { text: 'Database queries, because the CDN caches query results.', why: 'That is the cache tier’s job. The book’s CDN caches static content.' },
           { text: 'Personalized API responses for logged-in users.', why: 'Dynamic content caching exists but is outside this book’s scope.' },
         ],
@@ -250,7 +250,7 @@ export const STAGES: StageContent[] = [
     weakSpot: (
       <>
         Everything runs in one data center. Distant users pay extra network latency, and a data-center outage takes the whole site down. Try "Data
-        center outage" in Experiments.
+        center outage" above the diagram.
       </>
     ),
     fix: (
