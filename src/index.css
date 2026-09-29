@@ -1,40 +1,41 @@
-﻿@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
 
 /* Bind `dark:` utilities to the in-app theme toggle (App adds `.dark`), not the OS setting. */
 @custom-variant dark (&:where(.dark, .dark *));
-
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 :root {
   font-family: 'Inter', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  color-scheme: light;
 }
+html.dark { color-scheme: dark; }
 
-body { margin: 0; background: #f5f5f4; }
-html.dark body { background: #0a0a0a; }
+body { margin: 0; background: #fafaf9; }
+html.dark body { background: #0a0a0b; }
 * { box-sizing: border-box; }
-*:focus-visible { outline: 2px solid #f59e0b; outline-offset: 2px; }
+*:focus-visible { outline: 2px solid #6366f1; outline-offset: 2px; border-radius: 4px; }
 
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 .no-scrollbar::-webkit-scrollbar { display: none; }
 
-* { scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.08) transparent; }
-*::-webkit-scrollbar { width: 4px; height: 4px; }
-*::-webkit-scrollbar-track { background: transparent; }
-*::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 2px; }
-
-/* Flatten dated gradients on chapter hero banners */
-.sd-app .rounded-3xl.shadow-xl,
-.sd-app .rounded-3xl.border.shadow-xl {
-  background-image: none !important;
-  box-shadow: 0 1px 0 0 rgba(255,255,255,0.06), inset 0 0 0 1px rgba(255,255,255,0.04) !important;
+@keyframes fadein {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }
 
-.rounded-3xl { border-radius: 12px !important; }
-.rounded-2xl { border-radius: 10px !important; }
-.rounded-xl  { border-radius: 8px !important; }
-
-.sd-app h1 { letter-spacing: -0.03em; }
-.sd-app h2 { letter-spacing: -0.02em; }
-
+/* Readable lesson text: comfortable measure, size and rhythm. */
+.lesson-prose { max-width: 68ch; font-size: 15px; line-height: 1.75; color: #334155; }
+.lesson-prose > * + * { margin-top: 0.9em; }
+.lesson-prose strong { color: #0f172a; font-weight: 600; }
+.lesson-prose ul { list-style: disc; padding-left: 1.25em; }
+.lesson-prose ol { list-style: decimal; padding-left: 1.25em; }
+.lesson-prose li + li { margin-top: 0.35em; }
+.lesson-prose code { font-size: 0.9em; padding: 0.1em 0.35em; border-radius: 4px; background: #f1f5f9; color: #0f172a; }
+html.dark .lesson-prose { color: #cbd5e1; }
+html.dark .lesson-prose strong { color: #f8fafc; }
+html.dark .lesson-prose code { background: rgba(255,255,255,0.08); color: #f8fafc; }
