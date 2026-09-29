@@ -1,0 +1,6 @@
+{
+  "name": "Interactive Distributed Systems Visualizer",
+  "description": "An interactive visualizer teaching traditional hashing, consistent hashing, and virtual nodes.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
