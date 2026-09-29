@@ -20,11 +20,11 @@ import {
   Layers,
 } from 'lucide-react';
 
-import { ModuleType } from '../types';
+import { Ch5Part } from '../types';
 
 interface Module0HashingProps {
   isDarkMode?: boolean;
-  onNavigateModule?: (module: ModuleType) => void;
+  onNavigateModule?: (part: Ch5Part) => void;
 }
 
 export const Module0Hashing: React.FC<Module0HashingProps> = ({ isDarkMode = false, onNavigateModule }) => {

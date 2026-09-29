@@ -1,27 +1,39 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ModuleType } from './types';
-import { Header } from './components/Header';
+import { Header, CHAPTERS } from './components/Header';
 import { Chapter1ScaleFromZero } from './components/Chapter1ScaleFromZero';
 import { Chapter2Estimation } from './components/Chapter2Estimation';
 import { Chapter3Framework } from './components/Chapter3Framework';
 import { Chapter4RateLimiter } from './components/Chapter4RateLimiter';
-import { Module0Hashing } from './components/Module0Hashing';
-import { Module1ConsistentHashing } from './components/Module1ConsistentHashing';
-import { Module2VirtualNodes } from './components/Module2VirtualNodes';
-import { ComparisonMode } from './components/ComparisonMode';
+import { Chapter5ConsistentHashing } from './components/Chapter5ConsistentHashing';
 import { Chapter6KeyValueStore } from './components/Chapter6KeyValueStore';
 import { Chapter7IdGenerator } from './components/Chapter7IdGenerator';
 import { Chapter8UrlShortener } from './components/Chapter8UrlShortener';
+import { usePersistentState, clearChapterState } from './lib/usePersistentState';
 import { motion, AnimatePresence } from 'motion/react';
 
+const isModule = (m: unknown): m is ModuleType => CHAPTERS.some((c) => c.id === m);
+
 export default function App() {
-  const [activeModule, setActiveModule] = useState<ModuleType>('chapter1');
-  const [speed, setSpeed] = useState<number>(1);
-  const [isPlaying, setIsPlaying] = useState<boolean>(true);
+  const [storedModule, setActiveModule] = usePersistentState<ModuleType>('app:chapter', 'chapter1');
+  const activeModule: ModuleType = isModule(storedModule) ? storedModule : 'chapter1';
   const [resetCounter, setResetCounter] = useState<number>(0);
-  const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
+  const [isDarkMode, setIsDarkMode] = usePersistentState<boolean>('app:dark', false);
+
+  // `dark:` utilities are bound to this class (see index.css).
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', isDarkMode);
+  }, [isDarkMode]);
+
+  const handleNavigate = (m: ModuleType) => {
+    setActiveModule(m);
+    window.scrollTo({ top: 0 });
+  };
 
   const handleReset = () => {
+    const label = CHAPTERS.find((c) => c.id === activeModule)?.label ?? 'this chapter';
+    if (!window.confirm(`Reset your progress in "${label}"? Stages, quiz answers and settings will be cleared.`)) return;
+    clearChapterState(activeModule);
     setResetCounter((prev) => prev + 1);
   };
 
@@ -31,17 +43,13 @@ export default function App() {
         ? 'bg-[#0a0a0a] text-slate-100'
         : 'bg-[#f5f5f4] text-slate-900'
     }`}>
-      
+
       {/* Top Header Navigation */}
       <div>
         <Header
           activeModule={activeModule}
-          setActiveModule={setActiveModule}
+          setActiveModule={handleNavigate}
           onReset={handleReset}
-          speed={speed}
-          setSpeed={setSpeed}
-          isPlaying={isPlaying}
-          setIsPlaying={setIsPlaying}
           isDarkMode={isDarkMode}
           setIsDarkMode={setIsDarkMode}
         />
@@ -60,10 +68,7 @@ export default function App() {
               {activeModule === 'chapter2' && <Chapter2Estimation isDarkMode={isDarkMode} />}
               {activeModule === 'chapter3' && <Chapter3Framework isDarkMode={isDarkMode} />}
               {activeModule === 'rateLimiter' && <Chapter4RateLimiter isDarkMode={isDarkMode} />}
-              {activeModule === 'module0' && <Module0Hashing isDarkMode={isDarkMode} onNavigateModule={setActiveModule} />}
-              {activeModule === 'module1' && <Module1ConsistentHashing isDarkMode={isDarkMode} />}
-              {activeModule === 'module2' && <Module2VirtualNodes isDarkMode={isDarkMode} />}
-              {activeModule === 'comparison' && <ComparisonMode isDarkMode={isDarkMode} />}
+              {activeModule === 'chapter5' && <Chapter5ConsistentHashing isDarkMode={isDarkMode} />}
               {activeModule === 'chapter6' && <Chapter6KeyValueStore isDarkMode={isDarkMode} />}
               {activeModule === 'chapter7' && <Chapter7IdGenerator isDarkMode={isDarkMode} />}
               {activeModule === 'chapter8' && <Chapter8UrlShortener isDarkMode={isDarkMode} />}
@@ -77,12 +82,11 @@ export default function App() {
         isDarkMode ? 'border-white/[0.06] bg-[#111113]' : 'border-slate-200 bg-[#f5f5f4]'
       }`}>
         <div className="max-w-[1280px] mx-auto px-6 flex items-center justify-between">
-          <span className={`text-xs font-medium ${isDarkMode ? 'text-white/20' : 'text-slate-400'}`}>System Design Notes</span>
-          <span className={`text-xs ${isDarkMode ? 'text-white/20' : 'text-slate-400'}`}>Based on Alex Xu — Chapters 1–8</span>
+          <span className={`text-xs font-medium ${isDarkMode ? 'text-white/40' : 'text-slate-500'}`}>System Design Notes</span>
+          <span className={`text-xs ${isDarkMode ? 'text-white/40' : 'text-slate-500'}`}>Based on Alex Xu — Chapters 1–8</span>
         </div>
       </footer>
 
     </div>
   );
 }
-
