@@ -218,7 +218,7 @@ export const Chapter1Workspace: React.FC = () => {
               >
                 {done && <Check className="h-3 w-3" strokeWidth={3} />}
               </span>
-              <span className="text-xs tabular-nums text-slate-400 w-5">{String(k + 1).padStart(2, '0')}</span>
+              <span className="text-xs tabular-nums text-slate-500 dark:text-slate-400 w-5">{String(k + 1).padStart(2, '0')}</span>
               <span className="truncate">{s.title}</span>
             </button>
           </li>
@@ -253,7 +253,7 @@ export const Chapter1Workspace: React.FC = () => {
           </div>
           {stageList}
           {progressCard}
-          <button onClick={resetChapter} className="flex items-center gap-1.5 px-2.5 text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+          <button onClick={resetChapter} className="flex items-center gap-1.5 px-2.5 text-xs text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200">
             <RotateCcw className="h-3 w-3" /> Restart this chapter
           </button>
         </div>
@@ -553,7 +553,7 @@ export const Chapter1Workspace: React.FC = () => {
                   <ol className="space-y-1.5 font-mono text-xs">
                     {events.map((e, k) => (
                       <li key={k} className="flex gap-3">
-                        <span className="text-slate-400 tabular-nums">{new Date(e.t).toLocaleTimeString()}</span>
+                        <span className="text-slate-500 dark:text-slate-400 tabular-nums">{new Date(e.t).toLocaleTimeString()}</span>
                         <span
                           className={
                             e.tone === 'error'
@@ -901,7 +901,7 @@ const FlowBar: React.FC<{ flow: Flow; hasFix: boolean; isFinal: boolean; onStep:
                   <Icon className="h-3.5 w-3.5" />
                 </span>
                 <span className="text-sm font-semibold text-slate-900 dark:text-white">
-                  <span className="text-slate-400 mr-1">{k + 1}</span>
+                  <span className="text-slate-500 dark:text-slate-400 mr-1">{k + 1}</span>
                   {s.title}
                 </span>
               </span>

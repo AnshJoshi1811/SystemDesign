@@ -467,8 +467,8 @@ const StateView: React.FC<{ algo: RateLimiterAlgo; e: Engine; cfg: Config; now: 
               />
             );
           })}
-          <span className="absolute bottom-1 left-2 text-[11px] text-slate-400">{cfg.windowSec}s ago</span>
-          <span className="absolute bottom-1 right-2 text-[11px] text-slate-400">now</span>
+          <span className="absolute bottom-1 left-2 text-[11px] text-slate-500 dark:text-slate-400">{cfg.windowSec}s ago</span>
+          <span className="absolute bottom-1 right-2 text-[11px] text-slate-500 dark:text-slate-400">now</span>
         </div>
         <p className="text-sm text-slate-600 dark:text-slate-300">
           Dots slide left and drop off as they age. <span className="text-emerald-600 dark:text-emerald-400">Green</span> were allowed,{' '}

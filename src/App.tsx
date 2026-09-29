@@ -1,18 +1,32 @@
-import React, { useEffect, useState } from 'react';
+import React, { Suspense, lazy, useEffect, useState } from 'react';
 import { ModuleType } from './types';
 import { CHAPTERS, chapterById } from './chapters';
 import { Header } from './components/Header';
 import { Home } from './components/Home';
 import { NavContext, View } from './components/lesson/ChapterPlayer';
-import { Chapter1ScaleFromZero } from './components/Chapter1ScaleFromZero';
-import { Chapter2Estimation } from './components/Chapter2Estimation';
-import { Chapter3Framework } from './components/Chapter3Framework';
-import { Chapter4RateLimiter } from './components/Chapter4RateLimiter';
-import { Chapter5ConsistentHashing } from './components/Chapter5ConsistentHashing';
-import { Chapter6KeyValueStore } from './components/Chapter6KeyValueStore';
-import { Chapter7IdGenerator } from './components/Chapter7IdGenerator';
-import { Chapter8UrlShortener } from './components/Chapter8UrlShortener';
 import { usePersistentState, clearChapterState } from './lib/usePersistentState';
+
+// Each chapter is its own chunk, downloaded the first time it is opened.
+type ChapterComponent = React.ComponentType<{ isDarkMode?: boolean }>;
+const load = (f: () => Promise<Record<string, unknown>>, name: string) =>
+  lazy(() => f().then((m) => ({ default: m[name] as ChapterComponent })));
+
+const CHAPTER_VIEWS: Record<ModuleType, React.LazyExoticComponent<ChapterComponent>> = {
+  chapter1: load(() => import('./components/Chapter1ScaleFromZero'), 'Chapter1ScaleFromZero'),
+  chapter2: load(() => import('./components/Chapter2Estimation'), 'Chapter2Estimation'),
+  chapter3: load(() => import('./components/Chapter3Framework'), 'Chapter3Framework'),
+  rateLimiter: load(() => import('./components/Chapter4RateLimiter'), 'Chapter4RateLimiter'),
+  chapter5: load(() => import('./components/Chapter5ConsistentHashing'), 'Chapter5ConsistentHashing'),
+  chapter6: load(() => import('./components/Chapter6KeyValueStore'), 'Chapter6KeyValueStore'),
+  chapter7: load(() => import('./components/Chapter7IdGenerator'), 'Chapter7IdGenerator'),
+  chapter8: load(() => import('./components/Chapter8UrlShortener'), 'Chapter8UrlShortener'),
+};
+
+const ChapterLoading = () => (
+  <div className="flex items-center justify-center py-24 text-sm text-slate-500 dark:text-slate-400" role="status">
+    Loading chapter…
+  </div>
+);
 
 const isView = (v: unknown): v is View => v === 'home' || CHAPTERS.some((c) => c.id === v);
 
@@ -48,15 +62,13 @@ export default function App() {
         <Header view={view} onNavigate={go} isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />
 
         <main key={`${view}-${resetCounter}`} className={`${view === 'chapter1' ? 'max-w-[1600px]' : 'max-w-[1280px]'} mx-auto w-full px-4 sm:px-6 lg:px-8 pt-8 pb-24 animate-[fadein_.2s_ease-out]`}>
-          {view === 'home' && <Home lastChapter={lastChapter} />}
-          {view === 'chapter1' && <Chapter1ScaleFromZero isDarkMode={isDarkMode} />}
-          {view === 'chapter2' && <Chapter2Estimation isDarkMode={isDarkMode} />}
-          {view === 'chapter3' && <Chapter3Framework isDarkMode={isDarkMode} />}
-          {view === 'rateLimiter' && <Chapter4RateLimiter isDarkMode={isDarkMode} />}
-          {view === 'chapter5' && <Chapter5ConsistentHashing isDarkMode={isDarkMode} />}
-          {view === 'chapter6' && <Chapter6KeyValueStore isDarkMode={isDarkMode} />}
-          {view === 'chapter7' && <Chapter7IdGenerator isDarkMode={isDarkMode} />}
-          {view === 'chapter8' && <Chapter8UrlShortener isDarkMode={isDarkMode} />}
+          {view === 'home' ? (
+            <Home lastChapter={lastChapter} />
+          ) : (
+            <Suspense fallback={<ChapterLoading />}>
+              {React.createElement(CHAPTER_VIEWS[view], { isDarkMode })}
+            </Suspense>
+          )}
         </main>
 
         <footer className="mt-auto border-t border-slate-200 dark:border-white/[0.06] py-5">

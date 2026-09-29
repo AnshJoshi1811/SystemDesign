@@ -120,7 +120,7 @@ export const ChapterPlayer: React.FC<{ chapterId: ModuleType; lessons: Lesson[] 
           {lessonList}
           <button
             onClick={resetChapter}
-            className="flex items-center gap-1.5 px-2.5 text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+            className="flex items-center gap-1.5 px-2.5 text-xs text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
           >
             <RotateCcw className="w-3 h-3" />
             Restart this chapter

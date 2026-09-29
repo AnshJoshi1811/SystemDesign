@@ -48,7 +48,7 @@ export const GoDeeper: React.FC<{ title: string; children: React.ReactNode }> = 
   <details className="group rounded-xl bg-slate-50 dark:bg-white/[0.03] [&_summary::-webkit-details-marker]:hidden">
     <summary className="flex cursor-pointer select-none items-center justify-between gap-3 px-4 py-3 text-sm font-medium text-slate-700 dark:text-slate-200">
       <span>
-        <span className="text-slate-400 dark:text-slate-500 mr-2">Go deeper</span>
+        <span className="text-slate-500 dark:text-slate-400 mr-2">Go deeper</span>
         {title}
       </span>
       <ChevronDown className="w-4 h-4 text-slate-400 transition-transform group-open:rotate-180" />

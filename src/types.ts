@@ -1,8 +1,5 @@
 export type ModuleType = 'chapter1' | 'chapter2' | 'chapter3' | 'rateLimiter' | 'chapter5' | 'chapter6' | 'chapter7' | 'chapter8';
 
-/** Sub-parts of Chapter 5 (Consistent Hashing), stepped through inside one chapter. */
-export type Ch5Part = 'module0' | 'module1' | 'module2' | 'comparison';
-
 export type RateLimiterAlgo = 'tokenBucket' | 'leakyBucket' | 'fixedWindow' | 'slidingLog' | 'slidingCounter';
 
 export interface RateLimiterRequestLog {

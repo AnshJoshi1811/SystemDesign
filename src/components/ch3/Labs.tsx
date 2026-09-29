@@ -298,11 +298,11 @@ export const TimeBudgetLab: React.FC = () => {
   const deep = Math.min(25, left);
   const slack = left - deep;
   const status: Tone = deep >= 15 ? 'good' : deep >= 10 ? 'ok' : 'bad';
-  const deepColor = status === 'good' ? 'bg-emerald-500' : status === 'ok' ? 'bg-amber-500' : 'bg-rose-500';
+  const deepColor = status === 'good' ? 'bg-emerald-600' : status === 'ok' ? 'bg-amber-600' : 'bg-rose-600';
 
   const segs = [
     { label: 'Understand', min: step1, cls: 'bg-indigo-600 text-white' },
-    { label: 'High-level design', min: STEP2_MIN, cls: 'bg-slate-400 text-white dark:bg-slate-500' },
+    { label: 'High-level design', min: STEP2_MIN, cls: 'bg-slate-600 text-white dark:bg-slate-500' },
     { label: 'Deep dive', min: deep, cls: `${deepColor} text-white` },
     { label: 'Wrap up', min: WRAP_MIN, cls: 'bg-slate-300 text-slate-800 dark:bg-slate-600 dark:text-white' },
     ...(slack > 0 ? [{ label: 'Spare', min: slack, cls: 'bg-slate-100 text-slate-500 dark:bg-white/[0.06] dark:text-slate-400' }] : []),

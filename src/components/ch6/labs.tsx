@@ -316,7 +316,7 @@ export const SingleServerLab: React.FC = () => {
                     <span className="block text-xs text-slate-500 dark:text-slate-400">{e[1]}</span>
                   </>
                 ) : (
-                  <span className="text-xs text-slate-400">free</span>
+                  <span className="text-xs text-slate-500 dark:text-slate-400">free</span>
                 )}
               </div>
             );
@@ -947,7 +947,7 @@ export const MerkleLab: React.FC = () => {
   const cell = (hash: string, compared: boolean, diff: boolean, text: string) => (
     <div
       className={`min-w-0 rounded-lg px-1.5 py-1.5 text-center ${
-        !compared ? 'bg-slate-100 text-slate-400 dark:bg-white/[0.03] dark:text-slate-500' : diff ? 'bg-rose-100 text-rose-800 dark:bg-rose-400/15 dark:text-rose-200' : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-400/15 dark:text-emerald-200'
+        !compared ? 'bg-slate-100 text-slate-500 dark:bg-white/[0.03] dark:text-slate-400' : diff ? 'bg-rose-100 text-rose-800 dark:bg-rose-400/15 dark:text-rose-200' : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-400/15 dark:text-emerald-200'
       }`}
       title={compared ? (diff ? 'hashes differ' : 'hashes match') : 'not compared: its parent matched'}
     >
@@ -1072,7 +1072,7 @@ export const WritePathLab: React.FC = () => {
         <div className={col}>
           <p className={label}>1. Commit log (disk)</p>
           <ol className="mt-2 space-y-0.5 font-mono text-xs text-slate-800 dark:text-slate-100">
-            {st.commitLog.length === 0 && <li className="text-slate-400">empty</li>}
+            {st.commitLog.length === 0 && <li className="text-slate-500 dark:text-slate-400">empty</li>}
             {st.commitLog.map(([k, v], j) => (
               <li key={j}>
                 {k}={v}
@@ -1098,7 +1098,7 @@ export const WritePathLab: React.FC = () => {
         <div className={col}>
           <p className={label}>3. SSTables (disk)</p>
           <ul className="mt-2 space-y-1 font-mono text-xs text-slate-800 dark:text-slate-100">
-            {st.sstables.length === 0 && <li className="text-slate-400">none yet</li>}
+            {st.sstables.length === 0 && <li className="text-slate-500 dark:text-slate-400">none yet</li>}
             {st.sstables.map((t) => (
               <li key={t.id}>
                 SST-{t.id}: {t.entries.map(([k]) => k).join(', ')}
