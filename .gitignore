@@ -11,6 +11,9 @@ coverage/
 desktop.ini
 Thumbs.db
 
-# Source material (copyrighted, local reference only)
+# Local tool config (per-machine, not part of the project)
+.claude/
+
+# Source material (copyrighted, local reference only — never commit or publish)
 *.pdf
 alex_yu_extracted.txt

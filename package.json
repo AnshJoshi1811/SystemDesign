@@ -1,7 +1,14 @@
 {
-  "name": "react-example",
+  "name": "system-design-labs",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
+  "description": "Interactive, hands-on labs for practicing system design interview concepts — built with React + Vite.",
+  "homepage": "https://anshjoshi1811.github.io/SD/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AnshJoshi1811/SD.git"
+  },
+  "license": "MIT",
   "type": "module",
   "scripts": {
     "dev": "vite --port=3000 --host=0.0.0.0",
