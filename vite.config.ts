@@ -6,7 +6,7 @@ import {defineConfig} from 'vite';
 export default defineConfig(() => {
   return {
     // Relative base so the built assets resolve correctly whether the app is
-    // served from a domain root or a GitHub Pages project subpath (/SD/).
+    // served from a domain root or a GitHub Pages project subpath (/SystemDesign/).
     base: './',
     plugins: [react(), tailwindcss()],
     resolve: {

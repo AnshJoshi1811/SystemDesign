@@ -1,6 +1,6 @@
 # System Design Labs
 
-**[Try the live demo →](https://anshjoshi1811.github.io/SD/)**
+**[Try the live demo →](https://anshjoshi1811.github.io/SystemDesign/)**
 
 Interactive, hands-on labs for practicing system design interview concepts. Each chapter pairs a short explanation with a small live simulation you can poke at — read one idea, try it, answer a quick check, move on.
 

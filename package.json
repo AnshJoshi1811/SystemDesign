@@ -3,10 +3,10 @@
   "private": true,
   "version": "1.0.0",
   "description": "Interactive, hands-on labs for practicing system design interview concepts — built with React + Vite.",
-  "homepage": "https://anshjoshi1811.github.io/SD/",
+  "homepage": "https://anshjoshi1811.github.io/SystemDesign/",
   "repository": {
     "type": "git",
-    "url": "https://github.com/AnshJoshi1811/SD.git"
+    "url": "https://github.com/AnshJoshi1811/SystemDesign.git"
   },
   "license": "MIT",
   "type": "module",
