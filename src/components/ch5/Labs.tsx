@@ -25,13 +25,13 @@ import { usePersistentState } from '../../lib/usePersistentState';
 import { HashRingCanvas } from '../HashRingCanvas';
 import { Callout, Stat, Slider, Button, Segmented } from '../lesson/blocks';
 
-const muted = 'text-slate-500 dark:text-slate-400';
+const muted = 'text-[var(--text-subtle)] dark:text-[var(--text-subtle)]';
 const pct = (n: number, total: number) => Number(((n / (total || 1)) * 100).toFixed(1));
 
 /** Collapsed secondary settings, as in the Ch.4 labs. */
 const Settings: React.FC<{ summary: string; children: React.ReactNode }> = ({ summary, children }) => (
-  <details className="rounded-xl ring-1 ring-slate-200 dark:ring-white/10 [&_summary::-webkit-details-marker]:hidden">
-    <summary className="cursor-pointer select-none px-4 py-3 text-sm font-medium text-slate-700 dark:text-slate-200">
+  <details className="rounded-xl ring-1 ring-[var(--header-border)] dark:ring-[var(--header-border)] [&_summary::-webkit-details-marker]:hidden">
+    <summary className="cursor-pointer select-none px-4 py-3 text-sm font-medium text-[var(--text-muted)] dark:text-[var(--text-muted)]">
       Change the settings
       <span className={`ml-2 font-normal ${muted}`}>{summary}</span>
     </summary>
@@ -63,7 +63,7 @@ export const HashLab: React.FC = () => {
   return (
     <div className="space-y-5">
       <div className="space-y-2">
-        <label htmlFor="ch5-key" className="block text-sm font-medium text-slate-700 dark:text-slate-200">
+        <label htmlFor="ch5-key" className="block text-sm font-medium text-[var(--text-muted)] dark:text-[var(--text-muted)]">
           Key
         </label>
         <input
@@ -71,7 +71,7 @@ export const HashLab: React.FC = () => {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onBlur={() => input.trim() && remember(input.trim())}
-          className="w-full rounded-lg bg-white px-3 py-2 font-mono text-sm text-slate-900 ring-1 ring-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-white/[0.04] dark:text-white dark:ring-white/15"
+          className="w-full rounded-lg bg-[var(--surface)] px-3 py-2 font-mono text-sm text-[var(--text-base)] ring-1 ring-[var(--header-border)] focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-[var(--surface-muted)] dark:text-[var(--text-base)] dark:ring-[var(--header-border)]"
         />
         <div className="flex flex-wrap gap-2">
           {HASH_PRESETS.map((p) => (
@@ -80,8 +80,8 @@ export const HashLab: React.FC = () => {
               onClick={() => pick(p)}
               className={`rounded-md px-2.5 py-1 font-mono text-xs ring-1 transition-colors ${
                 p === key
-                  ? 'bg-indigo-50 text-indigo-900 ring-indigo-300 dark:bg-indigo-400/[0.12] dark:text-white dark:ring-indigo-400/40'
-                  : 'text-slate-700 ring-slate-200 hover:bg-slate-50 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/[0.05]'
+                  ? 'bg-[var(--surface-muted)] text-[var(--text-base)] ring-indigo-300 dark:bg-[var(--surface-muted)] dark:text-[var(--text-base)] dark:ring-indigo-400/40'
+                  : 'text-[var(--text-muted)] ring-[var(--header-border)] hover:bg-[var(--surface-muted)] dark:text-[var(--text-muted)] dark:ring-[var(--header-border)] dark:hover:bg-[var(--surface-muted)]'
               }`}
             >
               {p}
@@ -91,26 +91,26 @@ export const HashLab: React.FC = () => {
       </div>
 
       {/* key -> hash -> position */}
-      <div className="rounded-xl bg-slate-50 dark:bg-white/[0.04] p-4 space-y-4">
+      <div className="rounded-xl bg-[var(--surface-muted)] dark:bg-[var(--surface-muted)] p-4 space-y-4">
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
-          <span className="font-mono font-semibold text-slate-900 dark:text-white break-all">{key}</span>
+          <span className="font-mono font-semibold text-[var(--text-base)] dark:text-[var(--text-base)] break-all">{key}</span>
           <span className={muted}>→ {algo === 'murmur3' ? 'MurmurHash3' : 'FNV-1a'} →</span>
-          <span className="font-mono font-semibold text-indigo-700 dark:text-indigo-300">{h.hashHex}</span>
+          <span className="font-mono font-semibold text-[var(--text-base)] dark:text-[var(--text-muted)]">{h.hashHex}</span>
           <span className={`font-mono ${muted}`}>= {h.hashValue.toLocaleString()}</span>
         </div>
         <div>
           <div className="relative h-10">
-            <div className="absolute inset-x-0 top-1/2 h-1.5 -translate-y-1/2 rounded-full bg-slate-200 dark:bg-white/10" />
+            <div className="absolute inset-x-0 top-1/2 h-1.5 -translate-y-1/2 rounded-full bg-slate-200 dark:bg-[var(--surface-muted)]" />
             {others.map((k) => (
               <span
                 key={k.id}
                 title={`${k.keyString}: ${k.hashHex}`}
-                className="absolute top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-slate-400 dark:bg-slate-500"
+                className="absolute top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-slate-400 dark:bg-[var(--surface-muted)]0"
                 style={{ left: `${at(k)}%` }}
               />
             ))}
             <span
-              className="absolute top-1/2 h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-indigo-600 ring-4 ring-white transition-all duration-300 dark:ring-slate-900"
+              className="absolute top-1/2 h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[var(--accent)] ring-4 ring-white transition-all duration-300 dark:ring-slate-900"
               style={{ left: `${at(h)}%` }}
             />
           </div>
@@ -119,8 +119,8 @@ export const HashLab: React.FC = () => {
             <span>2³² − 1</span>
           </div>
         </div>
-        <p className="text-sm text-slate-600 dark:text-slate-300">
-          <strong className="text-slate-900 dark:text-white tabular-nums">{at(h).toFixed(1)}%</strong> of the way along the hash space. Grey dots are
+        <p className="text-sm text-[var(--text-muted)] dark:text-[var(--text-muted)]">
+          <strong className="text-[var(--text-base)] dark:text-[var(--text-base)] tabular-nums">{at(h).toFixed(1)}%</strong> of the way along the hash space. Grey dots are
           keys you tried before.
         </p>
       </div>
@@ -179,8 +179,8 @@ export const ModuloLab: React.FC<{ resizable?: boolean }> = ({ resizable = false
 
   return (
     <div className="space-y-5">
-      <div className="rounded-xl bg-slate-50 dark:bg-white/[0.04] p-4 space-y-3">
-        <p className="text-sm font-medium text-slate-700 dark:text-slate-200">
+      <div className="rounded-xl bg-[var(--surface-muted)] dark:bg-[var(--surface-muted)] p-4 space-y-3">
+        <p className="text-sm font-medium text-[var(--text-muted)] dark:text-[var(--text-muted)]">
           server = <span className="font-mono">hash(key) % {N}</span>
         </p>
         {servers.map((s) => {
@@ -188,7 +188,7 @@ export const ModuloLab: React.FC<{ resizable?: boolean }> = ({ resizable = false
           return (
             <div key={s.id} className="flex gap-3">
               <div className="w-20 shrink-0 pt-1">
-                <p className="flex items-center gap-1.5 text-sm font-medium text-slate-800 dark:text-slate-100">
+                <p className="flex items-center gap-1.5 text-sm font-medium text-[var(--text-base)] dark:text-[var(--text-base)]">
                   <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: s.color }} />
                   {s.name}
                 </p>
@@ -203,7 +203,7 @@ export const ModuloLab: React.FC<{ resizable?: boolean }> = ({ resizable = false
                     className={`h-7 min-w-[28px] rounded-md px-1 text-xs font-medium tabular-nums transition-colors ${
                       k.isMoved
                         ? 'bg-rose-100 text-rose-800 dark:bg-rose-400/15 dark:text-rose-300'
-                        : 'bg-white text-slate-700 ring-1 ring-slate-200 dark:bg-white/[0.06] dark:text-slate-200 dark:ring-white/10'
+                        : 'bg-[var(--surface)] text-[var(--text-muted)] ring-1 ring-[var(--header-border)] dark:bg-[var(--surface-muted)] dark:text-[var(--text-muted)] dark:ring-[var(--header-border)]'
                     } ${k.id === selectedId ? 'outline outline-2 outline-indigo-500' : ''}`}
                   >
                     {keyNum(k)}
@@ -279,7 +279,7 @@ export const RingIntroLab: React.FC = () => {
           { value: 'ring', label: 'As a ring' },
         ]}
       />
-      <div className="rounded-xl bg-slate-50 dark:bg-white/[0.04] p-4">
+      <div className="rounded-xl bg-[var(--surface-muted)] dark:bg-[var(--surface-muted)] p-4">
         {view === 'line' ? (
           <svg viewBox="0 0 600 130" className="w-full h-auto" role="img" aria-label="The hash space as a line from 0 to 2^32 minus 1, with 4 servers and 10 keys placed at their hash values.">
             <line x1="30" y1="70" x2="570" y2="70" strokeWidth="4" strokeLinecap="round" className="stroke-slate-300 dark:stroke-white/15" />
@@ -306,7 +306,7 @@ export const RingIntroLab: React.FC = () => {
           <HashRingCanvas servers={servers} keys={INTRO_KEYS} size={340} interactive={false} />
         )}
       </div>
-      <p className="text-sm text-slate-600 dark:text-slate-300">
+      <p className="text-sm text-[var(--text-muted)] dark:text-[var(--text-muted)]">
         Coloured dots are servers, hashed by name (<span className="font-mono">hash("Server_0")</span>). Small indigo dots are keys.{' '}
         {view === 'ring' ? 'Every position is the same as on the line; only the shape changed.' : 'Nothing is to the right of 2³² − 1.'}
       </p>
@@ -540,12 +540,12 @@ const ShareBars: React.FC<{ servers: PhysicalServer[]; shares: Record<string, nu
         const share = shares[s.id] ?? 0;
         return (
           <div key={s.id} className="flex items-center gap-3 text-sm">
-            <span className="w-20 shrink-0 text-slate-700 dark:text-slate-200">{s.name}</span>
-            <div className="relative h-3 flex-1 rounded-full bg-slate-200 dark:bg-white/10">
+            <span className="w-20 shrink-0 text-[var(--text-muted)] dark:text-[var(--text-muted)]">{s.name}</span>
+            <div className="relative h-3 flex-1 rounded-full bg-slate-200 dark:bg-[var(--surface-muted)]">
               <div className="h-full rounded-full transition-all duration-300" style={{ width: `${(share / scale) * 100}%`, backgroundColor: s.color }} />
               <span className="absolute -top-1 -bottom-1 w-0 border-l-2 border-dashed border-slate-500 dark:border-slate-300" style={{ left: `${(fair / scale) * 100}%` }} />
             </div>
-            <span className="w-14 shrink-0 text-right tabular-nums text-slate-900 dark:text-white">{share.toFixed(1)}%</span>
+            <span className="w-14 shrink-0 text-right tabular-nums text-[var(--text-base)] dark:text-[var(--text-base)]">{share.toFixed(1)}%</span>
           </div>
         );
       })}
