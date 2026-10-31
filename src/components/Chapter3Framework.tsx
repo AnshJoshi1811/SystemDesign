@@ -20,7 +20,7 @@ const FourSteps: React.FC = () => (
       ['Wrap up', 'Recap, bottlenecks, failures, next scale.'],
     ].map(([t, d], i) => (
       <li key={t} className="rounded-xl bg-[var(--surface-muted)] dark:bg-[var(--surface-muted)] p-3">
-        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--accent)] text-xs font-semibold text-white">{i + 1}</span>
+        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--accent)] text-xs font-semibold text-[var(--accent-fg)]">{i + 1}</span>
         <p className="mt-2 text-sm font-medium text-[var(--text-base)] dark:text-[var(--text-base)]">{t}</p>
         <p className="mt-0.5 text-sm text-[var(--text-muted)] dark:text-[var(--text-muted)]">{d}</p>
       </li>
