@@ -359,7 +359,7 @@ export const Chapter1Workspace: React.FC = () => {
               aria-current={tab === id ? 'page' : undefined}
               className={`flex shrink-0 items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium transition-colors ${
                 tab === id
-                  ? 'bg-[var(--accent)] text-white shadow-sm'
+                  ? 'bg-[var(--accent)] text-[var(--accent-fg)] shadow-sm'
                   : 'text-[var(--text-muted)] hover:bg-[var(--surface-muted)] ring-1 ring-[var(--header-border)]'
               }`}
             >
@@ -910,7 +910,7 @@ const Inspector: React.FC<{
             <Wrench className="h-4 w-4" /> Recover this component
           </button>
         ) : (
-          <button onClick={onCrash} className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-[var(--accent)] px-3 py-2.5 text-sm font-medium text-white hover:bg-[var(--accent-hover)]">
+          <button onClick={onCrash} className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-[var(--accent)] px-3 py-2.5 text-sm font-medium text-[var(--accent-fg)] hover:bg-[var(--accent-hover)]">
             <Zap className="h-4 w-4" /> Crash this component
           </button>
         )}
@@ -958,7 +958,7 @@ const TechStack: React.FC<{ arch: ReturnType<typeof buildArch>; selected: string
                         title={t.note}
                         className={`rounded-md px-2 py-1 text-xs ${
                           k === 0
-                            ? 'bg-[var(--accent)] font-medium text-white'
+                            ? 'bg-[var(--accent)] font-medium text-[var(--accent-fg)]'
                             : 'bg-[var(--surface-muted)] text-[var(--text-muted)] dark:bg-[var(--surface-muted)] dark:text-[var(--text-muted)]'
                         }`}
                       >
@@ -1012,10 +1012,10 @@ const FLOW_STEPS: { id: FlowStep; title: string; desc: string; icon: React.Compo
 
 const FLOW_TONE: Record<string, { box: string; icon: string; bar: string }> = {
   emerald: { box: 'ring-emerald-200 dark:ring-emerald-400/30', icon: 'bg-emerald-500 text-white', bar: 'bg-emerald-500' },
-  indigo: { box: 'ring-[var(--header-border)] dark:ring-[var(--header-border)]', icon: 'bg-[var(--accent)] text-white', bar: 'bg-[var(--accent)]' },
+  indigo: { box: 'ring-[var(--header-border)] dark:ring-[var(--header-border)]', icon: 'bg-[var(--accent)] text-[var(--accent-fg)]', bar: 'bg-[var(--accent)]' },
   amber: { box: 'ring-amber-200 dark:ring-amber-400/30', icon: 'bg-amber-500 text-white', bar: 'bg-amber-500' },
   violet: { box: 'ring-violet-200 dark:ring-violet-400/30', icon: 'bg-violet-500 text-white', bar: 'bg-violet-500' },
-  slate: { box: 'ring-[var(--header-border)] dark:ring-[var(--header-border)]', icon: 'bg-[var(--surface-muted)]0 text-white', bar: 'bg-[var(--surface-muted)]0' },
+  slate: { box: 'ring-[var(--header-border)] dark:ring-[var(--header-border)]', icon: 'bg-[var(--surface-muted)] text-[var(--text-subtle)]', bar: 'bg-[var(--surface-muted)]' },
 };
 
 const FlowBar: React.FC<{ flow: Flow; hasFix: boolean; isFinal: boolean; onStep: (s: FlowStep) => void }> = ({ flow, hasFix: fixable, isFinal, onStep }) => {
