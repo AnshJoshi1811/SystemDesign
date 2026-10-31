@@ -50,7 +50,12 @@ export const crc32Hex = (text: string): string => {
 };
 
 // A real (tiny) Bloom filter: 64 bits, 3 hash functions. It can say "definitely absent" or "maybe present".
-export const bloomIndexes = (key: string) => Array.from({ length: BLOOM_HASHES }, (_, i) => murmur3Hash(key, i + 1) % BLOOM_BITS);
+// BLOOM_HASHES is 3; enumerate directly to avoid Array.from allocation on every lookup.
+export const bloomIndexes = (key: string): [number, number, number] => [
+  murmur3Hash(key, 1) % BLOOM_BITS,
+  murmur3Hash(key, 2) % BLOOM_BITS,
+  murmur3Hash(key, 3) % BLOOM_BITS,
+];
 
 export const buildBloom = (keys: string[]) => {
   const bits = new Array<boolean>(BLOOM_BITS).fill(false);
