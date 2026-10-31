@@ -46,17 +46,17 @@ const NodeCard: React.FC<{ node: ArchNode; state: NodeState; selected: boolean; 
       aria-label={`${node.label}: ${down ? 'down' : state.status}`}
       className={`relative flex w-[176px] items-center gap-2.5 rounded-xl px-3 py-2.5 text-left ring-1 transition-all ${
         down ? 'bg-rose-50/60 ring-rose-300 dark:bg-rose-500/[0.08] dark:ring-rose-500/40' : tint.box
-      } ${selected ? 'ring-2 !ring-indigo-500 shadow-md' : 'hover:shadow-sm'}`}
+      } ${selected ? 'ring-2 !ring-[var(--accent)] shadow-md' : 'hover:shadow-sm'}`}
     >
-      <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/80 dark:bg-white/[0.06] ${down ? 'text-rose-500' : tint.icon}`}>
+      <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--surface-muted)] ${down ? 'text-rose-500' : tint.icon}`}>
         <Icon className="h-5 w-5" />
       </span>
       <span className="min-w-0 flex-1">
         <span className="flex items-center gap-1.5">
           <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${statusDot(state.status)}`} />
-          <span className={`truncate text-[13px] font-semibold ${down ? 'text-rose-700 line-through dark:text-rose-300' : 'text-slate-900 dark:text-white'}`}>{node.label}</span>
+          <span className={`truncate text-[13px] font-semibold ${down ? 'text-rose-700 line-through dark:text-rose-300' : 'text-[var(--text-base)]'}`}>{node.label}</span>
         </span>
-        <span className="block truncate text-[11px] text-slate-500 dark:text-slate-400">{state.role ?? node.sub}</span>
+        <span className="block truncate text-[11px] text-[var(--text-subtle)]">{state.role ?? node.sub}</span>
       </span>
       {state.badge && (
         <span
@@ -65,7 +65,7 @@ const NodeCard: React.FC<{ node: ArchNode; state: NodeState; selected: boolean; 
               ? 'bg-rose-600 text-white ring-rose-600'
               : state.status === 'busy'
               ? 'bg-amber-100 text-amber-800 ring-amber-200 dark:bg-amber-400/20 dark:text-amber-200 dark:ring-amber-400/30'
-              : 'bg-white text-slate-700 ring-slate-200 dark:bg-[#1a1a1d] dark:text-slate-200 dark:ring-white/10'
+              : 'bg-[var(--surface)] text-[var(--text-muted)] ring-[var(--header-border)]'
           }`}
         >
           {state.badge}
@@ -166,7 +166,7 @@ export const Diagram: React.FC<{
       ? 'stroke-orange-400'
       : l.kind === 'static'
       ? 'stroke-sky-400'
-      : 'stroke-slate-400 dark:stroke-slate-500';
+      : 'stroke-[var(--text-subtle)]';
 
   const row = (nodes: ArchNode[], cls = 'justify-center') =>
     nodes.length > 0 && (
@@ -212,8 +212,8 @@ export const Diagram: React.FC<{
             {arch.f.multiDc ? (
               <div className="relative z-10 flex justify-center gap-10">
                 {webGroups.map((g, i) => (
-                  <div key={i} className="rounded-2xl border border-dashed border-slate-300 dark:border-white/15 p-3 pt-6 relative">
-                    <span className="absolute left-3 top-1.5 text-[11px] font-medium text-slate-500 dark:text-slate-400">{i === 0 ? 'US-East' : 'US-West'}</span>
+                  <div key={i} className="rounded-2xl border border-dashed border-[var(--header-border)] p-3 pt-6 relative">
+                    <span className="absolute left-3 top-1.5 text-[11px] font-medium text-[var(--text-subtle)]">{i === 0 ? 'US-East' : 'US-West'}</span>
                     {row(g)}
                   </div>
                 ))}
@@ -234,8 +234,8 @@ export const Diagram: React.FC<{
       </div>
 
       {/* Legend */}
-      <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-1 text-xs text-slate-500 dark:text-slate-400">
-        <LegendItem cls="stroke-slate-400" label="Request flow" />
+      <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-1 text-xs text-[var(--text-subtle)]">
+        <LegendItem cls="stroke-[var(--text-subtle)]" label="Request flow" />
         {arch.f.replicas && <LegendItem cls="stroke-emerald-500" dashed label="Replication (async)" />}
         {arch.f.queue && <LegendItem cls="stroke-orange-400" dashed label="Queued jobs" />}
         {arch.f.cdn && <LegendItem cls="stroke-sky-400" dashed label="Static files" />}
@@ -243,7 +243,7 @@ export const Diagram: React.FC<{
       </div>
 
       {/* Zoom */}
-      <div className="absolute right-2 top-2 flex flex-col overflow-hidden rounded-lg bg-white ring-1 ring-slate-200 shadow-sm dark:bg-[#18181b] dark:ring-white/10">
+      <div className="absolute right-2 top-2 flex flex-col overflow-hidden rounded-lg bg-[var(--surface)] ring-1 ring-[var(--header-border)] shadow-sm">
         <ZoomBtn label="Zoom in" onClick={() => setZoom((z) => Math.min(1.6, z + 0.15))}>
           <Plus className="h-4 w-4" />
         </ZoomBtn>
@@ -259,7 +259,7 @@ export const Diagram: React.FC<{
 };
 
 const ZoomBtn: React.FC<{ label: string; onClick: () => void; children: React.ReactNode }> = ({ label, onClick, children }) => (
-  <button onClick={onClick} title={label} aria-label={label} className="flex h-8 w-8 items-center justify-center text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-white/[0.06]">
+  <button onClick={onClick} title={label} aria-label={label} className="flex h-8 w-8 items-center justify-center text-[var(--text-muted)] hover:bg-[var(--surface-muted)]">
     {children}
   </button>
 );
