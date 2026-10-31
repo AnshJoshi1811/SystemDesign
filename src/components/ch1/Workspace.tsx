@@ -19,16 +19,71 @@ import {
   X,
   PanelLeftClose,
   PanelLeftOpen,
+  ExternalLink,
 } from 'lucide-react';
 import { usePersistentState } from '../../lib/usePersistentState';
 import { useLang } from '../../lib/i18n';
 import { WhatChanged, Quiz } from '../learn/LearningKit';
 import { Callout, Segmented } from '../lesson/blocks';
 import { useNav } from '../lesson/ChapterPlayer';
+import { chapterById } from '../../chapters';
 import { STAGES, StageContent } from './content';
 import { FINAL_STAGE, STAGE_META, COMPONENT_INFO, TECH, KIND_NAME, Experiment } from './meta';
 import { buildArch, simulate, Inputs, Failures, CAP, FAILOVER_MS, ArchNode, NodeState, Kind } from './model';
 import { Diagram, ICON as KIND_ICON } from './Diagram';
+
+/** "Read on Medium" link shown inside Concepts, everywhere it renders. */
+const MediumLink: React.FC<{ url: string; lang: 'en' | 'hi' }> = ({ url, lang }) => (
+  <a
+    href={url}
+    target="_blank"
+    rel="noopener noreferrer"
+    className="group/medium flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-medium transition-all"
+    style={{ background: 'var(--surface-muted)', border: '1px solid var(--header-border)', color: 'var(--text-base)' }}
+    onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = 'var(--shadow-float-sm)'; }}
+    onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--header-border)'; e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none'; }}
+  >
+    <BookOpen className="h-4 w-4 shrink-0" style={{ color: 'var(--text-subtle)' }} />
+    <span className="flex-1">{lang === 'hi' ? 'Medium pe poora article padho' : 'Read the full article on Medium'}</span>
+    <ExternalLink className="h-3.5 w-3.5 shrink-0 transition-transform group-hover/medium:translate-x-0.5 group-hover/medium:-translate-y-0.5" style={{ color: 'var(--text-subtle)' }} />
+  </a>
+);
+
+/** Vertical edge tab that expands horizontally on hover to reveal its label — modern "reveal" micro-interaction. */
+const ReopenTab: React.FC<{ onClick: () => void; label: string }> = ({ onClick, label }) => {
+  const [hover, setHover] = useState(false);
+  return (
+    <button
+      onClick={onClick}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      className="absolute z-30 flex items-center gap-2 overflow-hidden rounded-xl transition-all duration-200 ease-out"
+      style={{
+        left: 24,
+        top: '50%',
+        transform: hover ? 'translateY(-50%) translateX(2px)' : 'translateY(-50%)',
+        padding: hover ? '10px 14px' : '12px 9px',
+        background: 'var(--surface)',
+        border: '1px solid var(--header-border)',
+        boxShadow: hover ? 'var(--shadow-float)' : 'var(--shadow-float-sm)',
+        color: hover ? 'var(--text-base)' : 'var(--text-subtle)',
+      }}
+      title={label}
+      aria-label={label}
+    >
+      <BookOpen className="h-4 w-4 shrink-0" />
+      <span
+        className="whitespace-nowrap text-xs font-medium transition-all duration-200 ease-out"
+        style={{
+          maxWidth: hover ? 160 : 0,
+          opacity: hover ? 1 : 0,
+        }}
+      >
+        {label}
+      </span>
+    </button>
+  );
+};
 
 /** Small static icon badge shown next to a panel's title (component kind, or a book for Concepts). */
 const KindIconBadge: React.FC<{ icon: React.ComponentType<{ className?: string }> }> = ({ icon: Icon }) => (
@@ -98,6 +153,7 @@ export const Chapter1Workspace: React.FC = () => {
   const i = Math.min(Math.max(0, stage), N - 1);
   const content = ALL_STAGES[i];
   const meta = STAGE_META[i];
+  const chapterMeta = chapterById('chapter1');
   const after = hasFix(i) ? afterMap[i] ?? true : true; // open on this stage's own design
   const level = levelFor(i, after);
   const inputs: Inputs = inputsMap[i] ?? { ...meta.defaults, cacheHit: 80 };
@@ -410,6 +466,7 @@ export const Chapter1Workspace: React.FC = () => {
               <div className="lesson-prose"><p>{content.why}</p><p><strong>Weak spot: </strong>{content.weakSpot}</p><p><strong>{i === N - 1 ? 'Next: ' : 'The fix: '}</strong>{content.fix}</p></div>
               {i > 0 && <WhatChanged before={content.before} after={content.after} reason={content.reason} />}
               <Callout tone="idea" title="Key takeaway">{content.takeaway}</Callout>
+              {chapterMeta?.mediumUrl && <MediumLink url={chapterMeta.mediumUrl} lang={lang} />}
               <div id="ch1-check"><Quiz key={i} persistKey={`chapter1:quiz:stage${i}`} questions={content.quiz} title="Quick check" onProgress={(s, t) => s === t && mark('check')} /></div>
             </section>
           )}
@@ -450,6 +507,7 @@ export const Chapter1Workspace: React.FC = () => {
                   </div>
                   {i > 0 && <WhatChanged before={content.before} after={content.after} reason={content.reason} />}
                   <Callout tone="idea" title={lang === 'hi' ? 'Key baat' : 'Key takeaway'}>{content.takeaway}</Callout>
+                  {chapterMeta?.mediumUrl && <MediumLink url={chapterMeta.mediumUrl} lang={lang} />}
                   <div id="ch1-check">
                     <Quiz key={i} persistKey={`chapter1:quiz:stage${i}`} questions={content.quiz} title={lang === 'hi' ? 'Quick test' : 'Quick check'} onProgress={(s, t) => s === t && mark('check')} />
                   </div>
@@ -555,7 +613,7 @@ export const Chapter1Workspace: React.FC = () => {
                 <div className="flex flex-wrap items-center gap-1.5 pointer-events-auto rounded-xl px-2 py-1.5 backdrop-blur" style={{ background: 'var(--surface)', border: '1px solid var(--header-border)', boxShadow: 'var(--shadow-float-sm)' }}>
                   {meta.experiments.map((ex) => (
                     <button key={ex.id} onClick={() => runExperiment(ex)} title={ex.description}
-                      className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-rose-700 ring-1 ring-rose-200 hover:bg-rose-50 dark:text-rose-300 dark:ring-rose-400/30 dark:hover:bg-rose-400/10">
+                      className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-rose-700 ring-1 ring-rose-200 transition-all duration-150 hover:bg-rose-50 hover:-translate-y-0.5 hover:shadow-sm dark:text-rose-300 dark:ring-rose-400/30 dark:hover:bg-rose-400/10">
                       <Flame className="h-3 w-3" /> {ex.label}
                     </button>
                   ))}
@@ -564,7 +622,7 @@ export const Chapter1Workspace: React.FC = () => {
                       options={[{ value: 'before', label: meta.toggle?.[0] ?? 'Before' }, { value: 'after', label: meta.toggle?.[1] ?? 'After' }]}
                       onChange={(v) => setAfter(v === 'after')} />
                   )}
-                  <button onClick={clearFailures} className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs ring-1 ring-[var(--header-border)] hover:bg-[var(--surface-muted)]" style={{ color: 'var(--text-muted)' }}>
+                  <button onClick={clearFailures} className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs ring-1 ring-[var(--header-border)] transition-all duration-150 hover:bg-[var(--surface-muted)] hover:-translate-y-0.5 hover:shadow-sm" style={{ color: 'var(--text-muted)' }}>
                     <RotateCcw className="h-3 w-3" /> Reset
                   </button>
                 </div>
@@ -633,6 +691,7 @@ export const Chapter1Workspace: React.FC = () => {
                         </div>
                         {i > 0 && <WhatChanged before={content.before} after={content.after} reason={content.reason} />}
                         <Callout tone="idea" title={lang === 'hi' ? 'Key baat' : 'Key takeaway'}>{content.takeaway}</Callout>
+                        {chapterMeta?.mediumUrl && <MediumLink url={chapterMeta.mediumUrl} lang={lang} />}
                         <div id="ch1-check">
                           <Quiz key={i} persistKey={`chapter1:quiz:stage${i}`} questions={content.quiz} title={lang === 'hi' ? 'Quick test' : 'Quick check'} onProgress={(s, t) => s === t && mark('check')} />
                         </div>
@@ -644,34 +703,18 @@ export const Chapter1Workspace: React.FC = () => {
 
               {/* ─ Reopen tab — shown only when Concepts is hidden and nothing is selected ─ */}
               {conceptsHidden && !selNode && (
-                <button
-                  onClick={() => setConceptsHidden(false)}
-                  className="absolute z-30 flex flex-col items-center justify-center gap-1.5 rounded-xl px-1.5 py-3 transition-colors"
-                  style={{
-                    left: 24,
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    width: 34,
-                    background: 'var(--surface)',
-                    border: '1px solid var(--header-border)',
-                    boxShadow: 'var(--shadow-float-sm)',
-                    color: 'var(--text-subtle)',
-                  }}
-                  title={lang === 'hi' ? 'Concepts dikhao' : 'Show concepts'}
-                  aria-label="Show concepts"
-                >
-                  <BookOpen className="h-4 w-4" />
-                  <PanelLeftOpen className="h-3.5 w-3.5" />
-                </button>
+                <ReopenTab onClick={() => setConceptsHidden(false)} label={lang === 'hi' ? 'Concepts dikhao' : 'Show concepts'} />
               )}
 
-              {/* ─ BOTTOM: Simulation controls floating ─ */}
+              {/* ─ BOTTOM, CENTERED: Simulation controls floating ─ */}
               <div
-                className="absolute z-20 rounded-xl overflow-hidden"
+                className="absolute z-20 rounded-xl overflow-hidden transition-shadow duration-150 hover:shadow-lg"
                 style={{
                   bottom: 24,
-                  left: 440,
-                  maxWidth: 'calc(92vw - 480px)',
+                  left: '58%',
+                  transform: 'translateX(-50%)',
+                  width: 'max-content',
+                  maxWidth: 'min(560px, calc(92vw - 480px))',
                   background: 'var(--surface)',
                   border: '1px solid var(--header-border)',
                   boxShadow: 'var(--shadow-float-sm)',
