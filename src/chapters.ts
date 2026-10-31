@@ -32,6 +32,7 @@ export const CHAPTERS: ChapterMeta[] = [
     title: 'Back-of-the-Envelope Estimation',
     short: 'Estimation',
     blurb: 'Estimate traffic, storage and servers in your head, fast.',
+    mediumUrl: 'https://d9nich.medium.com/back-of-the-envelope-estimation-simplifying-system-design-with-quick-approximations-a3a9e96da4af',
     techLogos: [
       { name: 'Python', icon: 'python', color: '#3776AB' },
     ],
