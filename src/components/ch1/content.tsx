@@ -6,6 +6,8 @@ export interface StageContent {
   goal: React.ReactNode;
   /** Optional Hinglish (Hindi+English) one-liner for quick context. */
   hinglish?: React.ReactNode;
+  /** Optional real Medium article for deeper reading on this stage's specific topic. */
+  mediumUrl?: string;
   why: React.ReactNode;
   before: React.ReactNode;
   after: React.ReactNode;
@@ -20,6 +22,7 @@ export const STAGES: StageContent[] = [
   {
     title: 'Single server',
     hinglish: 'Ek hi server pe sab kuch — web app bhi, database bhi. Simple hai but agar ye crash hua toh poora site down. Yahi sikhenge is stage mein.',
+    mediumUrl: 'https://medium.com/nerd-for-tech/client-server-architecture-explained-with-examples-diagrams-and-real-world-applications-407e9e04e2d1',
     goal: 'Follow one request end to end: DNS lookup, then HTTP to your only server, then a response.',
     why: 'Everything (web app, database) runs on one machine. It is the simplest setup that works.',
     before: 'Nothing deployed.',
@@ -56,6 +59,7 @@ export const STAGES: StageContent[] = [
   {
     title: 'Separate web and database servers',
     hinglish: 'Web app aur database ko alag-alag servers pe rakh do. Isse dono independently scale ho sakte hain aur ek ka crash doosre ko affect nahi karega.',
+    mediumUrl: 'https://medium.com/@letsCodeDevelopers/sql-vs-nosql-choosing-the-right-database-for-your-next-big-project-40d8f141b71e',
     goal: 'See why splitting the web tier from the data tier is the first scaling step.',
     why: 'The web server handles web and mobile traffic; a separate server runs the database.',
     before: 'Web app and database on one machine, fighting over CPU and memory.',
@@ -98,6 +102,7 @@ export const STAGES: StageContent[] = [
   {
     title: 'Load balancer and multiple web servers',
     hinglish: 'Jab ek web server kam pade, toh traffic ko multiple servers mein baant do. Load balancer ek traffic cop ki tarah kaam karta hai.',
+    mediumUrl: 'https://medium.com/javarevisited/load-balancing-algorithms-that-can-be-used-in-java-applications-6f605d1bf19',
     goal: 'Understand how a load balancer removes the web tier’s single point of failure and lets you add capacity.',
     why: 'Users now connect to the load balancer’s public IP. Web servers sit behind it on private IPs.',
     before: 'Users hit one web server directly. Crash it and the site is down.',
@@ -133,6 +138,7 @@ export const STAGES: StageContent[] = [
   {
     title: 'Database replication',
     hinglish: 'Ek master database writes karta hai, aur multiple replicas reads handle karte hain. Agar master gira toh replica promote ho jaata hai.',
+    mediumUrl: 'https://medium.com/gitconnected/zero-to-million-users-part-4-database-replication-186d19c04bb6',
     goal: 'See how a master/replica setup splits reads from writes and survives a database failure.',
     why: 'Most apps read far more than they write, so you usually run more replicas than masters.',
     before: 'One database handles every read and every write, and has no backup.',
@@ -174,6 +180,7 @@ export const STAGES: StageContent[] = [
   {
     title: 'Cache tier',
     hinglish: 'Frequently read data ko RAM mein store karo — database hit karne ki zaroorat hi nahi. Cache = fast memory, database = slow disk.',
+    mediumUrl: 'https://medium.com/@alxkm/caching-strategies-every-developer-should-learn-early-36c277b4a7d8',
     goal: 'Learn how a read-through cache takes load off the database and speeds up responses.',
     why: 'A web server checks the cache first. On a miss it queries the database, stores the result in the cache, and returns it.',
     before: 'Every read goes to a database replica, even for the same popular rows.',
@@ -215,6 +222,7 @@ export const STAGES: StageContent[] = [
   {
     title: 'Content delivery network (CDN)',
     hinglish: 'Static files (images, CSS, JS) ko user ke paas wale server se serve karo. Jitna paas server, utna fast load.',
+    mediumUrl: 'https://medium.com/@himashawije/how-does-the-content-delivery-network-cdn-work-5338c218006a',
     goal: 'See what a CDN speeds up (static files) and what it does not (your API).',
     why: 'A CDN is a set of servers spread around the world that cache static content close to users.',
     before: 'Web servers send images, JS and CSS themselves, from one location.',
@@ -251,6 +259,7 @@ export const STAGES: StageContent[] = [
   {
     title: 'Stateless web tier',
     hinglish: 'Session data web server ki memory mein mat rakho — shared storage mein rakh. Phir koi bhi server koi bhi request handle kar sakta hai.',
+    mediumUrl: 'https://medium.com/@ajin.sunny/system-design-architecture-stateful-vs-stateless-62ed0ddb9f2b',
     goal: 'See why keeping state out of web servers makes adding, removing and replacing them painless.',
     why: 'Web servers fetch session data from a shared store on each request instead of keeping it in memory.',
     before: 'Sessions live in each web server’s memory. Sticky sessions pin users to one server; losing that server logs them out.',
@@ -291,6 +300,7 @@ export const STAGES: StageContent[] = [
   {
     title: 'Multiple data centers',
     hinglish: 'Traffic ko geographically alag datacenters mein split karo. US users ko US server, Asia users ko Asia server. Latency down, availability up.',
+    mediumUrl: 'https://medium.com/@josephakayesi/scale-from-zero-to-millions-of-users-3e91daa771d9',
     goal: 'See how geoDNS routes users to the nearest data center and fails over when one goes offline.',
     why: 'In normal operation traffic is split between US-East and US-West. Each data center has the full stack.',
     before: 'One data center. Distant users are slow, and an outage there is a total outage.',
@@ -326,6 +336,7 @@ export const STAGES: StageContent[] = [
   {
     title: 'Message queue, logging, metrics and automation',
     hinglish: 'Slow tasks (email bhejna, image process karna) queue mein daalo aur background workers se karwao. Main server fast rehta hai.',
+    mediumUrl: 'https://medium.com/@ramekris/message-queues-rabbitmq-vs-kafka-335076a5ff88',
     goal: 'Learn how a queue decouples slow work from user requests, and why a large system needs monitoring and automation.',
     why: 'Web servers publish photo jobs to a queue and reply right away. Workers pull jobs and process them in the background.',
     before: 'Photo jobs run inside the web request: users wait about 2 s and web capacity is tied up. Logs are scattered across servers.',
@@ -367,6 +378,7 @@ export const STAGES: StageContent[] = [
   {
     title: 'Database sharding',
     hinglish: 'Ek database mein itna data nahi samata? Data ko pieces mein baant ke multiple databases mein daalo — har piece ek "shard" kehlata hai.',
+    mediumUrl: 'https://medium.com/@jeeyoungk/how-sharding-works-b4dec46b3f6',
     goal: 'See how sharding spreads writes across databases, and the new problems it brings.',
     why: 'Each shard has the same schema but holds different users. A hash of the sharding key picks the shard.',
     before: 'One master takes every write. Scaling it up has hardware limits, costs a lot and is still a SPOF.',
