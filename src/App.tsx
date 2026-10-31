@@ -32,7 +32,8 @@ export default function App() {
   const view: View = isView(storedView) ? storedView : 'home';
   const [lastChapter, setLastChapter] = usePersistentState<ModuleType | null>('app:chapter', null);
   const [resetCounter, setResetCounter] = useState(0);
-  const [isDarkMode, setIsDarkMode] = usePersistentState<boolean>('app:dark', false);
+  // Dark is the default — light is the opt-in.
+  const [isDarkMode, setIsDarkMode] = usePersistentState<boolean>('app:dark', true);
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', isDarkMode);
