@@ -10,7 +10,7 @@ interface Chapter8UrlShortenerProps {
 }
 
 const tableCls = 'w-full text-sm';
-const thCls = 'py-2 px-1 text-left font-medium text-slate-500 dark:text-slate-400';
+const thCls = 'py-2 px-1 text-left font-medium text-[var(--text-subtle)] dark:text-[var(--text-subtle)]';
 const tdCls = 'py-2 px-1 align-top';
 
 const LESSONS: Lesson[] = [
@@ -239,7 +239,7 @@ const LESSONS: Lesson[] = [
                   <th className={thCls}>Problem</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-200 dark:divide-white/10">
+              <tbody className="divide-y divide-[var(--header-border)] dark:divide-[var(--header-border)]">
                 <tr>
                   <td className={tdCls}>Base62</td>
                   <td className={`${tdCls} font-mono`}>3.5 trillion</td>
@@ -386,7 +386,7 @@ const LESSONS: Lesson[] = [
                   <th className={thCls}>Base62 conversion</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-200 dark:divide-white/10">
+              <tbody className="divide-y divide-[var(--header-border)] dark:divide-[var(--header-border)]">
                 {[
                   ['Fixed code length', 'Length grows with the ID'],
                   ['No unique ID generator needed', 'Depends on a unique ID generator'],
