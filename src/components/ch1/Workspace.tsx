@@ -815,9 +815,9 @@ export const Chapter1Workspace: React.FC = () => {
                 </div>
               )}
 
-              {/* ─ Floating failure callout at top center ─ */}
+              {/* ─ Floating failure callout — anchored top-LEFT, never over the diagram's center where nodes sit ─ */}
               {failing && (
-                <div className="absolute top-16 z-25 pointer-events-auto max-w-md" style={{ left: 86, right: rightPanelOpen ? 440 : 24, marginInline: 'auto', width: 'fit-content' }}>
+                <div className="absolute z-30 pointer-events-auto" style={{ top: 64, left: 86, width: 320 }}>
                   <Callout tone={health === 'ok' ? 'success' : health === 'outage' ? 'danger' : 'warning'} title={health === 'ok' ? (lang === 'hi' ? 'Architecture ne failure handle kiya' : 'Architecture absorbed the failure') : sim.headline}>
                     <FailureSummary sim={sim} after={after} stage={i} withLabel={meta.toggle?.[1]} withoutLabel={meta.toggle?.[0]} />
                   </Callout>
