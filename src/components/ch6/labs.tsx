@@ -253,7 +253,7 @@ const KeyPicker: React.FC<{ keys: string[]; value: string; onChange: (k: string)
         aria-pressed={k === value}
         className={`rounded-lg px-2.5 py-1 text-xs font-mono ring-1 transition-colors ${
           k === value
-            ? 'bg-[var(--accent)] text-white ring-indigo-600'
+            ? 'bg-[var(--accent)] text-[var(--accent-fg)] ring-indigo-600'
             : 'bg-[var(--surface)] text-[var(--text-muted)] ring-[var(--header-border)] hover:ring-[var(--header-border)] dark:bg-[var(--surface)] dark:text-[var(--text-muted)] dark:ring-[var(--header-border)]'
         }`}
       >
