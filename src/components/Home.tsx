@@ -1,12 +1,14 @@
 import React from 'react';
 import { ArrowRight, Check, BookOpen, ExternalLink, Lock } from 'lucide-react';
 import { HowToLearn } from './HowToLearn';
+import { useLang } from '../lib/i18n';
 import { CHAPTERS, readProgress } from '../chapters';
 import { useNav } from './lesson/ChapterPlayer';
 import { ModuleType } from '../types';
 
 export const Home: React.FC<{ lastChapter: ModuleType | null }> = ({ lastChapter }) => {
   const { go } = useNav();
+  const { lang } = useLang();
   const resume = lastChapter ? CHAPTERS.find((c) => c.id === lastChapter) : undefined;
   const resumeProgress = resume ? readProgress(resume.id) : null;
 
@@ -25,20 +27,25 @@ export const Home: React.FC<{ lastChapter: ModuleType | null }> = ({ lastChapter
           className="text-[11px] font-semibold tracking-[0.15em] uppercase mb-4"
           style={{ color: 'var(--text-subtle)' }}
         >
-          System Design Interview · Chapters 1–8
+          {lang === 'hi' ? 'System Design Interview · Chapters 1–8' : 'System Design Interview · Chapters 1–8'}
         </p>
         <h1
           className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight leading-[1.15] max-w-2xl"
           style={{ color: 'var(--text-base)' }}
         >
-          Learn system design by<br className="hidden sm:block" /> doing, not reading.
+          {lang === 'hi' ? (
+            <>System design seekho<br className="hidden sm:block" /> karke, padhke nahi.</>
+          ) : (
+            <>Learn system design by<br className="hidden sm:block" /> doing, not reading.</>
+          )}
         </h1>
         <p
           className="mt-4 text-base sm:text-lg leading-relaxed max-w-xl"
           style={{ color: 'var(--text-muted)' }}
         >
-          Interactive labs covering every chapter of Alex Xu's System Design Interview book.
-          Read one concept, run it in a simulation, answer a question, move on.
+          {lang === 'hi'
+            ? 'Alex Xu ki System Design Interview book ke har chapter pe interactive labs. Ek concept padho, simulation chalao, ek question ka jawab do, aage badho.'
+            : "Interactive labs covering every chapter of Alex Xu's System Design Interview book. Read one concept, run it in a simulation, answer a question, move on."}
         </p>
 
         <div className="mt-7 flex flex-wrap items-center gap-3">
@@ -46,10 +53,12 @@ export const Home: React.FC<{ lastChapter: ModuleType | null }> = ({ lastChapter
             onClick={() => go(resume ? resume.id : 'chapter1')}
             className="btn-primary"
           >
-            {resume ? `Continue · Ch ${resume.num}` : 'Start Chapter 1'}
+            {resume
+              ? (lang === 'hi' ? `Aage badho · Ch ${resume.num}` : `Continue · Ch ${resume.num}`)
+              : (lang === 'hi' ? 'Chapter 1 shuru karo' : 'Start Chapter 1')}
             {resume && resumeProgress && resumeProgress.total > 0 && (
               <span className="opacity-50 text-xs font-normal">
-                lesson {resumeProgress.lesson + 1}/{resumeProgress.total}
+                {lang === 'hi' ? `lesson ${resumeProgress.lesson + 1}/${resumeProgress.total}` : `lesson ${resumeProgress.lesson + 1}/${resumeProgress.total}`}
               </span>
             )}
             <ArrowRight className="w-4 h-4 shrink-0" />
@@ -63,7 +72,7 @@ export const Home: React.FC<{ lastChapter: ModuleType | null }> = ({ lastChapter
               className="text-sm px-3 py-1.5 rounded-full"
               style={{ background: 'var(--surface-muted)', color: 'var(--text-muted)' }}
             >
-              {completedChapters}/{totalLessons} done
+              {completedChapters}/{totalLessons} {lang === 'hi' ? 'poora hua' : 'done'}
             </span>
           )}
         </div>
@@ -171,7 +180,7 @@ export const Home: React.FC<{ lastChapter: ModuleType | null }> = ({ lastChapter
                       onClick={(e) => e.stopPropagation()}
                     >
                       <BookOpen className="w-3 h-3 shrink-0" />
-                      Read on Medium
+                      {lang === 'hi' ? 'Medium pe padho' : 'Read on Medium'}
                       <ExternalLink className="w-3 h-3 shrink-0" />
                     </a>
                   ) : (
@@ -180,7 +189,7 @@ export const Home: React.FC<{ lastChapter: ModuleType | null }> = ({ lastChapter
                       style={{ color: 'var(--text-subtle)' }}
                     >
                       <Lock className="w-3 h-3 shrink-0" />
-                      No article yet
+                      {lang === 'hi' ? 'Abhi article nahi hai' : 'No article yet'}
                     </span>
                   )}
 
@@ -189,7 +198,11 @@ export const Home: React.FC<{ lastChapter: ModuleType | null }> = ({ lastChapter
                     className="flex items-center gap-1 text-[11px] font-medium transition-opacity hover:opacity-60 shrink-0"
                     style={{ color: 'var(--text-subtle)', background: 'transparent', border: 'none', cursor: 'pointer' }}
                   >
-                    {complete ? 'Review' : started ? 'Continue' : 'Start'}
+                    {complete
+                      ? (lang === 'hi' ? 'Review' : 'Review')
+                      : started
+                        ? (lang === 'hi' ? 'Aage badho' : 'Continue')
+                        : (lang === 'hi' ? 'Shuru karo' : 'Start')}
                     <ArrowRight className="w-3 h-3" />
                   </button>
                 </div>
