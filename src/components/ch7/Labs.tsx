@@ -74,7 +74,7 @@ export const RequirementsList: React.FC = () => (
   <ol className="space-y-3">
     {REQUIREMENTS.map((r, i) => (
       <li key={r.short} className="flex gap-3">
-        <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--accent)] text-xs font-semibold text-white">{i + 1}</span>
+        <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--accent)] text-xs font-semibold text-[var(--accent-fg)]">{i + 1}</span>
         <span>
           <span className={`block text-sm font-medium ${strong}`}>{r.text}</span>
           <span className="block text-sm text-[var(--text-muted)] dark:text-[var(--text-muted)]">{r.why}</span>
