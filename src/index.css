@@ -87,6 +87,12 @@ html.dark .lesson-prose code { background: rgba(255,255,255,0.08); color: #fafaf
 }
 .btn-primary:hover { background: var(--btn-primary-hover); }
 
+/* Miro mode — tighten the main container padding so canvas can breathe */
+body.miro-mode main {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
 /* Chapter card — equal height columns via flex column */
 .chapter-card {
   background: var(--surface);
