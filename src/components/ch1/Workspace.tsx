@@ -21,6 +21,7 @@ import {
   PanelLeftOpen,
 } from 'lucide-react';
 import { usePersistentState } from '../../lib/usePersistentState';
+import { useLang } from '../../lib/i18n';
 import { WhatChanged, Quiz } from '../learn/LearningKit';
 import { Callout, Segmented } from '../lesson/blocks';
 import { useNav } from '../lesson/ChapterPlayer';
@@ -55,6 +56,7 @@ export const Chapter1Workspace: React.FC = () => {
   const [storedTab, setTab] = usePersistentState<Tab>('chapter1:tab', 'concepts');
   const tab: Tab = storedTab === 'concepts' ? 'concepts' : 'architecture';
   const [sidebarCollapsed, setSidebarCollapsed] = usePersistentState<boolean>('chapter1:sidebar:collapsed', false);
+  const { lang } = useLang();
   // Split pane: concepts takes splitPct% width, architecture takes the rest
   const [splitPct, setSplitPct] = usePersistentState<number>('chapter1:split', 55);
   const splitRef = React.useRef<HTMLDivElement>(null);
@@ -341,10 +343,11 @@ export const Chapter1Workspace: React.FC = () => {
         <div className="lg:hidden space-y-4">
           {tab === 'concepts' && (
             <section className="space-y-5">
-              <div className="rounded-xl px-4 py-3 text-sm leading-relaxed" style={{ background: 'var(--surface-muted)', border: '1px solid var(--header-border)', color: 'var(--text-muted)' }}>
-                <span className="text-[10px] font-bold tracking-widest uppercase block mb-1" style={{ color: 'var(--text-subtle)' }}>🇮🇳 Simple mein samjho</span>
-                {content.hinglish ?? <span>Is stage mein hum <strong style={{ color: 'var(--text-base)' }}>{content.title.toLowerCase()}</strong> ke baare mein seekhenge.</span>}
-              </div>
+              {lang === 'hi' && content.hinglish && (
+                <div className="rounded-xl px-4 py-3 text-sm leading-relaxed" style={{ background: 'var(--surface-muted)', border: '1px solid var(--header-border)', color: 'var(--text-base)' }}>
+                  {content.hinglish}
+                </div>
+              )}
               <div className="lesson-prose"><p>{content.why}</p><p><strong>Weak spot: </strong>{content.weakSpot}</p><p><strong>{i === N - 1 ? 'Next: ' : 'The fix: '}</strong>{content.fix}</p></div>
               {i > 0 && <WhatChanged before={content.before} after={content.after} reason={content.reason} />}
               <Callout tone="idea" title="Key takeaway">{content.takeaway}</Callout>
@@ -368,43 +371,74 @@ export const Chapter1Workspace: React.FC = () => {
           )}
         </div>
 
-        {/* Desktop: split pane always visible */}
+        {/* Desktop + sidebar COLLAPSED: split pane with concepts/inspector on left, architecture on right */}
         <div
           ref={splitRef}
-          className="hidden lg:flex rounded-2xl overflow-hidden"
+          className={`${sidebarCollapsed ? 'hidden lg:flex' : 'hidden'} rounded-2xl overflow-hidden`}
           style={{ height: 'calc(100vh - 200px)', minHeight: 520, border: '1px solid var(--header-border)', background: 'var(--surface)' }}
         >
-          {/* ── Left: Concepts ── */}
+          {/* ── Left: Concepts (default) OR Inspector+TechStack (when node selected) ── */}
           <div
             className="flex flex-col overflow-y-auto"
             style={{ width: `${splitPct}%`, minWidth: 280, borderRight: '1px solid var(--header-border)' }}
           >
+            {/* Header bar with mode indicator */}
             <div className="flex items-center justify-between px-4 py-3 shrink-0" style={{ borderBottom: '1px solid var(--header-border)', background: 'var(--surface-muted)' }}>
-              <span className="text-xs font-semibold" style={{ color: 'var(--text-subtle)' }}>CONCEPTS</span>
-              <button
-                onClick={() => openTab('architecture')}
-                className="text-[10px] px-2 py-0.5 rounded transition-colors lg:hidden"
-                style={{ background: 'var(--accent)', color: 'var(--accent-fg)' }}
-              >
-                → Architecture
-              </button>
+              <span className="text-xs font-semibold" style={{ color: 'var(--text-subtle)' }}>
+                {selNode ? 'COMPONENT INSPECTOR' : 'CONCEPTS'}
+              </span>
+              {selNode && (
+                <button
+                  onClick={() => setSelected(null)}
+                  className="text-[10px] font-medium px-2 py-0.5 rounded transition-opacity hover:opacity-70"
+                  style={{ color: 'var(--text-muted)' }}
+                >
+                  ← Back to concepts
+                </button>
+              )}
             </div>
-            <div className="flex-1 overflow-y-auto p-5 space-y-5">
-              {/* Hinglish pill */}
-              <div className="rounded-xl px-4 py-3 text-sm leading-relaxed" style={{ background: 'var(--surface-muted)', border: '1px solid var(--header-border)', color: 'var(--text-muted)' }}>
-                <span className="text-[10px] font-bold tracking-widest uppercase block mb-1" style={{ color: 'var(--text-subtle)' }}>🇮🇳 Simple mein samjho</span>
-                {content.hinglish ?? <span>Is stage mein hum <strong style={{ color: 'var(--text-base)' }}>{content.title.toLowerCase()}</strong> ke baare mein seekhenge.</span>}
-              </div>
-              <div className="lesson-prose">
-                <p>{content.why}</p>
-                <p><strong>Weak spot: </strong>{content.weakSpot}</p>
-                <p><strong>{i === N - 1 ? 'Next: ' : 'The fix: '}</strong>{content.fix}</p>
-              </div>
-              {i > 0 && <WhatChanged before={content.before} after={content.after} reason={content.reason} />}
-              <Callout tone="idea" title="Key takeaway">{content.takeaway}</Callout>
-              <div id="ch1-check">
-                <Quiz key={i} persistKey={`chapter1:quiz:stage${i}`} questions={content.quiz} title="Quick check" onProgress={(s, t) => s === t && mark('check')} />
-              </div>
+
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto">
+              {selNode ? (
+                /* Inspector mode */
+                <div>
+                  <Inspector
+                    node={selNode}
+                    state={sim.nodes[selNode.id]}
+                    crashed={fail.crashed.includes(selNode.id)}
+                    count={arch.all.filter((n) => n.kind === selNode.kind).length}
+                    onClose={() => setSelected(null)}
+                    onCrash={() => crash(selNode.id)}
+                    onRecover={() => recover(selNode.id)}
+                  />
+                  <div style={{ borderTop: '1px solid var(--header-border)' }}>
+                    <TechStack arch={arch} selected={selected} onSelect={select} />
+                  </div>
+                </div>
+              ) : (
+                /* Concepts mode */
+                <div className="p-5 space-y-5">
+                  {lang === 'hi' && content.hinglish && (
+                    <div className="rounded-xl px-4 py-3 text-sm leading-relaxed" style={{ background: 'var(--surface-muted)', border: '1px solid var(--header-border)', color: 'var(--text-base)' }}>
+                      {content.hinglish}
+                    </div>
+                  )}
+                  <div className="lesson-prose">
+                    <p>{content.why}</p>
+                    <p><strong>Weak spot: </strong>{content.weakSpot}</p>
+                    <p><strong>{i === N - 1 ? 'Next: ' : 'The fix: '}</strong>{content.fix}</p>
+                  </div>
+                  {i > 0 && <WhatChanged before={content.before} after={content.after} reason={content.reason} />}
+                  <Callout tone="idea" title="Key takeaway">{content.takeaway}</Callout>
+                  <p className="text-xs italic" style={{ color: 'var(--text-subtle)' }}>
+                    💡 Click any component in the architecture (right) to inspect it here.
+                  </p>
+                  <div id="ch1-check">
+                    <Quiz key={i} persistKey={`chapter1:quiz:stage${i}`} questions={content.quiz} title="Quick check" onProgress={(s, t) => s === t && mark('check')} />
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
@@ -518,28 +552,105 @@ export const Chapter1Workspace: React.FC = () => {
                 </div>
               </div>
 
-              {/* Inspector — right 30%, only when node selected */}
-              {selNode && (
-                <div className="shrink-0 overflow-y-auto" style={{ width: 280, borderLeft: '1px solid var(--header-border)' }}>
-                  <Inspector
-                    node={selNode}
-                    state={sim.nodes[selNode.id]}
-                    crashed={fail.crashed.includes(selNode.id)}
-                    count={arch.all.filter((n) => n.kind === selNode.kind).length}
-                    onClose={() => setSelected(null)}
-                    onCrash={() => crash(selNode.id)}
-                    onRecover={() => recover(selNode.id)}
-                  />
-                  <div style={{ borderTop: '1px solid var(--header-border)' }}>
-                    <TechStack arch={arch} selected={selected} onSelect={select} />
-                  </div>
-                </div>
-              )}
             </div>
           </div>
         </div>
 
-
+        {/* Desktop + sidebar VISIBLE: tabs, focused single-pane reading mode */}
+        {!sidebarCollapsed && (
+          <div className="hidden lg:block space-y-4">
+            {tab === 'concepts' && (
+              <section className="max-w-3xl space-y-5">
+                {lang === 'hi' && content.hinglish && (
+                  <div className="rounded-xl px-4 py-3 text-sm leading-relaxed" style={{ background: 'var(--surface-muted)', border: '1px solid var(--header-border)', color: 'var(--text-base)' }}>
+                    {content.hinglish}
+                  </div>
+                )}
+                <div className="lesson-prose">
+                  <p>{content.why}</p>
+                  <p><strong>Weak spot: </strong>{content.weakSpot}</p>
+                  <p><strong>{i === N - 1 ? 'Next: ' : 'The fix: '}</strong>{content.fix}</p>
+                </div>
+                {i > 0 && <WhatChanged before={content.before} after={content.after} reason={content.reason} />}
+                <Callout tone="idea" title="Key takeaway">{content.takeaway}</Callout>
+                {!effFlow.explore && (
+                  <p className="text-sm" style={{ color: 'var(--text-subtle)' }}>
+                    → Switch to <button className="underline underline-offset-2" onClick={() => openTab('architecture')} style={{ color: 'var(--text-muted)' }}>Architecture</button> to explore the diagram, or <button className="underline underline-offset-2" onClick={() => setSidebarCollapsed(true)} style={{ color: 'var(--text-muted)' }}>hide the sidebar</button> for a split view.
+                  </p>
+                )}
+                <div id="ch1-check">
+                  <Quiz key={i} persistKey={`chapter1:quiz:stage${i}`} questions={content.quiz} title="Quick check" onProgress={(s, t) => s === t && mark('check')} />
+                </div>
+              </section>
+            )}
+            {tab === 'architecture' && (
+              <div className={`grid gap-5 transition-all ${selNode ? 'xl:grid-cols-[minmax(0,1fr)_280px]' : 'grid-cols-1'}`}>
+                <section className="min-w-0 rounded-2xl bg-[var(--surface)] ring-1 ring-[var(--header-border)] p-4 sm:p-5">
+                  <div className="flex flex-wrap items-center gap-2 mb-3">
+                    {meta.experiments.map((ex) => (
+                      <button key={ex.id} onClick={() => runExperiment(ex)} className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium text-rose-700 ring-1 ring-rose-200 hover:bg-rose-50 dark:text-rose-300 dark:ring-rose-400/30 dark:hover:bg-rose-400/10">
+                        <Flame className="h-3.5 w-3.5" /> {ex.label}
+                      </button>
+                    ))}
+                    {hasFix(i) && (
+                      <Segmented label="Version" value={after ? 'after' : 'before'}
+                        options={[{ value: 'before', label: meta.toggle?.[0] ?? 'Before' }, { value: 'after', label: meta.toggle?.[1] ?? 'After' }]}
+                        onChange={(v) => setAfter(v === 'after')} />
+                    )}
+                    <button onClick={clearFailures} className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm ring-1 ring-[var(--header-border)] hover:bg-[var(--surface-muted)]" style={{ color: 'var(--text-muted)' }}>
+                      <RotateCcw className="h-3.5 w-3.5" /> Reset
+                    </button>
+                  </div>
+                  {failing && (
+                    <Callout className="mb-3" tone={health === 'ok' ? 'success' : health === 'outage' ? 'danger' : 'warning'} title={health === 'ok' ? 'Architecture absorbed the failure' : sim.headline}>
+                      <FailureSummary sim={sim} after={after} stage={i} withLabel={meta.toggle?.[1]} withoutLabel={meta.toggle?.[0]} />
+                    </Callout>
+                  )}
+                  <Diagram arch={arch} sim={sim} selected={selected} onSelect={select} running={sim.success > 0} />
+                  <details className="mt-4 rounded-xl overflow-hidden" style={{ border: '1px solid var(--header-border)' }}>
+                    <summary className="cursor-pointer flex items-center gap-2 px-4 py-2.5 text-sm font-medium select-none" style={{ background: 'var(--surface-muted)', color: 'var(--text-base)' }}>
+                      <Settings2 className="h-4 w-4" style={{ color: 'var(--text-subtle)' }} />
+                      Simulation controls
+                    </summary>
+                    <div className="p-4" style={{ background: 'var(--surface)' }}>
+                      <div className="grid gap-4 sm:grid-cols-3">
+                        <Control label="Traffic (req/sec)" value={`${inputs.rps.toLocaleString()} RPS`}>
+                          <input type="range" min={0} max={100} value={rpsToPos(inputs.rps)} onChange={(e) => setInputs({ rps: posToRps(Number(e.target.value)) })} className="w-full accent-[var(--accent)]" />
+                        </Control>
+                        <Control label="Read / write mix" value={`${inputs.readPct}% / ${100 - inputs.readPct}%`}>
+                          <input type="range" min={50} max={99} value={inputs.readPct} onChange={(e) => setInputs({ readPct: Number(e.target.value) })} className="w-full accent-emerald-600" />
+                        </Control>
+                        <Control label={arch.f.multiDc ? 'Servers per DC' : 'Web servers'} value={arch.f.lb ? `${inputs.websPerDc} nodes` : '1 node'}>
+                          {arch.f.lb ? (
+                            <div className="flex items-center gap-2">
+                              <StepBtn label="Remove" onClick={() => setInputs({ websPerDc: Math.max(1, inputs.websPerDc - 1) })} disabled={inputs.websPerDc <= 1}><Minus className="h-4 w-4" /></StepBtn>
+                              <span className="w-8 text-center text-sm tabular-nums">{inputs.websPerDc}</span>
+                              <StepBtn label="Add" onClick={() => setInputs({ websPerDc: Math.min(4, inputs.websPerDc + 1) })} disabled={inputs.websPerDc >= 4}><Plus className="h-4 w-4" /></StepBtn>
+                            </div>
+                          ) : <p className="text-xs" style={{ color: 'var(--text-subtle)' }}>Needs a load balancer first.</p>}
+                        </Control>
+                      </div>
+                    </div>
+                  </details>
+                </section>
+                {selNode && (
+                  <div className="min-w-0">
+                    <Inspector
+                      node={selNode}
+                      state={sim.nodes[selNode.id]}
+                      crashed={fail.crashed.includes(selNode.id)}
+                      count={arch.all.filter((n) => n.kind === selNode.kind).length}
+                      onClose={() => setSelected(null)}
+                      onCrash={() => crash(selNode.id)}
+                      onRecover={() => recover(selNode.id)}
+                    />
+                  </div>
+                )}
+                {!selNode && <TechStack arch={arch} selected={selected} onSelect={select} />}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* ---------- Learning flow ---------- */}
         <FlowBar
