@@ -11,7 +11,7 @@ import { Quiz, QuizQuestion } from '../learn/LearningKit';
  * Keep each lesson to a single idea. If it needs a second Try, it is two lessons.
  */
 
-const sectionLabel = 'flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400';
+const sectionLabel = 'flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[var(--text-subtle)] dark:text-[var(--text-subtle)]';
 
 export const Explain: React.FC<{ children: React.ReactNode; title?: string }> = ({ children, title = 'Understand' }) => (
   <section className="space-y-3">
@@ -29,8 +29,8 @@ export const Try: React.FC<{ task: React.ReactNode; children: React.ReactNode }>
       <Hand className="w-4 h-4" />
       Try it
     </h2>
-    <p className="text-[15px] leading-7 text-slate-800 dark:text-slate-100">{task}</p>
-    <div className="rounded-2xl bg-white ring-1 ring-slate-200 dark:bg-white/[0.03] dark:ring-white/10 p-4 sm:p-6">{children}</div>
+    <p className="text-[15px] leading-7 text-[var(--text-base)] dark:text-[var(--text-base)]">{task}</p>
+    <div className="rounded-2xl bg-[var(--surface)] ring-1 ring-[var(--header-border)] dark:bg-[var(--surface)] dark:ring-[var(--header-border)] p-4 sm:p-6">{children}</div>
   </section>
 );
 
@@ -45,10 +45,10 @@ export const Check: React.FC<{ persistKey: string; questions: QuizQuestion[] }> 
 );
 
 export const GoDeeper: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
-  <details className="group rounded-xl bg-slate-50 dark:bg-white/[0.03] [&_summary::-webkit-details-marker]:hidden">
-    <summary className="flex cursor-pointer select-none items-center justify-between gap-3 px-4 py-3 text-sm font-medium text-slate-700 dark:text-slate-200">
+  <details className="group rounded-xl bg-[var(--surface-muted)] dark:bg-[var(--surface)] [&_summary::-webkit-details-marker]:hidden">
+    <summary className="flex cursor-pointer select-none items-center justify-between gap-3 px-4 py-3 text-sm font-medium text-[var(--text-muted)] dark:text-[var(--text-muted)]">
       <span>
-        <span className="text-slate-500 dark:text-slate-400 mr-2">Go deeper</span>
+        <span className="text-[var(--text-subtle)] dark:text-[var(--text-subtle)] mr-2">Go deeper</span>
         {title}
       </span>
       <ChevronDown className="w-4 h-4 text-slate-400 transition-transform group-open:rotate-180" />
@@ -62,7 +62,7 @@ const TONES = {
   success: { icon: CheckCircle2, box: 'bg-emerald-50 text-emerald-950 dark:bg-emerald-400/[0.08] dark:text-emerald-50', ic: 'text-emerald-600 dark:text-emerald-300' },
   warning: { icon: AlertTriangle, box: 'bg-amber-50 text-amber-950 dark:bg-amber-400/[0.08] dark:text-amber-50', ic: 'text-amber-600 dark:text-amber-300' },
   danger: { icon: XCircle, box: 'bg-rose-50 text-rose-950 dark:bg-rose-400/[0.08] dark:text-rose-50', ic: 'text-rose-600 dark:text-rose-300' },
-  idea: { icon: Lightbulb, box: 'bg-indigo-50 text-indigo-950 dark:bg-indigo-400/[0.08] dark:text-indigo-50', ic: 'text-indigo-600 dark:text-indigo-300' },
+  idea: { icon: Lightbulb, box: 'bg-[var(--surface-muted)] text-indigo-950 dark:bg-[var(--surface-muted)] dark:text-indigo-50', ic: 'text-[var(--accent)] dark:text-[var(--text-muted)]' },
 } as const;
 
 /** A single highlighted note. Use sparingly: at most one or two per lesson. */
@@ -86,9 +86,9 @@ export const Callout: React.FC<{ tone?: keyof typeof TONES; title?: React.ReactN
 };
 
 export const Figure: React.FC<{ caption: React.ReactNode; children: React.ReactNode }> = ({ caption, children }) => (
-  <figure className="my-2 rounded-2xl bg-white ring-1 ring-slate-200 dark:bg-white/[0.03] dark:ring-white/10 p-4 sm:p-6 text-slate-700 dark:text-slate-200">
+  <figure className="my-2 rounded-2xl bg-[var(--surface)] ring-1 ring-[var(--header-border)] dark:bg-[var(--surface)] dark:ring-[var(--header-border)] p-4 sm:p-6 text-[var(--text-muted)] dark:text-[var(--text-muted)]">
     {children}
-    <figcaption className="mt-3 text-sm text-slate-500 dark:text-slate-400">{caption}</figcaption>
+    <figcaption className="mt-3 text-sm text-[var(--text-subtle)] dark:text-[var(--text-subtle)]">{caption}</figcaption>
   </figure>
 );
 
@@ -99,16 +99,16 @@ export const Stat: React.FC<{ label: string; value: React.ReactNode; tone?: 'neu
   tone = 'neutral',
   hint,
 }) => (
-  <div className="rounded-xl bg-slate-50 dark:bg-white/[0.04] px-4 py-3">
-    <p className="text-xs text-slate-500 dark:text-slate-400">{label}</p>
+  <div className="rounded-xl bg-[var(--surface-muted)] dark:bg-[var(--surface-muted)] px-4 py-3">
+    <p className="text-xs text-[var(--text-subtle)] dark:text-[var(--text-subtle)]">{label}</p>
     <p
       className={`mt-0.5 text-2xl font-semibold tabular-nums ${
-        tone === 'good' ? 'text-emerald-600 dark:text-emerald-400' : tone === 'bad' ? 'text-rose-600 dark:text-rose-400' : 'text-slate-900 dark:text-white'
+        tone === 'good' ? 'text-emerald-600 dark:text-emerald-400' : tone === 'bad' ? 'text-rose-600 dark:text-rose-400' : 'text-[var(--text-base)] dark:text-[var(--text-base)]'
       }`}
     >
       {value}
     </p>
-    {hint && <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{hint}</p>}
+    {hint && <p className="text-xs text-[var(--text-subtle)] dark:text-[var(--text-subtle)] mt-0.5">{hint}</p>}
   </div>
 );
 
@@ -125,10 +125,10 @@ export const Slider: React.FC<{
 }> = ({ label, value, min, max, step = 1, unit = '', onChange, hint }) => (
   <label className="block">
     <span className="flex items-baseline justify-between text-sm">
-      <span className="font-medium text-slate-700 dark:text-slate-200">{label}</span>
-      <span className="tabular-nums text-slate-900 dark:text-white font-semibold">
+      <span className="font-medium text-[var(--text-muted)] dark:text-[var(--text-muted)]">{label}</span>
+      <span className="tabular-nums text-[var(--text-base)] dark:text-[var(--text-base)] font-semibold">
         {value}
-        {unit && <span className="text-slate-500 dark:text-slate-400 font-normal ml-0.5">{unit}</span>}
+        {unit && <span className="text-[var(--text-subtle)] dark:text-[var(--text-subtle)] font-normal ml-0.5">{unit}</span>}
       </span>
     </span>
     <input
@@ -138,18 +138,18 @@ export const Slider: React.FC<{
       step={step}
       value={value}
       onChange={(e) => onChange(Number(e.target.value))}
-      className="mt-2 w-full accent-indigo-600"
+      className="mt-2 w-full accent-[var(--accent)]"
     />
-    {hint && <span className="block text-xs text-slate-500 dark:text-slate-400 mt-1">{hint}</span>}
+    {hint && <span className="block text-xs text-[var(--text-subtle)] dark:text-[var(--text-subtle)] mt-1">{hint}</span>}
   </label>
 );
 
 type BtnVariant = 'primary' | 'secondary' | 'danger' | 'ghost';
 const BTN: Record<BtnVariant, string> = {
-  primary: 'bg-indigo-600 text-white hover:bg-indigo-500 shadow-sm',
-  secondary: 'bg-white text-slate-800 ring-1 ring-slate-300 hover:bg-slate-50 dark:bg-white/[0.06] dark:text-slate-100 dark:ring-white/15 dark:hover:bg-white/[0.1]',
+  primary: 'bg-[var(--accent)] text-white hover:bg-[var(--accent-hover)] shadow-sm',
+  secondary: 'bg-[var(--surface)] text-[var(--text-base)] ring-1 ring-[var(--header-border)] hover:bg-[var(--surface-muted)] dark:bg-[var(--surface-muted)] dark:text-[var(--text-base)] dark:ring-[var(--header-border)] dark:hover:bg-[var(--surface)]/[0.1]',
   danger: 'bg-rose-600 text-white hover:bg-rose-500 shadow-sm',
-  ghost: 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-white/[0.06]',
+  ghost: 'text-[var(--text-muted)] hover:bg-[var(--surface-muted)] dark:text-[var(--text-muted)] dark:hover:bg-[var(--surface-muted)]',
 };
 
 export const Button: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: BtnVariant }> = ({
@@ -176,7 +176,7 @@ export function Segmented<T extends string>({
   label: string;
 }) {
   return (
-    <div role="radiogroup" aria-label={label} className="inline-flex rounded-lg bg-slate-100 dark:bg-white/[0.06] p-1">
+    <div role="radiogroup" aria-label={label} className="inline-flex rounded-lg bg-[var(--surface-muted)] dark:bg-[var(--surface-muted)] p-1">
       {options.map((o) => (
         <button
           key={o.value}
@@ -185,8 +185,8 @@ export function Segmented<T extends string>({
           onClick={() => onChange(o.value)}
           className={`px-3 py-1.5 text-sm rounded-md transition-colors ${
             value === o.value
-              ? 'bg-white text-slate-900 shadow-sm dark:bg-white/[0.12] dark:text-white'
-              : 'text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white'
+              ? 'bg-[var(--surface)] text-[var(--text-base)] shadow-sm dark:bg-[var(--surface)]/[0.12] dark:text-[var(--text-base)]'
+              : 'text-[var(--text-muted)] hover:text-[var(--text-base)] dark:text-[var(--text-muted)] dark:hover:text-white'
           }`}
         >
           {o.label}
