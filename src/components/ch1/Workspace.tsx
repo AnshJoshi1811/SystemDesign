@@ -247,7 +247,19 @@ export const Chapter1Workspace: React.FC = () => {
         </div>
 
         {/* ---------- Compact stage header ---------- */}
-        <header className="flex items-start justify-between gap-4 pt-1">
+        <header
+          className="flex items-start justify-between gap-4"
+          style={
+            sidebarCollapsed
+              ? {
+                  // Break out to full viewport width in Miro mode
+                  width: '100vw',
+                  marginLeft: 'calc(-50vw + 50%)',
+                  padding: '4px 32px 12px',
+                }
+              : { paddingTop: 4 }
+          }
+        >
           <div className="min-w-0">
             {/* Breadcrumb with sidebar toggle */}
             <div className="flex items-center gap-2 mb-1.5">
@@ -629,30 +641,42 @@ export const Chapter1Workspace: React.FC = () => {
           )}
         </div>
 
-        {/* ---------- Learning flow ---------- */}
-        <FlowBar
-          flow={effFlow}
-          hasFix={hasFix(i)}
-          isFinal={i === N - 1}
-          onStep={(s) => {
-            if (s === 'learn') openTab('concepts');
-            else if (s === 'explore') openTab('architecture');
-            else if (s === 'break') {
-              openTab('architecture');
-              if (hasFix(i) && after) setAfter(false);
-              if (meta.experiments[0]) runExperiment(meta.experiments[0]);
-            }
-            else if (s === 'fix') {
-              if (hasFix(i)) {
+        {/* ---------- Learning flow — full width in Miro mode ---------- */}
+        <div
+          style={
+            sidebarCollapsed
+              ? {
+                  width: '100vw',
+                  marginLeft: 'calc(-50vw + 50%)',
+                  padding: '20px 32px 0',
+                }
+              : { marginTop: 20 }
+          }
+        >
+          <FlowBar
+            flow={effFlow}
+            hasFix={hasFix(i)}
+            isFinal={i === N - 1}
+            onStep={(s) => {
+              if (s === 'learn') openTab('concepts');
+              else if (s === 'explore') openTab('architecture');
+              else if (s === 'break') {
                 openTab('architecture');
-                setAfter(true);
-              } else if (i < N - 1) goStage(i + 1);
-            } else {
-              openTab('concepts');
-              setTimeout(() => document.getElementById('ch1-check')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
-            }
-          }}
-        />
+                if (hasFix(i) && after) setAfter(false);
+                if (meta.experiments[0]) runExperiment(meta.experiments[0]);
+              }
+              else if (s === 'fix') {
+                if (hasFix(i)) {
+                  openTab('architecture');
+                  setAfter(true);
+                } else if (i < N - 1) goStage(i + 1);
+              } else {
+                openTab('concepts');
+                setTimeout(() => document.getElementById('ch1-check')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+              }
+            }}
+          />
+        </div>
       </div>
     </div>
   );
