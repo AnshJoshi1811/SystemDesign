@@ -31,15 +31,15 @@ import {
 // Shared bits
 // ---------------------------------------------------------------------------
 
-const surface = 'rounded-xl bg-slate-50 dark:bg-white/[0.04] p-4';
-const small = 'text-xs text-slate-500 dark:text-slate-400';
-const strong = 'text-slate-900 dark:text-white';
+const surface = 'rounded-xl bg-[var(--surface-muted)] dark:bg-[var(--surface-muted)] p-4';
+const small = 'text-xs text-[var(--text-subtle)] dark:text-[var(--text-subtle)]';
+const strong = 'text-[var(--text-base)] dark:text-[var(--text-base)]';
 
 const Settings: React.FC<{ summary: React.ReactNode; children: React.ReactNode }> = ({ summary, children }) => (
-  <details className="rounded-xl ring-1 ring-slate-200 dark:ring-white/10 [&_summary::-webkit-details-marker]:hidden">
-    <summary className="cursor-pointer select-none px-4 py-3 text-sm font-medium text-slate-700 dark:text-slate-200">
+  <details className="rounded-xl ring-1 ring-[var(--header-border)] dark:ring-[var(--header-border)] [&_summary::-webkit-details-marker]:hidden">
+    <summary className="cursor-pointer select-none px-4 py-3 text-sm font-medium text-[var(--text-muted)] dark:text-[var(--text-muted)]">
       Change the settings
-      <span className="ml-2 font-normal text-slate-500 dark:text-slate-400">{summary}</span>
+      <span className="ml-2 font-normal text-[var(--text-subtle)] dark:text-[var(--text-subtle)]">{summary}</span>
     </summary>
     <div className="px-4 pb-4 space-y-4">{children}</div>
   </details>
@@ -50,7 +50,7 @@ const CHIP: Record<ChipTone, string> = {
   ok: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-400/15 dark:text-emerald-300',
   warn: 'bg-amber-100 text-amber-800 dark:bg-amber-400/15 dark:text-amber-300',
   bad: 'bg-rose-100 text-rose-800 dark:bg-rose-400/15 dark:text-rose-300',
-  neutral: 'bg-slate-200 text-slate-700 dark:bg-white/10 dark:text-slate-200',
+  neutral: 'bg-slate-200 text-[var(--text-muted)] dark:bg-[var(--surface-muted)] dark:text-[var(--text-muted)]',
 };
 const Chip: React.FC<{ tone: ChipTone; children: React.ReactNode; title?: string }> = ({ tone, children, title }) => (
   <span title={title} className={`inline-flex h-7 min-w-[36px] items-center justify-center rounded-md px-1.5 text-xs font-mono font-semibold tabular-nums ${CHIP[tone]}`}>
@@ -74,10 +74,10 @@ export const RequirementsList: React.FC = () => (
   <ol className="space-y-3">
     {REQUIREMENTS.map((r, i) => (
       <li key={r.short} className="flex gap-3">
-        <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-xs font-semibold text-white">{i + 1}</span>
+        <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--accent)] text-xs font-semibold text-white">{i + 1}</span>
         <span>
           <span className={`block text-sm font-medium ${strong}`}>{r.text}</span>
-          <span className="block text-sm text-slate-600 dark:text-slate-300">{r.why}</span>
+          <span className="block text-sm text-[var(--text-muted)] dark:text-[var(--text-muted)]">{r.why}</span>
         </span>
       </li>
     ))}
@@ -146,12 +146,12 @@ const VERDICT: Record<Verdict, { label: string; cls: string }> = {
 
 /** One approach scored against the five requirements. */
 export const ReqCheck: React.FC<{ approach: Approach }> = ({ approach }) => (
-  <ul className="divide-y divide-slate-200 dark:divide-white/10">
+  <ul className="divide-y divide-[var(--header-border)] dark:divide-[var(--header-border)]">
     {SCORECARD[approach].cells.map(([v, note], i) => (
       <li key={i} className="flex items-baseline gap-3 py-2 text-sm">
         <span className={`w-20 shrink-0 font-medium ${strong}`}>{REQUIREMENTS[i].short}</span>
         <span className={`w-12 shrink-0 font-semibold ${VERDICT[v].cls}`}>{VERDICT[v].label}</span>
-        <span className="text-slate-600 dark:text-slate-300">{note}</span>
+        <span className="text-[var(--text-muted)] dark:text-[var(--text-muted)]">{note}</span>
       </li>
     ))}
   </ul>
@@ -162,7 +162,7 @@ export const Scorecard: React.FC = () => (
   <div className="overflow-x-auto -mx-1">
     <table className="w-full text-sm min-w-[520px]">
       <thead>
-        <tr className="text-left text-slate-500 dark:text-slate-400">
+        <tr className="text-left text-[var(--text-subtle)] dark:text-[var(--text-subtle)]">
           <th className="py-2 px-1 font-medium">Approach</th>
           {REQUIREMENTS.map((r) => (
             <th key={r.short} className="py-2 px-1 font-medium">
@@ -171,7 +171,7 @@ export const Scorecard: React.FC = () => (
           ))}
         </tr>
       </thead>
-      <tbody className="divide-y divide-slate-200 dark:divide-white/10">
+      <tbody className="divide-y divide-[var(--header-border)] dark:divide-[var(--header-border)]">
         {(Object.keys(SCORECARD) as Approach[]).map((a) => (
           <tr key={a}>
             <td className={`py-2 px-1 font-medium ${strong}`}>{SCORECARD[a].label}</td>
@@ -230,7 +230,7 @@ export const CounterLab: React.FC<{ kind: 'db' | 'ticket' }> = ({ kind }) => {
             <span
               key={w}
               className={`rounded-lg px-3 py-2 text-xs font-medium ring-1 transition-colors ${
-                latest?.from === w ? 'bg-indigo-50 ring-indigo-400 text-indigo-900 dark:bg-indigo-400/[0.12] dark:ring-indigo-400/50 dark:text-white' : 'bg-white ring-slate-200 text-slate-700 dark:bg-white/[0.03] dark:ring-white/10 dark:text-slate-200'
+                latest?.from === w ? 'bg-[var(--surface-muted)] ring-indigo-400 text-[var(--text-base)] dark:bg-[var(--surface-muted)] dark:ring-indigo-400/50 dark:text-[var(--text-base)]' : 'bg-[var(--surface)] ring-[var(--header-border)] text-[var(--text-muted)] dark:bg-[var(--surface)] dark:ring-[var(--header-border)] dark:text-[var(--text-muted)]'
               }`}
             >
               {w}
@@ -241,11 +241,11 @@ export const CounterLab: React.FC<{ kind: 'db' | 'ticket' }> = ({ kind }) => {
         <span className="text-slate-400">↓</span>
         <div
           className={`w-full max-w-xs rounded-xl px-4 py-3 text-center ring-2 transition-colors ${
-            down ? 'ring-rose-400 bg-rose-50 dark:bg-rose-400/[0.08]' : 'ring-emerald-400 bg-white dark:bg-white/[0.03]'
+            down ? 'ring-rose-400 bg-rose-50 dark:bg-rose-400/[0.08]' : 'ring-emerald-400 bg-[var(--surface)] dark:bg-[var(--surface)]'
           }`}
         >
           <p className={`text-sm font-medium ${strong}`}>{label}</p>
-          <p className="text-sm text-slate-600 dark:text-slate-300">
+          <p className="text-sm text-[var(--text-muted)] dark:text-[var(--text-muted)]">
             {down ? 'down' : 'up'} · last ID <span className={`font-mono font-semibold ${strong}`}>{counter || '–'}</span>
           </p>
         </div>
@@ -265,7 +265,7 @@ export const CounterLab: React.FC<{ kind: 'db' | 'ticket' }> = ({ kind }) => {
 
       <div className="space-y-3">
         <div className="flex flex-wrap gap-1.5 min-h-[28px]" aria-label="Recent IDs">
-          {recent.length === 0 && <span className="text-sm text-slate-500 dark:text-slate-400">No requests yet.</span>}
+          {recent.length === 0 && <span className="text-sm text-[var(--text-subtle)] dark:text-[var(--text-subtle)]">No requests yet.</span>}
           {recent.map((r) => (
             <Chip key={r.n} tone={r.value === null ? 'bad' : 'ok'} title={r.from}>
               {r.value ?? 'fail'}
@@ -391,7 +391,7 @@ export const MultiMasterLab: React.FC = () => {
               <button
                 key={s.name}
                 onClick={() => generate(i)}
-                className="rounded-xl bg-white p-3 text-left ring-1 ring-slate-200 hover:ring-indigo-400 dark:bg-white/[0.03] dark:ring-white/10 dark:hover:ring-indigo-400/60 transition-colors"
+                className="rounded-xl bg-[var(--surface)] p-3 text-left ring-1 ring-[var(--header-border)] hover:ring-indigo-400 dark:bg-[var(--surface)] dark:ring-[var(--header-border)] dark:hover:ring-indigo-400/60 transition-colors"
               >
                 <span className="flex items-baseline justify-between">
                   <span className={`text-sm font-medium ${strong}`}>{s.name}</span>
@@ -482,7 +482,7 @@ export const UuidLab: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className={`${surface} space-y-2`}>
-        {list.length === 0 && <p className="text-sm text-slate-500 dark:text-slate-400">No UUIDs yet.</p>}
+        {list.length === 0 && <p className="text-sm text-[var(--text-subtle)] dark:text-[var(--text-subtle)]">No UUIDs yet.</p>}
         {list.map((x) => (
           <div key={x.n} className="flex items-baseline gap-3">
             <span className={`w-6 shrink-0 text-right ${small} tabular-nums`}>#{x.n}</span>
@@ -541,8 +541,8 @@ export const UuidLab: React.FC = () => {
 
 export type FieldKey = 'sign' | 't' | 'd' | 'm' | 's';
 const FIELD: Record<FieldKey, { label: string; bar: string; text: string }> = {
-  sign: { label: 'Sign', bar: 'bg-slate-200 text-slate-700 dark:bg-white/10 dark:text-slate-200', text: 'text-slate-500 dark:text-slate-400' },
-  t: { label: 'Timestamp', bar: 'bg-indigo-100 text-indigo-900 dark:bg-indigo-400/20 dark:text-indigo-100', text: 'text-indigo-700 dark:text-indigo-300' },
+  sign: { label: 'Sign', bar: 'bg-slate-200 text-[var(--text-muted)] dark:bg-[var(--surface-muted)] dark:text-[var(--text-muted)]', text: 'text-[var(--text-subtle)] dark:text-[var(--text-subtle)]' },
+  t: { label: 'Timestamp', bar: 'bg-indigo-100 text-[var(--text-base)] dark:bg-indigo-400/20 dark:text-indigo-100', text: 'text-[var(--text-base)] dark:text-[var(--text-muted)]' },
   d: { label: 'DC', bar: 'bg-sky-100 text-sky-900 dark:bg-sky-400/20 dark:text-sky-100', text: 'text-sky-700 dark:text-sky-300' },
   m: { label: 'Machine', bar: 'bg-violet-100 text-violet-900 dark:bg-violet-400/20 dark:text-violet-100', text: 'text-violet-700 dark:text-violet-300' },
   s: { label: 'Seq', bar: 'bg-fuchsia-100 text-fuchsia-900 dark:bg-fuchsia-400/20 dark:text-fuchsia-100', text: 'text-fuchsia-700 dark:text-fuchsia-300' },
@@ -651,7 +651,7 @@ export const LayoutLab: React.FC = () => {
       {info && active && (
         <div className="space-y-1">
           <p className={`text-sm font-semibold ${FIELD[active].text}`}>{info.title}</p>
-          <p className="text-sm text-slate-700 dark:text-slate-200">{info.text}</p>
+          <p className="text-sm text-[var(--text-muted)] dark:text-[var(--text-muted)]">{info.text}</p>
           <p className={small}>
             Bits {hi[active]}
             {bitsOf(active, L) > 1 ? ` to ${hi[active] - bitsOf(active, L) + 1}` : ''} · in this example: <span className="font-mono">{value[active]}</span>
@@ -809,16 +809,16 @@ export const BurstLab: React.FC = () => {
         </p>
         {!res && (
           <div className="flex items-center gap-2 text-xs font-mono">
-            <span className="w-12 shrink-0 text-slate-500 dark:text-slate-400">ms +0</span>
-            <div className="h-5 flex-1 rounded bg-slate-200 dark:bg-white/10" />
-            <span className="w-24 text-right text-slate-500 dark:text-slate-400">0 / {cap.toLocaleString()}</span>
+            <span className="w-12 shrink-0 text-[var(--text-subtle)] dark:text-[var(--text-subtle)]">ms +0</span>
+            <div className="h-5 flex-1 rounded bg-slate-200 dark:bg-[var(--surface-muted)]" />
+            <span className="w-24 text-right text-[var(--text-subtle)] dark:text-[var(--text-subtle)]">0 / {cap.toLocaleString()}</span>
           </div>
         )}
         {rows.slice(0, 6).map((c, i) => (
           <div key={i} className="flex items-center gap-2 text-xs font-mono">
-            <span className="w-12 shrink-0 text-slate-500 dark:text-slate-400">ms +{i}</span>
-            <div className="h-5 flex-1 rounded bg-slate-200 dark:bg-white/10 overflow-hidden">
-              <div className={`h-full ${c > cap ? 'bg-rose-500' : 'bg-indigo-500'}`} style={{ width: `${Math.min(100, (c / cap) * 100)}%` }} />
+            <span className="w-12 shrink-0 text-[var(--text-subtle)] dark:text-[var(--text-subtle)]">ms +{i}</span>
+            <div className="h-5 flex-1 rounded bg-slate-200 dark:bg-[var(--surface-muted)] overflow-hidden">
+              <div className={`h-full ${c > cap ? 'bg-rose-500' : 'bg-[var(--accent)]'}`} style={{ width: `${Math.min(100, (c / cap) * 100)}%` }} />
             </div>
             <span className={`w-24 text-right ${c > cap ? 'text-rose-600 dark:text-rose-400 font-semibold' : strong}`}>
               {c.toLocaleString()} / {cap.toLocaleString()}
@@ -997,7 +997,7 @@ const ClockTable: React.FC<{ rows: ClockRows; policy: RollbackPolicy }> = ({ row
       </p>
       <table className="w-full text-xs min-w-[560px] mt-2">
         <thead>
-          <tr className="text-left text-slate-500 dark:text-slate-400">
+          <tr className="text-left text-[var(--text-subtle)] dark:text-[var(--text-subtle)]">
             {['#', 'True time', 'Clock', 'Handled by', 'Timestamp', 'Seq', 'ID (last 8)', 'Outcome'].map((h) => (
               <th key={h} className="py-1.5 px-1 font-medium">
                 {h}
@@ -1005,7 +1005,7 @@ const ClockTable: React.FC<{ rows: ClockRows; policy: RollbackPolicy }> = ({ row
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-slate-200 dark:divide-white/10 font-mono">
+        <tbody className="divide-y divide-[var(--header-border)] dark:divide-[var(--header-border)] font-mono">
           {rows.map((r) => (
             <tr key={r.n} className={r.duplicate ? 'text-rose-700 dark:text-rose-300' : ''}>
               <td className="py-1.5 px-1">{r.n}</td>
@@ -1089,8 +1089,8 @@ export const DecodeLab: React.FC = () => {
               title={x.who}
               className={`rounded-lg px-2.5 py-1.5 font-mono text-xs ring-1 transition-colors ${
                 current === x.value
-                  ? 'bg-indigo-50 ring-indigo-400 text-indigo-900 dark:bg-indigo-400/[0.12] dark:ring-indigo-400/50 dark:text-white'
-                  : 'bg-white ring-slate-200 text-slate-700 hover:ring-slate-300 dark:bg-white/[0.03] dark:ring-white/10 dark:text-slate-200'
+                  ? 'bg-[var(--surface-muted)] ring-indigo-400 text-[var(--text-base)] dark:bg-[var(--surface-muted)] dark:ring-indigo-400/50 dark:text-[var(--text-base)]'
+                  : 'bg-[var(--surface)] ring-[var(--header-border)] text-[var(--text-muted)] hover:ring-[var(--header-border)] dark:bg-[var(--surface)] dark:ring-[var(--header-border)] dark:text-[var(--text-muted)]'
               }`}
             >
               {x.value}
@@ -1115,7 +1115,7 @@ export const DecodeLab: React.FC = () => {
             inputMode="numeric"
             placeholder="or paste an ID"
             aria-label="Snowflake ID to decode"
-            className="min-w-0 flex-1 rounded-lg bg-white px-3 py-2 font-mono text-sm ring-1 ring-slate-300 text-slate-900 placeholder:text-slate-400 dark:bg-white/[0.04] dark:ring-white/15 dark:text-white"
+            className="min-w-0 flex-1 rounded-lg bg-[var(--surface)] px-3 py-2 font-mono text-sm ring-1 ring-[var(--header-border)] text-[var(--text-base)] placeholder:text-slate-400 dark:bg-[var(--surface-muted)] dark:ring-[var(--header-border)] dark:text-[var(--text-base)]"
           />
         </div>
         {typed.trim() && !typedValid && <p className="text-sm text-rose-600 dark:text-rose-400">Enter a whole number from 0 to {MAX_ID.toString()}.</p>}
@@ -1126,7 +1126,7 @@ export const DecodeLab: React.FC = () => {
         <Binary id={id} layout={L} />
       </div>
 
-      <dl className="divide-y divide-slate-200 dark:divide-white/10">
+      <dl className="divide-y divide-[var(--header-border)] dark:divide-[var(--header-border)]">
         {rows.map((r) => (
           <div key={r.label} className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5 py-2 text-sm">
             <dt>
