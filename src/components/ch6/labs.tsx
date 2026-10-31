@@ -56,9 +56,9 @@ import {
  * Shared pieces
  * ===================================================================================== */
 
-const stage = 'rounded-xl bg-slate-50 dark:bg-white/[0.04] p-4 sm:p-5';
-const label = 'text-xs font-medium text-slate-500 dark:text-slate-400';
-const muted = 'text-sm text-slate-600 dark:text-slate-300';
+const stage = 'rounded-xl bg-[var(--surface-muted)] dark:bg-[var(--surface-muted)] p-4 sm:p-5';
+const label = 'text-xs font-medium text-[var(--text-subtle)] dark:text-[var(--text-subtle)]';
+const muted = 'text-sm text-[var(--text-muted)] dark:text-[var(--text-muted)]';
 
 /** Background rounds: async copies land, heartbeats tick, hints are handed back. */
 function useSim(seed: [string, string][] = SEED, run = true) {
@@ -88,7 +88,7 @@ const chipTone = {
   good: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-400/15 dark:text-emerald-300',
   wait: 'bg-amber-100 text-amber-800 dark:bg-amber-400/15 dark:text-amber-300',
   bad: 'bg-rose-100 text-rose-800 dark:bg-rose-400/15 dark:text-rose-300',
-  none: 'bg-slate-200 text-slate-600 dark:bg-white/10 dark:text-slate-300',
+  none: 'bg-slate-200 text-[var(--text-muted)] dark:bg-[var(--surface-muted)] dark:text-[var(--text-muted)]',
 };
 
 const Chip: React.FC<{ tone: keyof typeof chipTone; children: React.ReactNode }> = ({ tone, children }) => (
@@ -127,16 +127,16 @@ const ServerBoxes: React.FC<{
             aria-label={`${id}, ${roles[i]}, ${up ? 'up' : 'down'}. Click to ${up ? 'crash' : 'recover'} it.`}
             className={`min-w-0 rounded-xl p-2.5 text-left ring-1 transition-colors ${
               up
-                ? 'bg-white ring-slate-200 hover:ring-slate-300 dark:bg-white/[0.03] dark:ring-white/10'
+                ? 'bg-[var(--surface)] ring-[var(--header-border)] hover:ring-[var(--header-border)] dark:bg-[var(--surface)] dark:ring-[var(--header-border)]'
                 : 'bg-rose-50 ring-rose-300 dark:bg-rose-400/[0.08] dark:ring-rose-400/40'
             }`}
           >
             <span className="flex items-baseline justify-between gap-1">
-              <span className="font-mono text-sm font-semibold text-slate-900 dark:text-white">{id}</span>
+              <span className="font-mono text-sm font-semibold text-[var(--text-base)] dark:text-[var(--text-base)]">{id}</span>
               <span className={`text-xs ${up ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>{up ? 'up' : 'down'}</span>
             </span>
-            <span className="block text-xs text-slate-500 dark:text-slate-400">{roles[i]}</span>
-            <span className="mt-1.5 block truncate text-sm text-slate-800 dark:text-slate-100">
+            <span className="block text-xs text-[var(--text-subtle)] dark:text-[var(--text-subtle)]">{roles[i]}</span>
+            <span className="mt-1.5 block truncate text-sm text-[var(--text-base)] dark:text-[var(--text-base)]">
               {versions.length ? versions.map((v) => v.value).join(' | ') : heldHints.length ? heldHints.map((h) => h.version.value).join(' | ') : '—'}
             </span>
             <span className="mt-1.5 flex flex-wrap gap-1">
@@ -146,7 +146,7 @@ const ServerBoxes: React.FC<{
               {heldHints.length > 0 && <Chip tone="wait">holds hint for {heldHints.map((h) => h.target).join(', ')}</Chip>}
             </span>
             {outcome && (
-              <span className={`mt-1.5 block text-xs font-medium ${outcome.outcome === 'down' || outcome.outcome === 'partitioned' ? 'text-rose-600 dark:text-rose-400' : 'text-slate-600 dark:text-slate-300'}`}>
+              <span className={`mt-1.5 block text-xs font-medium ${outcome.outcome === 'down' || outcome.outcome === 'partitioned' ? 'text-rose-600 dark:text-rose-400' : 'text-[var(--text-muted)] dark:text-[var(--text-muted)]'}`}>
                 last {op!.type === 'PUT' ? 'write' : 'read'}: {OUTCOME[outcome.outcome].text(outcome)}
               </span>
             )}
@@ -181,7 +181,7 @@ const RingDiagram: React.FC<{ keys: string[]; selectedKey: string; n: number; on
   return (
     <svg
       viewBox="0 0 380 380"
-      className="w-full h-auto max-w-[400px] mx-auto text-slate-700 dark:text-slate-200"
+      className="w-full h-auto max-w-[400px] mx-auto text-[var(--text-muted)] dark:text-[var(--text-muted)]"
       role="img"
       aria-label={`Hash ring with five servers, two positions each. Key ${selectedKey} at ${selAngle} degrees. Walking clockwise, its ${n} replica${n > 1 ? 's are' : ' is'} ${order.map((o) => o.nodeId).join(', ')}.`}
     >
@@ -253,8 +253,8 @@ const KeyPicker: React.FC<{ keys: string[]; value: string; onChange: (k: string)
         aria-pressed={k === value}
         className={`rounded-lg px-2.5 py-1 text-xs font-mono ring-1 transition-colors ${
           k === value
-            ? 'bg-indigo-600 text-white ring-indigo-600'
-            : 'bg-white text-slate-700 ring-slate-200 hover:ring-slate-300 dark:bg-white/[0.03] dark:text-slate-200 dark:ring-white/10'
+            ? 'bg-[var(--accent)] text-white ring-indigo-600'
+            : 'bg-[var(--surface)] text-[var(--text-muted)] ring-[var(--header-border)] hover:ring-[var(--header-border)] dark:bg-[var(--surface)] dark:text-[var(--text-muted)] dark:ring-[var(--header-border)]'
         }`}
       >
         {k}
@@ -307,16 +307,16 @@ export const SingleServerLab: React.FC = () => {
               <div
                 key={i}
                 className={`rounded-lg px-3 py-2 text-sm ${
-                  e ? (up ? 'bg-white ring-1 ring-slate-200 dark:bg-white/[0.04] dark:ring-white/10' : 'bg-rose-50 ring-1 ring-rose-200 dark:bg-rose-400/[0.06] dark:ring-rose-400/30') : 'border-2 border-dashed border-slate-300 dark:border-white/15'
+                  e ? (up ? 'bg-[var(--surface)] ring-1 ring-[var(--header-border)] dark:bg-[var(--surface-muted)] dark:ring-[var(--header-border)]' : 'bg-rose-50 ring-1 ring-rose-200 dark:bg-rose-400/[0.06] dark:ring-rose-400/30') : 'border-2 border-dashed border-slate-300 dark:border-white/15'
                 }`}
               >
                 {e ? (
                   <>
-                    <span className="block font-mono text-xs text-slate-900 dark:text-white">{e[0]}</span>
-                    <span className="block text-xs text-slate-500 dark:text-slate-400">{e[1]}</span>
+                    <span className="block font-mono text-xs text-[var(--text-base)] dark:text-[var(--text-base)]">{e[0]}</span>
+                    <span className="block text-xs text-[var(--text-subtle)] dark:text-[var(--text-subtle)]">{e[1]}</span>
                   </>
                 ) : (
-                  <span className="text-xs text-slate-500 dark:text-slate-400">free</span>
+                  <span className="text-xs text-[var(--text-subtle)] dark:text-[var(--text-subtle)]">free</span>
                 )}
               </div>
             );
@@ -421,7 +421,7 @@ export const CapLab: React.FC = () => {
   return (
     <div className="space-y-5">
       <div className={stage}>
-        <svg viewBox="0 0 380 220" className="w-full h-auto text-slate-700 dark:text-slate-200" role="img" aria-label={`Three replicas. ${partitioned ? 'The link to n3 is cut.' : 'All links are up.'}`}>
+        <svg viewBox="0 0 380 220" className="w-full h-auto text-[var(--text-muted)] dark:text-[var(--text-muted)]" role="img" aria-label={`Three replicas. ${partitioned ? 'The link to n3 is cut.' : 'All links are up.'}`}>
           <line x1={80} y1={55} x2={80} y2={165} stroke="currentColor" strokeOpacity={0.35} strokeWidth={2} />
           {(['n1', 'n2'] as CapNode[]).map((id) => (
             <line key={id} x1={pos[id].x} y1={pos[id].y} x2={300} y2={110} className={partitioned ? 'stroke-rose-500' : 'stroke-slate-400'} strokeWidth={2} strokeDasharray={partitioned ? '4 6' : undefined} />
@@ -479,7 +479,7 @@ export const CapLab: React.FC = () => {
         </Callout>
       )}
       {conflict && (
-        <div className="flex flex-wrap items-center gap-2 text-sm text-slate-700 dark:text-slate-200">
+        <div className="flex flex-wrap items-center gap-2 text-sm text-[var(--text-muted)] dark:text-[var(--text-muted)]">
           <span>Keep:</span>
           <Button onClick={() => resolve(conflict.main)}>n1/n2’s {conflict.main.value}</Button>
           <Button onClick={() => resolve(conflict.iso)}>n3’s {conflict.iso.value}</Button>
@@ -513,7 +513,7 @@ export const RingLab: React.FC<{ replication?: boolean }> = ({ replication = fal
       <p className={muted}>
         Walk clockwise from {keyAngle(k)}°:{' '}
         {steps.map((st, i) => (
-          <span key={i} className={`font-mono ${st.taken ? 'text-slate-900 dark:text-white' : 'line-through text-slate-400'}`}>
+          <span key={i} className={`font-mono ${st.taken ? 'text-[var(--text-base)] dark:text-[var(--text-base)]' : 'line-through text-slate-400'}`}>
             {st.nodeId} at {st.angle}°{i < steps.length - 1 ? ' → ' : ''}
           </span>
         ))}
@@ -714,7 +714,7 @@ export const VectorClockLab: React.FC = () => {
     <div className="space-y-5">
       <div className={stage}>
         <p className={label}>Versions of data item D</p>
-        {history.length === 0 && <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">Empty.</p>}
+        {history.length === 0 && <p className="mt-3 text-sm text-[var(--text-subtle)] dark:text-[var(--text-subtle)]">Empty.</p>}
         <ol className="mt-3 space-y-2">
           {history.map((h) => {
             const live = heads.some((x) => x.id === h.id);
@@ -726,14 +726,14 @@ export const VectorClockLab: React.FC = () => {
                     ? conflict
                       ? 'bg-amber-50 ring-amber-300 dark:bg-amber-400/[0.08] dark:ring-amber-400/40'
                       : 'bg-emerald-50 ring-emerald-300 dark:bg-emerald-400/[0.08] dark:ring-emerald-400/40'
-                    : 'bg-white ring-slate-200 dark:bg-white/[0.03] dark:ring-white/10'
+                    : 'bg-[var(--surface)] ring-[var(--header-border)] dark:bg-[var(--surface)] dark:ring-[var(--header-border)]'
                 }`}
               >
                 <div className="flex flex-wrap items-baseline justify-between gap-x-3">
-                  <span className="font-mono text-sm font-semibold text-slate-900 dark:text-white">{fmtClock(h.clock, h.id)}</span>
-                  <span className="text-xs text-slate-500 dark:text-slate-400">{live ? (conflict ? 'sibling' : 'current') : 'replaced'}</span>
+                  <span className="font-mono text-sm font-semibold text-[var(--text-base)] dark:text-[var(--text-base)]">{fmtClock(h.clock, h.id)}</span>
+                  <span className="text-xs text-[var(--text-subtle)] dark:text-[var(--text-subtle)]">{live ? (conflict ? 'sibling' : 'current') : 'replaced'}</span>
                 </div>
-                <span className="text-xs text-slate-600 dark:text-slate-300">
+                <span className="text-xs text-[var(--text-muted)] dark:text-[var(--text-muted)]">
                   {h.value}, written via {h.server}
                   {h.from.length ? `, based on ${h.from.join(' + ')}` : ''}
                 </span>
@@ -765,8 +765,8 @@ export const VectorClockLab: React.FC = () => {
         </Callout>
       )}
       {history.length >= 2 && (
-        <details className="rounded-xl ring-1 ring-slate-200 dark:ring-white/10 [&_summary::-webkit-details-marker]:hidden">
-          <summary className="cursor-pointer select-none px-4 py-3 text-sm font-medium text-slate-700 dark:text-slate-200">Compare any two versions</summary>
+        <details className="rounded-xl ring-1 ring-[var(--header-border)] dark:ring-[var(--header-border)] [&_summary::-webkit-details-marker]:hidden">
+          <summary className="cursor-pointer select-none px-4 py-3 text-sm font-medium text-[var(--text-muted)] dark:text-[var(--text-muted)]">Compare any two versions</summary>
           <div className="px-4 pb-4 space-y-3">
             <div className="flex flex-wrap items-center gap-2 text-sm">
               {[
@@ -774,11 +774,11 @@ export const VectorClockLab: React.FC = () => {
                 [cmpB, setCmpB],
               ].map(([val, set], i) => (
                 <React.Fragment key={i}>
-                  {i === 1 && <span className="text-slate-500 dark:text-slate-400">vs</span>}
+                  {i === 1 && <span className="text-[var(--text-subtle)] dark:text-[var(--text-subtle)]">vs</span>}
                   <select
                     value={val as string}
                     onChange={(e) => (set as (v: string) => void)(e.target.value)}
-                    className="rounded-lg px-2 py-1.5 text-sm font-mono ring-1 ring-slate-300 bg-white text-slate-900 dark:bg-white/[0.06] dark:ring-white/15 dark:text-white"
+                    className="rounded-lg px-2 py-1.5 text-sm font-mono ring-1 ring-[var(--header-border)] bg-[var(--surface)] text-[var(--text-base)] dark:bg-[var(--surface-muted)] dark:ring-[var(--header-border)] dark:text-[var(--text-base)]"
                   >
                     {history.map((h) => (
                       <option key={h.id}>{h.id}</option>
@@ -810,17 +810,17 @@ export const GossipLab: React.FC = () => {
             const since = sim.tick - sim.seen[nd.id].at;
             const st = since >= OFFLINE_TICKS ? 'offline' : since >= SUSPECT_TICKS ? 'suspect' : 'alive';
             return (
-              <li key={nd.id} className="flex items-center gap-3 rounded-lg bg-white px-3 py-2 ring-1 ring-slate-200 dark:bg-white/[0.03] dark:ring-white/10">
-                <span className="w-7 font-mono text-sm font-semibold text-slate-900 dark:text-white">{nd.id}</span>
-                <span className="w-20 text-xs text-slate-500 dark:text-slate-400">
-                  heartbeat <span className="font-mono text-slate-900 dark:text-white">{sim.seen[nd.id].hb}</span>
+              <li key={nd.id} className="flex items-center gap-3 rounded-lg bg-[var(--surface)] px-3 py-2 ring-1 ring-[var(--header-border)] dark:bg-[var(--surface)] dark:ring-[var(--header-border)]">
+                <span className="w-7 font-mono text-sm font-semibold text-[var(--text-base)] dark:text-[var(--text-base)]">{nd.id}</span>
+                <span className="w-20 text-xs text-[var(--text-subtle)] dark:text-[var(--text-subtle)]">
+                  heartbeat <span className="font-mono text-[var(--text-base)] dark:text-[var(--text-base)]">{sim.seen[nd.id].hb}</span>
                 </span>
                 <span className="flex-1 flex gap-0.5" aria-label={`${since} rounds since its counter increased`}>
                   {Array.from({ length: OFFLINE_TICKS }).map((_, i) => (
                     <span
                       key={i}
                       className={`h-2 flex-1 rounded-full ${
-                        i < Math.min(since, OFFLINE_TICKS) ? (since >= OFFLINE_TICKS ? 'bg-rose-500' : since >= SUSPECT_TICKS ? 'bg-amber-400' : 'bg-slate-300 dark:bg-white/20') : 'bg-slate-200 dark:bg-white/10'
+                        i < Math.min(since, OFFLINE_TICKS) ? (since >= OFFLINE_TICKS ? 'bg-rose-500' : since >= SUSPECT_TICKS ? 'bg-amber-400' : 'bg-slate-300 dark:bg-[var(--surface)]/20') : 'bg-slate-200 dark:bg-[var(--surface-muted)]'
                       }`}
                     />
                   ))}
@@ -830,7 +830,7 @@ export const GossipLab: React.FC = () => {
             );
           })}
         </ul>
-        <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">
+        <p className="mt-3 text-xs text-[var(--text-subtle)] dark:text-[var(--text-subtle)]">
           The bar fills while a member’s counter stays the same: suspect after {SUSPECT_TICKS} rounds, offline after {OFFLINE_TICKS}.
         </p>
       </div>
@@ -947,7 +947,7 @@ export const MerkleLab: React.FC = () => {
   const cell = (hash: string, compared: boolean, diff: boolean, text: string) => (
     <div
       className={`min-w-0 rounded-lg px-1.5 py-1.5 text-center ${
-        !compared ? 'bg-slate-100 text-slate-500 dark:bg-white/[0.03] dark:text-slate-400' : diff ? 'bg-rose-100 text-rose-800 dark:bg-rose-400/15 dark:text-rose-200' : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-400/15 dark:text-emerald-200'
+        !compared ? 'bg-[var(--surface-muted)] text-[var(--text-subtle)] dark:bg-[var(--surface)] dark:text-[var(--text-subtle)]' : diff ? 'bg-rose-100 text-rose-800 dark:bg-rose-400/15 dark:text-rose-200' : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-400/15 dark:text-emerald-200'
       }`}
       title={compared ? (diff ? 'hashes differ' : 'hashes match') : 'not compared: its parent matched'}
     >
@@ -957,14 +957,14 @@ export const MerkleLab: React.FC = () => {
   );
   const tree = (t: typeof ta, id: string) => (
     <div className="space-y-2">
-      <p className="text-sm font-semibold text-slate-900 dark:text-white">{id}’s tree</p>
+      <p className="text-sm font-semibold text-[var(--text-base)] dark:text-[var(--text-base)]">{id}’s tree</p>
       {cell(t.root, true, cmp.rootDiff, 'root')}
       <div className="grid grid-cols-2 gap-1.5">{t.mids.map((m, i) => <React.Fragment key={i}>{cell(m, cmp.rootDiff, cmp.midDiff[i], i === 0 ? '0–180°' : '180–360°')}</React.Fragment>)}</div>
       <div className="grid grid-cols-4 gap-1.5">
         {t.leaves.map((l, j) => (
           <div key={j}>
             {cell(l, cmp.leafCompared[j], cmp.leafDiff[j], `${BUCKETS[j][0]}°+`)}
-            <p className="mt-0.5 text-center text-[11px] text-slate-500 dark:text-slate-400">{t.buckets[j].length} keys</p>
+            <p className="mt-0.5 text-center text-[11px] text-[var(--text-subtle)] dark:text-[var(--text-subtle)]">{t.buckets[j].length} keys</p>
           </div>
         ))}
       </div>
@@ -1020,22 +1020,22 @@ export const MerkleLab: React.FC = () => {
 const WRITE_KEYS = ['apple', 'banana', 'cherry', 'date', 'elder', 'fig', 'grape', 'kiwi', 'lemon'];
 
 const TableRow: React.FC<{ id: number; entries: [string, string][]; bits?: boolean[]; mark?: number[]; verdict?: ReadStep['verdict'] }> = ({ id, entries, bits, mark = [], verdict }) => (
-  <div className="rounded-lg bg-white px-3 py-2 ring-1 ring-slate-200 dark:bg-white/[0.03] dark:ring-white/10 space-y-1.5">
+  <div className="rounded-lg bg-[var(--surface)] px-3 py-2 ring-1 ring-[var(--header-border)] dark:bg-[var(--surface)] dark:ring-[var(--header-border)] space-y-1.5">
     <div className="flex flex-wrap items-baseline justify-between gap-2">
-      <span className="font-mono text-sm font-semibold text-slate-900 dark:text-white">SST-{id}</span>
+      <span className="font-mono text-sm font-semibold text-[var(--text-base)] dark:text-[var(--text-base)]">SST-{id}</span>
       {verdict && (
         <Chip tone={verdict === 'hit' ? 'good' : verdict === 'skip' ? 'none' : 'wait'}>
           {verdict === 'hit' ? 'read from disk: found' : verdict === 'skip' ? 'skipped: definitely not here' : 'read from disk: not here (false positive)'}
         </Chip>
       )}
     </div>
-    <p className="font-mono text-xs text-slate-600 dark:text-slate-300 break-words">{entries.map(([k]) => k).join(', ')}</p>
+    <p className="font-mono text-xs text-[var(--text-muted)] dark:text-[var(--text-muted)] break-words">{entries.map(([k]) => k).join(', ')}</p>
     {bits && (
       <div className="flex gap-0.5" aria-label={`Bloom filter of SST-${id}`}>
         {bits.map((b, i) => (
           <span
             key={i}
-            className={`h-4 flex-1 rounded-sm ${b ? 'bg-indigo-500' : 'bg-slate-200 dark:bg-white/10'} ${mark.includes(i) ? 'ring-2 ring-amber-500 ring-offset-1 ring-offset-white dark:ring-offset-[#1c1c1c]' : ''}`}
+            className={`h-4 flex-1 rounded-sm ${b ? 'bg-[var(--accent)]' : 'bg-slate-200 dark:bg-[var(--surface-muted)]'} ${mark.includes(i) ? 'ring-2 ring-amber-500 ring-offset-1 ring-offset-white dark:ring-offset-[#1c1c1c]' : ''}`}
           />
         ))}
       </div>
@@ -1065,14 +1065,14 @@ export const WritePathLab: React.FC = () => {
     setMsg({ tone: r.lost ? 'success' : 'info', title: 'Crashed and restarted', text: r.lost ? `The ${r.lost} key(s) in memory were lost, then rebuilt by replaying ${r.replayed} commit-log entr${r.replayed === 1 ? 'y' : 'ies'}. Nothing lost.` : 'The memtable was empty, so there was nothing to recover.' });
   };
 
-  const col = 'rounded-lg bg-white p-3 ring-1 ring-slate-200 dark:bg-white/[0.03] dark:ring-white/10 min-h-[96px]';
+  const col = 'rounded-lg bg-[var(--surface)] p-3 ring-1 ring-[var(--header-border)] dark:bg-[var(--surface)] dark:ring-[var(--header-border)] min-h-[96px]';
   return (
     <div className="space-y-5">
       <div className={`${stage} grid gap-3 sm:grid-cols-3`}>
         <div className={col}>
           <p className={label}>1. Commit log (disk)</p>
-          <ol className="mt-2 space-y-0.5 font-mono text-xs text-slate-800 dark:text-slate-100">
-            {st.commitLog.length === 0 && <li className="text-slate-500 dark:text-slate-400">empty</li>}
+          <ol className="mt-2 space-y-0.5 font-mono text-xs text-[var(--text-base)] dark:text-[var(--text-base)]">
+            {st.commitLog.length === 0 && <li className="text-[var(--text-subtle)] dark:text-[var(--text-subtle)]">empty</li>}
             {st.commitLog.map(([k, v], j) => (
               <li key={j}>
                 {k}={v}
@@ -1088,7 +1088,7 @@ export const WritePathLab: React.FC = () => {
             {Array.from({ length: MEMTABLE_LIMIT }).map((_, j) => {
               const e = Object.entries(st.memtable)[j];
               return (
-                <div key={j} className={`h-6 rounded px-2 font-mono text-xs leading-6 ${e ? 'bg-indigo-100 text-indigo-900 dark:bg-indigo-400/15 dark:text-indigo-100' : 'border border-dashed border-slate-300 dark:border-white/15'}`}>
+                <div key={j} className={`h-6 rounded px-2 font-mono text-xs leading-6 ${e ? 'bg-indigo-100 text-[var(--text-base)] dark:bg-[var(--surface-muted)] dark:text-indigo-100' : 'border border-dashed border-slate-300 dark:border-white/15'}`}>
                   {e ? `${e[0]}=${e[1]}` : ''}
                 </div>
               );
@@ -1097,8 +1097,8 @@ export const WritePathLab: React.FC = () => {
         </div>
         <div className={col}>
           <p className={label}>3. SSTables (disk)</p>
-          <ul className="mt-2 space-y-1 font-mono text-xs text-slate-800 dark:text-slate-100">
-            {st.sstables.length === 0 && <li className="text-slate-500 dark:text-slate-400">none yet</li>}
+          <ul className="mt-2 space-y-1 font-mono text-xs text-[var(--text-base)] dark:text-[var(--text-base)]">
+            {st.sstables.length === 0 && <li className="text-[var(--text-subtle)] dark:text-[var(--text-subtle)]">none yet</li>}
             {st.sstables.map((t) => (
               <li key={t.id}>
                 SST-{t.id}: {t.entries.map(([k]) => k).join(', ')}
@@ -1143,16 +1143,16 @@ export const ReadPathLab: React.FC = () => {
         <KeyPicker keys={READ_KEYS} value={k ?? ''} onChange={setK} />
       </div>
       <div className={`${stage} space-y-2`}>
-        <div className="flex flex-wrap items-baseline justify-between gap-2 rounded-lg bg-white px-3 py-2 ring-1 ring-slate-200 dark:bg-white/[0.03] dark:ring-white/10">
-          <span className="text-sm font-semibold text-slate-900 dark:text-white">Memtable</span>
-          <span className="font-mono text-xs text-slate-600 dark:text-slate-300">{mem.map(([x]) => x).join(', ') || 'empty'}</span>
+        <div className="flex flex-wrap items-baseline justify-between gap-2 rounded-lg bg-[var(--surface)] px-3 py-2 ring-1 ring-[var(--header-border)] dark:bg-[var(--surface)] dark:ring-[var(--header-border)]">
+          <span className="text-sm font-semibold text-[var(--text-base)] dark:text-[var(--text-base)]">Memtable</span>
+          <span className="font-mono text-xs text-[var(--text-muted)] dark:text-[var(--text-muted)]">{mem.map(([x]) => x).join(', ') || 'empty'}</span>
           {res && <Chip tone={res.steps[0].verdict === 'hit' ? 'good' : 'none'}>{res.steps[0].verdict === 'hit' ? 'found in memory' : 'not here'}</Chip>}
         </div>
         {st.sstables.map((t) => (
           <TableRow key={t.id} id={t.id} entries={t.entries} bits={t.bits} mark={k ? bloomPositions(k) : []} verdict={res && res.steps[0].verdict !== 'hit' ? verdictFor(t.id) : undefined} />
         ))}
         {k && (
-          <p className="text-xs text-slate-500 dark:text-slate-400">
+          <p className="text-xs text-[var(--text-subtle)] dark:text-[var(--text-subtle)]">
             Amber rings: the 2 bits “{k}” hashes to ({bloomPositions(k).join(', ')}). All set means maybe here; any empty bit means definitely not.
           </p>
         )}
