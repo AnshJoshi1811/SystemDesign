@@ -12,7 +12,7 @@ import { Bot, Send, X, Loader2, AlertCircle } from 'lucide-react';
 // After deploying the Cloudflare Worker (cf-worker.js in repo root),
 // replace this URL with your worker's URL from the Cloudflare dashboard.
 // e.g. https://sd-ai-proxy.YOUR-NAME.workers.dev
-const WORKER_URL = 'https://sd-ai-proxy.anshjoshi1811.workers.dev';
+const WORKER_URL = 'https://sd-ai-proxy.anshsjoshi07.workers.dev';
 
 const SYSTEM_PROMPT = `You are a concise system design tutor. Answer questions about system design concepts covered in: 
 scaling, rate limiting, consistent hashing, key-value stores, unique ID generation, and URL shorteners.
