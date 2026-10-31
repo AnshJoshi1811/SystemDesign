@@ -114,7 +114,7 @@ export const SearchBar: React.FC = () => {
           role="listbox"
           className="absolute top-full left-0 right-0 mt-2 rounded-xl overflow-hidden z-50"
           style={{
-            background: 'var(--surface)',
+            background: 'var(--surface-solid)',
             border: '1px solid var(--header-border)',
             boxShadow: '0 8px 32px rgba(0,0,0,0.18)',
           }}
