@@ -28,7 +28,25 @@ import { useNav } from '../lesson/ChapterPlayer';
 import { STAGES, StageContent } from './content';
 import { FINAL_STAGE, STAGE_META, COMPONENT_INFO, TECH, KIND_NAME, Experiment } from './meta';
 import { buildArch, simulate, Inputs, Failures, CAP, FAILOVER_MS, ArchNode, NodeState, Kind } from './model';
-import { Diagram } from './Diagram';
+import { Diagram, ICON as KIND_ICON } from './Diagram';
+
+/** Header icon slot that swaps to an X on hover — click closes whatever panel it sits in. */
+const PanelCloseIcon: React.FC<{ icon: React.ComponentType<{ className?: string }>; onClose: () => void; label: string }> = ({ icon: Icon, onClose, label }) => {
+  const [hover, setHover] = useState(false);
+  return (
+    <button
+      onClick={onClose}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg transition-colors"
+      style={{ color: hover ? 'var(--text-base)' : 'var(--text-subtle)', background: hover ? 'var(--surface-muted)' : 'transparent' }}
+      title={label}
+      aria-label={label}
+    >
+      {hover ? <X className="h-4 w-4" /> : <Icon className="h-4 w-4" />}
+    </button>
+  );
+};
 
 const ALL_STAGES: StageContent[] = [...STAGES, FINAL_STAGE];
 const N = ALL_STAGES.length;
@@ -56,6 +74,7 @@ export const Chapter1Workspace: React.FC = () => {
   const [storedTab, setTab] = usePersistentState<Tab>('chapter1:tab', 'concepts');
   const tab: Tab = storedTab === 'concepts' ? 'concepts' : 'architecture';
   const [sidebarCollapsed, setSidebarCollapsed] = usePersistentState<boolean>('chapter1:sidebar:collapsed', false);
+  const [conceptsHidden, setConceptsHidden] = useState(false);
   const { lang } = useLang();
 
   // When in Miro mode, add a body class so the global main padding tightens
@@ -510,10 +529,10 @@ export const Chapter1Workspace: React.FC = () => {
                 backgroundSize: '20px 20px',
               }}
             >
-              {/* ─ BACKGROUND LAYER: Architecture canvas, fills everything ─ */}
-              <div className="absolute inset-0 flex items-center justify-center" style={{ paddingLeft: 440, paddingRight: 40, paddingTop: 80, paddingBottom: 80 }}>
-                <div className="w-full h-full flex items-center justify-center">
-                  <Diagram arch={arch} sim={sim} selected={selected} onSelect={select} running={sim.success > 0} />
+              {/* ─ BACKGROUND LAYER: Architecture canvas, fills everything. Drag anywhere empty to pan. ─ */}
+              <div className="absolute inset-0" style={{ paddingLeft: 440, paddingRight: 40, paddingTop: 80, paddingBottom: 80 }}>
+                <div className="w-full h-full">
+                  <Diagram arch={arch} sim={sim} selected={selected} onSelect={select} running={sim.success > 0} canvasMode />
                 </div>
               </div>
 
@@ -547,78 +566,95 @@ export const Chapter1Workspace: React.FC = () => {
                 </div>
               </div>
 
-              {/* ─ LEFT: Concepts overlay — z-30 above the canvas ─ */}
-              <div
-                className="absolute z-30 flex flex-col rounded-xl overflow-hidden"
-                style={{
-                  left: 24,
-                  top: 24,
-                  bottom: 24,
-                  width: 400,
-                  background: 'var(--surface)',
-                  border: '1px solid var(--header-border)',
-                  boxShadow: 'var(--shadow-float)',
-                }}
-              >
-                <div className="shrink-0 flex items-center justify-between px-4 py-3" style={{ borderBottom: '1px solid var(--header-border)', background: 'var(--surface-muted)' }}>
-                  <span className="text-xs font-bold tracking-widest uppercase" style={{ color: 'var(--text-subtle)' }}>
-                    {lang === 'hi' ? 'Concepts' : 'Concepts'}
-                  </span>
-                  <span className="text-[10px]" style={{ color: 'var(--text-subtle)' }}>
-                    Stage {i + 1} / {N}
-                  </span>
-                </div>
-
-                <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-4">
-                  {lang === 'hi' && content.hinglish && (
-                    <div className="rounded-xl px-3 py-2.5 text-xs leading-relaxed" style={{ background: 'var(--surface-muted)', border: '1px solid var(--header-border)', color: 'var(--text-base)' }}>
-                      {content.hinglish}
-                    </div>
-                  )}
-                  <div className="lesson-prose text-sm">
-                    <p>{content.why}</p>
-                    <p><strong>{lang === 'hi' ? 'Weak spot: ' : 'Weak spot: '}</strong>{content.weakSpot}</p>
-                    <p><strong>{i === N - 1 ? (lang === 'hi' ? 'Aage: ' : 'Next: ') : (lang === 'hi' ? 'Solution: ' : 'The fix: ')}</strong>{content.fix}</p>
-                  </div>
-                  {i > 0 && <WhatChanged before={content.before} after={content.after} reason={content.reason} />}
-                  <Callout tone="idea" title={lang === 'hi' ? 'Key baat' : 'Key takeaway'}>{content.takeaway}</Callout>
-                  <div id="ch1-check">
-                    <Quiz key={i} persistKey={`chapter1:quiz:stage${i}`} questions={content.quiz} title={lang === 'hi' ? 'Quick test' : 'Quick check'} onProgress={(s, t) => s === t && mark('check')} />
-                  </div>
-                </div>
-              </div>
-
-              {/* ─ RIGHT: Inspector overlay — z-40, visible only when a component is selected ─ */}
-              {selNode && (
+              {/* ─ LEFT: unified panel — Concepts by default, swaps to Inspector when a component is clicked ─ */}
+              {(selNode || !conceptsHidden) && (
                 <div
-                  className="absolute z-40 flex flex-col rounded-xl overflow-hidden"
+                  className="absolute z-30 flex flex-col rounded-xl overflow-hidden"
                   style={{
-                    right: 24,
-                    top: 80,
+                    left: 24,
+                    top: 24,
                     bottom: 24,
-                    width: 320,
+                    width: 400,
                     background: 'var(--surface)',
                     border: '1px solid var(--header-border)',
                     boxShadow: 'var(--shadow-float)',
                   }}
                 >
-                  <div className="shrink-0 flex items-center justify-between px-4 py-3" style={{ borderBottom: '1px solid var(--header-border)', background: 'var(--surface-muted)' }}>
-                    <span className="text-xs font-bold tracking-widest uppercase" style={{ color: 'var(--text-subtle)' }}>
-                      {lang === 'hi' ? 'Component' : 'Inspector'}
+                  <div className="shrink-0 flex items-center gap-2 px-3 py-2.5" style={{ borderBottom: '1px solid var(--header-border)', background: 'var(--surface-muted)' }}>
+                    {selNode ? (
+                      <>
+                        <PanelCloseIcon icon={KIND_ICON[selNode.kind]} label="Close" onClose={() => setSelected(null)} />
+                        <span className="text-sm font-semibold truncate" style={{ color: 'var(--text-base)' }}>{selNode.label}</span>
+                      </>
+                    ) : (
+                      <>
+                        <PanelCloseIcon icon={BookOpen} label="Hide concepts" onClose={() => setConceptsHidden(true)} />
+                        <span className="text-xs font-bold tracking-widest uppercase" style={{ color: 'var(--text-subtle)' }}>
+                          Concepts
+                        </span>
+                      </>
+                    )}
+                    <span className="ml-auto text-[10px] shrink-0" style={{ color: 'var(--text-subtle)' }}>
+                      Stage {i + 1} / {N}
                     </span>
-                    <button
-                      onClick={() => setSelected(null)}
-                      className="rounded p-1 transition-colors hover:bg-[var(--surface)]"
-                      style={{ color: 'var(--text-subtle)' }}
-                      aria-label="Close inspector"
-                    >
-                      <X className="h-3.5 w-3.5" />
-                    </button>
                   </div>
+
                   <div className="flex-1 min-h-0 overflow-y-auto">
-                    <Inspector embedded node={selNode} state={sim.nodes[selNode.id]} crashed={fail.crashed.includes(selNode.id)} count={arch.all.filter((n) => n.kind === selNode.kind).length} onClose={() => setSelected(null)} onCrash={() => crash(selNode.id)} onRecover={() => recover(selNode.id)} />
+                    {selNode ? (
+                      <Inspector
+                        embedded
+                        node={selNode}
+                        state={sim.nodes[selNode.id]}
+                        crashed={fail.crashed.includes(selNode.id)}
+                        count={arch.all.filter((n) => n.kind === selNode.kind).length}
+                        onClose={() => setSelected(null)}
+                        onCrash={() => crash(selNode.id)}
+                        onRecover={() => recover(selNode.id)}
+                      />
+                    ) : (
+                      <div className="p-4 space-y-4">
+                        {lang === 'hi' && content.hinglish && (
+                          <div className="rounded-xl px-3 py-2.5 text-xs leading-relaxed" style={{ background: 'var(--surface-muted)', border: '1px solid var(--header-border)', color: 'var(--text-base)' }}>
+                            {content.hinglish}
+                          </div>
+                        )}
+                        <div className="lesson-prose text-sm">
+                          <p>{content.why}</p>
+                          <p><strong>{lang === 'hi' ? 'Weak spot: ' : 'Weak spot: '}</strong>{content.weakSpot}</p>
+                          <p><strong>{i === N - 1 ? (lang === 'hi' ? 'Aage: ' : 'Next: ') : (lang === 'hi' ? 'Solution: ' : 'The fix: ')}</strong>{content.fix}</p>
+                        </div>
+                        {i > 0 && <WhatChanged before={content.before} after={content.after} reason={content.reason} />}
+                        <Callout tone="idea" title={lang === 'hi' ? 'Key baat' : 'Key takeaway'}>{content.takeaway}</Callout>
+                        <div id="ch1-check">
+                          <Quiz key={i} persistKey={`chapter1:quiz:stage${i}`} questions={content.quiz} title={lang === 'hi' ? 'Quick test' : 'Quick check'} onProgress={(s, t) => s === t && mark('check')} />
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
+              )}
+
+              {/* ─ Reopen tab — shown only when Concepts is hidden and nothing is selected ─ */}
+              {conceptsHidden && !selNode && (
+                <button
+                  onClick={() => setConceptsHidden(false)}
+                  className="absolute z-30 flex flex-col items-center justify-center gap-1.5 rounded-xl px-1.5 py-3 transition-colors"
+                  style={{
+                    left: 24,
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    width: 34,
+                    background: 'var(--surface)',
+                    border: '1px solid var(--header-border)',
+                    boxShadow: 'var(--shadow-float-sm)',
+                    color: 'var(--text-subtle)',
+                  }}
+                  title={lang === 'hi' ? 'Concepts dikhao' : 'Show concepts'}
+                  aria-label="Show concepts"
+                >
+                  <BookOpen className="h-4 w-4" />
+                  <PanelLeftOpen className="h-3.5 w-3.5" />
+                </button>
               )}
 
               {/* ─ BOTTOM: Simulation controls floating ─ */}
