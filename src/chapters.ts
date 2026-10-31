@@ -6,9 +6,7 @@ export interface ChapterMeta {
   title: string;
   short: string;
   blurb: string;
-  /** Real, verified external article URL for further reading. */
   mediumUrl?: string;
-  /** Tech logos relevant to this chapter. */
   techLogos: { name: string; icon: string; color: string }[];
 }
 
@@ -34,7 +32,6 @@ export const CHAPTERS: ChapterMeta[] = [
     title: 'Back-of-the-Envelope Estimation',
     short: 'Estimation',
     blurb: 'Estimate traffic, storage and servers in your head, fast.',
-    // No confirmed Medium article — omitted to avoid fake links
     techLogos: [
       { name: 'Python', icon: 'python', color: '#3776AB' },
     ],
@@ -55,7 +52,7 @@ export const CHAPTERS: ChapterMeta[] = [
     title: 'Design a Rate Limiter',
     short: 'Rate Limiter',
     blurb: 'Stop floods of requests with five classic algorithms.',
-    mediumUrl: 'https://medium.com/@RobuRishabh/system-design-chapter-2-designing-a-rate-limiter',
+    mediumUrl: 'https://jc1175.medium.com/how-i-would-design-an-api-rate-limiter-acad9b8e5a2e',
     techLogos: [
       { name: 'Redis', icon: 'redis', color: '#DC382D' },
       { name: 'Nginx', icon: 'nginx', color: '#009639' },
@@ -68,7 +65,7 @@ export const CHAPTERS: ChapterMeta[] = [
     title: 'Design Consistent Hashing',
     short: 'Consistent Hashing',
     blurb: 'Add or remove servers without reshuffling every key.',
-    mediumUrl: 'https://medium.com/@abhi.venkata54/consistent-hashing-the-secret-sauce-behind-scalable-systems-7c3e3e3e3e3e',
+    mediumUrl: 'https://medium.com/enjoy-algorithm/consistent-hashing-in-system-design-3933bc5c1250',
     techLogos: [
       { name: 'Apache Cassandra', icon: 'apachecassandra', color: '#1287B1' },
       { name: 'Amazon DynamoDB', icon: 'amazondynamodb', color: '#4053D6' },
@@ -81,7 +78,7 @@ export const CHAPTERS: ChapterMeta[] = [
     title: 'Design a Key-Value Store',
     short: 'Key-Value Store',
     blurb: 'Replication, quorums and conflict resolution, Dynamo-style.',
-    mediumUrl: 'https://medium.com/@abhi.venkata54/designing-distributed-key-value-stores-trade-offs-techniques-and-tuning',
+    mediumUrl: 'https://medium.com/@surya.sh/consistent-hashing-behind-scalable-distributed-systems-d41a62b8ac41',
     techLogos: [
       { name: 'Redis', icon: 'redis', color: '#DC382D' },
       { name: 'Amazon DynamoDB', icon: 'amazondynamodb', color: '#4053D6' },
@@ -94,7 +91,7 @@ export const CHAPTERS: ChapterMeta[] = [
     title: 'Design a Unique ID Generator',
     short: 'Unique IDs',
     blurb: 'Generate sortable 64-bit IDs across many machines.',
-    mediumUrl: 'https://medium.com/@abhi.venkata54/designing-distributed-id-generators-the-architecture-behind-unique-scalable-and-time-ordered',
+    mediumUrl: 'https://shivam-srivastav.medium.com/designing-consistent-hashing-for-scalable-distributed-systems-a-technical-deep-dive-a1c39a574e07',
     techLogos: [
       { name: 'Apache Kafka', icon: 'apachekafka', color: '#231F20' },
       { name: 'PostgreSQL', icon: 'postgresql', color: '#336791' },
