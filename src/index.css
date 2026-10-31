@@ -21,6 +21,9 @@
   --header-border: rgba(0,0,0,0.07);
   --surface: #ffffff;
   --surface-muted: #f4f4f5;
+  /* Genuinely opaque — use for floating popovers, dropdowns and panels that sit on top of arbitrary page content. --surface itself is translucent in dark mode and will let content bleed through. */
+  --surface-solid: #ffffff;
+  --surface-solid-muted: #f4f4f5;
   --text-base: #111111;
   --text-muted: #52525b;
   --text-subtle: #a1a1aa;
@@ -42,6 +45,9 @@ html.dark {
   --header-border: rgba(255,255,255,0.07);
   --surface: rgba(255,255,255,0.03);
   --surface-muted: rgba(255,255,255,0.06);
+  /* Genuinely opaque dark panels — popovers/dropdowns/floating overlays must use these, not --surface, or page content behind them bleeds through. */
+  --surface-solid: #18181b;
+  --surface-solid-muted: #202024;
   --text-base: #fafafa;
   --text-muted: #a1a1aa;
   --text-subtle: #52525b;
