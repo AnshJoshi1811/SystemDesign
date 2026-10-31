@@ -1,61 +1,64 @@
-/**
- * Cloudflare Worker — CORS proxy for HuggingFace Inference API
- * Deploy at: dash.cloudflare.com → Workers → Create Worker → paste this → Deploy
- * Free tier: 100,000 requests/day — more than enough
- */
+const ALLOWED_ORIGIN = 'https://anshjoshi1811.github.io';
 
-const HF_MODEL = 'microsoft/Phi-3.5-mini-instruct';
-const ALLOWED_ORIGIN = 'https://anshjoshi1811.github.io'; // your GitHub Pages URL
+// Models tried in order — if one is down/overloaded, next is tried
+const MODELS = [
+  'HuggingFaceH4/zephyr-7b-beta',
+  'mistralai/Mistral-7B-Instruct-v0.2',
+  'google/flan-t5-large',
+];
 
 export default {
   async fetch(request) {
-    // Handle CORS preflight
     if (request.method === 'OPTIONS') {
       return new Response(null, {
         headers: {
           'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
           'Access-Control-Allow-Methods': 'POST, OPTIONS',
           'Access-Control-Allow-Headers': 'Content-Type',
-          'Access-Control-Max-Age': '86400',
         },
       });
     }
 
     if (request.method !== 'POST') {
-      return new Response('Method not allowed', { status: 405 });
+      return new Response('Send a POST request', { status: 405 });
     }
 
+    let body;
     try {
-      const body = await request.json();
-
-      // Forward to HuggingFace — HF_TOKEN is a Cloudflare env secret (optional)
-      const headers = { 'Content-Type': 'application/json' };
-      if (typeof HF_TOKEN !== 'undefined' && HF_TOKEN) {
-        headers['Authorization'] = `Bearer ${HF_TOKEN}`;
-      }
-
-      const hfRes = await fetch(
-        `https://api-inference.huggingface.co/models/${HF_MODEL}`,
-        { method: 'POST', headers, body: JSON.stringify(body) }
-      );
-
-      const data = await hfRes.text();
-
-      return new Response(data, {
-        status: hfRes.status,
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
-        },
-      });
-    } catch (err) {
-      return new Response(JSON.stringify({ error: err.message }), {
-        status: 500,
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
-        },
+      body = await request.json();
+    } catch {
+      return new Response(JSON.stringify({ error: 'Invalid JSON body' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': ALLOWED_ORIGIN },
       });
     }
+
+    // Try each model until one works
+    let lastStatus = 500;
+    let lastData = '';
+    for (const model of MODELS) {
+      const hfRes = await fetch(
+        `https://api-inference.huggingface.co/models/${model}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        }
+      );
+      lastData = await hfRes.text();
+      lastStatus = hfRes.status;
+
+      // 200 or 503 (model loading) — stop here
+      if (hfRes.status === 200 || hfRes.status === 503) break;
+      // 5xx other than 503 — try next model
+    }
+
+    return new Response(lastData, {
+      status: lastStatus,
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
+      },
+    });
   },
 };
