@@ -24,6 +24,8 @@
   --text-base: #111111;
   --text-muted: #52525b;
   --text-subtle: #a1a1aa;
+  --shadow-float: 0 8px 32px rgba(0,0,0,0.14);
+  --shadow-float-sm: 0 4px 16px rgba(0,0,0,0.10);
 }
 
 html.dark {
@@ -43,8 +45,11 @@ html.dark {
   --text-base: #fafafa;
   --text-muted: #a1a1aa;
   --text-subtle: #52525b;
+  --shadow-float: 0 8px 32px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.06);
+  --shadow-float-sm: 0 4px 16px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.05);
 }
 
+html, body { overflow-x: hidden; }
 body { margin: 0; background: #f9f9f9; }
 html.dark body { background: #09090b; }
 * { box-sizing: border-box; }
