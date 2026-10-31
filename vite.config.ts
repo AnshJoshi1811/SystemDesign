@@ -1,7 +1,7 @@
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
-import {defineConfig} from 'vite';
+import { defineConfig } from 'vite';
 
 export default defineConfig(() => {
   return {
@@ -16,10 +16,32 @@ export default defineConfig(() => {
     },
     server: {
       // HMR is disabled in AI Studio via DISABLE_HMR env var.
-      // Do not modifyâfile watching is disabled to prevent flickering during agent edits.
       hmr: process.env.DISABLE_HMR !== 'true',
-      // Disable file watching when DISABLE_HMR is true to save CPU during agent edits.
       watch: process.env.DISABLE_HMR === 'true' ? null : {},
+    },
+    build: {
+      // Slightly more aggressive minification.
+      minify: 'esbuild',
+      rollupOptions: {
+        output: {
+          /**
+           * Manual chunking strategy:
+           *  - React + ReactDOM share one small vendor chunk downloaded once.
+           *  - lucide-react icons used by shared lesson/learn infrastructure go
+           *    into a shared "ui" chunk so they aren't duplicated across chapters.
+           *  - Each chapter already gets its own lazy chunk via App.tsx's
+           *    dynamic imports; this just keeps the shared base small.
+           */
+          manualChunks(id: string) {
+            if (id.includes('node_modules/react') || id.includes('node_modules/react-dom')) {
+              return 'vendor-react';
+            }
+            if (id.includes('node_modules/lucide-react')) {
+              return 'vendor-icons';
+            }
+          },
+        },
+      },
     },
   };
 });
