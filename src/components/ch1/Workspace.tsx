@@ -379,7 +379,7 @@ export const Chapter1Workspace: React.FC = () => {
         >
           {/* ── Left: Concepts (default) OR Inspector+TechStack (when node selected) ── */}
           <div
-            className="flex flex-col overflow-y-auto"
+            className="flex flex-col min-h-0"
             style={{ width: `${splitPct}%`, minWidth: 280, borderRight: '1px solid var(--header-border)' }}
           >
             {/* Header bar with mode indicator */}
@@ -398,48 +398,42 @@ export const Chapter1Workspace: React.FC = () => {
               )}
             </div>
 
-            {/* Content */}
-            <div className="flex-1 overflow-y-auto">
-              {selNode ? (
-                /* Inspector mode */
-                <div>
-                  <Inspector
-                    node={selNode}
-                    state={sim.nodes[selNode.id]}
-                    crashed={fail.crashed.includes(selNode.id)}
-                    count={arch.all.filter((n) => n.kind === selNode.kind).length}
-                    onClose={() => setSelected(null)}
-                    onCrash={() => crash(selNode.id)}
-                    onRecover={() => recover(selNode.id)}
-                  />
-                  <div style={{ borderTop: '1px solid var(--header-border)' }}>
-                    <TechStack arch={arch} selected={selected} onSelect={select} />
+            {/* Content — single scroll container */}
+            {selNode ? (
+              <div className="flex-1 min-h-0 overflow-y-auto">
+                <Inspector
+                  embedded
+                  node={selNode}
+                  state={sim.nodes[selNode.id]}
+                  crashed={fail.crashed.includes(selNode.id)}
+                  count={arch.all.filter((n) => n.kind === selNode.kind).length}
+                  onClose={() => setSelected(null)}
+                  onCrash={() => crash(selNode.id)}
+                  onRecover={() => recover(selNode.id)}
+                />
+              </div>
+            ) : (
+              <div className="flex-1 min-h-0 overflow-y-auto p-5 space-y-5">
+                {lang === 'hi' && content.hinglish && (
+                  <div className="rounded-xl px-4 py-3 text-sm leading-relaxed" style={{ background: 'var(--surface-muted)', border: '1px solid var(--header-border)', color: 'var(--text-base)' }}>
+                    {content.hinglish}
                   </div>
+                )}
+                <div className="lesson-prose">
+                  <p>{content.why}</p>
+                  <p><strong>Weak spot: </strong>{content.weakSpot}</p>
+                  <p><strong>{i === N - 1 ? 'Next: ' : 'The fix: '}</strong>{content.fix}</p>
                 </div>
-              ) : (
-                /* Concepts mode */
-                <div className="p-5 space-y-5">
-                  {lang === 'hi' && content.hinglish && (
-                    <div className="rounded-xl px-4 py-3 text-sm leading-relaxed" style={{ background: 'var(--surface-muted)', border: '1px solid var(--header-border)', color: 'var(--text-base)' }}>
-                      {content.hinglish}
-                    </div>
-                  )}
-                  <div className="lesson-prose">
-                    <p>{content.why}</p>
-                    <p><strong>Weak spot: </strong>{content.weakSpot}</p>
-                    <p><strong>{i === N - 1 ? 'Next: ' : 'The fix: '}</strong>{content.fix}</p>
-                  </div>
-                  {i > 0 && <WhatChanged before={content.before} after={content.after} reason={content.reason} />}
-                  <Callout tone="idea" title="Key takeaway">{content.takeaway}</Callout>
-                  <p className="text-xs italic" style={{ color: 'var(--text-subtle)' }}>
-                    💡 Click any component in the architecture (right) to inspect it here.
-                  </p>
-                  <div id="ch1-check">
-                    <Quiz key={i} persistKey={`chapter1:quiz:stage${i}`} questions={content.quiz} title="Quick check" onProgress={(s, t) => s === t && mark('check')} />
-                  </div>
+                {i > 0 && <WhatChanged before={content.before} after={content.after} reason={content.reason} />}
+                <Callout tone="idea" title="Key takeaway">{content.takeaway}</Callout>
+                <p className="text-xs italic" style={{ color: 'var(--text-subtle)' }}>
+                  💡 Click any component in the architecture (right) to inspect it here.
+                </p>
+                <div id="ch1-check">
+                  <Quiz key={i} persistKey={`chapter1:quiz:stage${i}`} questions={content.quiz} title="Quick check" onProgress={(s, t) => s === t && mark('check')} />
                 </div>
-              )}
-            </div>
+              </div>
+            )}
           </div>
 
           {/* ── Draggable divider ── */}
@@ -740,7 +734,9 @@ const Inspector: React.FC<{
   onClose: () => void;
   onCrash: () => void;
   onRecover: () => void;
-}> = ({ node, state, crashed, count, onClose, onCrash, onRecover }) => {
+  /** When true, strip the card chrome (used inside split pane). */
+  embedded?: boolean;
+}> = ({ node, state, crashed, count, onClose, onCrash, onRecover, embedded = false }) => {
   const [view, setView] = useState<'overview' | 'tech' | 'metrics' | 'config'>('overview');
   if (!node) {
     return (
@@ -755,14 +751,19 @@ const Inspector: React.FC<{
   const info = COMPONENT_INFO[node.kind];
   const status = state?.status ?? 'healthy';
   return (
-    <aside className="self-start rounded-2xl bg-[var(--surface)] p-5 ring-1 ring-[var(--header-border)] dark:bg-[var(--surface)] dark:ring-[var(--header-border)] xl:sticky xl:top-20">
+    <aside className={embedded
+      ? 'p-4'
+      : 'self-start rounded-2xl bg-[var(--surface)] p-5 ring-1 ring-[var(--header-border)] xl:sticky xl:top-20'
+    }>
       <div className="flex items-center justify-between">
-        <p className="flex items-center gap-2 font-semibold text-[var(--text-base)] dark:text-[var(--text-base)]">
-          <Search className="h-4 w-4" /> Component inspector
+        <p className="flex items-center gap-2 font-semibold" style={{ color: 'var(--text-base)' }}>
+          <Search className="h-4 w-4" /> {embedded ? node.name : 'Component inspector'}
         </p>
-        <button onClick={onClose} aria-label="Close inspector" className="rounded p-1 text-slate-400 hover:bg-[var(--surface-muted)] hover:text-[var(--text-muted)] dark:hover:bg-[var(--surface-muted)]">
-          <X className="h-4 w-4" />
-        </button>
+        {!embedded && (
+          <button onClick={onClose} aria-label="Close inspector" className="rounded p-1 hover:bg-[var(--surface-muted)]" style={{ color: 'var(--text-subtle)' }}>
+            <X className="h-4 w-4" />
+          </button>
+        )}
       </div>
 
       <div className="mt-4 flex items-center justify-between gap-3 rounded-xl ring-1 ring-[var(--header-border)] p-3 dark:ring-[var(--header-border)]">
