@@ -439,28 +439,32 @@ export const Chapter1Workspace: React.FC = () => {
             </>
           )}
 
-          {/* ───────── When sidebar is COLLAPSED: true Miro whiteboard ───────── */}
+          {/* ───────── When sidebar is COLLAPSED: true Miro whiteboard, EDGE-TO-EDGE ───────── */}
           {sidebarCollapsed && (
             <div
-              className="relative rounded-2xl overflow-hidden"
+              className="relative overflow-hidden"
               style={{
-                height: 'calc(100vh - 200px)',
-                minHeight: 580,
-                border: '1px solid var(--header-border)',
+                /* Break out of the max-w-[1280px] parent container to true viewport width */
+                width: '100vw',
+                marginLeft: 'calc(-50vw + 50%)',
+                height: 'calc(100vh - 170px)',
+                minHeight: 600,
+                borderTop: '1px solid var(--header-border)',
+                borderBottom: '1px solid var(--header-border)',
                 background: 'var(--surface)',
                 backgroundImage: `radial-gradient(var(--header-border) 1px, transparent 1px)`,
                 backgroundSize: '20px 20px',
               }}
             >
               {/* ─ BACKGROUND LAYER: Architecture canvas, fills everything ─ */}
-              <div className="absolute inset-0 flex items-center justify-center p-6 pl-[420px] pr-6">
-                <div className="w-full h-full">
+              <div className="absolute inset-0 flex items-center justify-center" style={{ paddingLeft: 440, paddingRight: 40, paddingTop: 80, paddingBottom: 80 }}>
+                <div className="w-full h-full flex items-center justify-center">
                   <Diagram arch={arch} sim={sim} selected={selected} onSelect={select} running={sim.success > 0} />
                 </div>
               </div>
 
               {/* ─ TOP: Status + Actions toolbar ─ */}
-              <div className="absolute top-3 left-[420px] right-3 flex items-start justify-between gap-2 z-20 pointer-events-none">
+              <div className="absolute top-4 flex items-start justify-between gap-2 z-20 pointer-events-none" style={{ left: 440, right: 24 }}>
                 <div className="flex items-center gap-2 pointer-events-auto rounded-xl px-3 py-1.5 backdrop-blur" style={{ background: 'var(--surface)', border: '1px solid var(--header-border)', boxShadow: '0 2px 10px rgba(0,0,0,0.1)' }}>
                   <span className={`h-2 w-2 rounded-full ${health === 'ok' ? 'bg-emerald-500' : health === 'degraded' ? 'bg-amber-500' : 'bg-rose-500'}`} />
                   <span className="text-xs font-semibold" style={{ color: 'var(--text-base)' }}>{content.title}</span>
@@ -491,8 +495,12 @@ export const Chapter1Workspace: React.FC = () => {
 
               {/* ─ LEFT: Concepts overlay — z-30 above the canvas ─ */}
               <div
-                className="absolute left-3 top-3 bottom-3 w-[400px] z-30 flex flex-col rounded-xl overflow-hidden"
+                className="absolute z-30 flex flex-col rounded-xl overflow-hidden"
                 style={{
+                  left: 24,
+                  top: 24,
+                  bottom: 24,
+                  width: 400,
                   background: 'var(--surface)',
                   border: '1px solid var(--header-border)',
                   boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
@@ -529,8 +537,12 @@ export const Chapter1Workspace: React.FC = () => {
               {/* ─ RIGHT: Inspector overlay — z-40, visible only when a component is selected ─ */}
               {selNode && (
                 <div
-                  className="absolute right-3 top-16 bottom-3 w-80 z-40 flex flex-col rounded-xl overflow-hidden"
+                  className="absolute z-40 flex flex-col rounded-xl overflow-hidden"
                   style={{
+                    right: 24,
+                    top: 80,
+                    bottom: 24,
+                    width: 320,
                     background: 'var(--surface)',
                     border: '1px solid var(--header-border)',
                     boxShadow: '0 8px 32px rgba(0,0,0,0.18)',
@@ -555,12 +567,13 @@ export const Chapter1Workspace: React.FC = () => {
                 </div>
               )}
 
-              {/* ─ BOTTOM-CENTER: Simulation controls floating ─ */}
+              {/* ─ BOTTOM: Simulation controls floating ─ */}
               <div
-                className="absolute bottom-3 left-[420px] z-20 rounded-xl overflow-hidden"
+                className="absolute z-20 rounded-xl overflow-hidden"
                 style={{
-                  width: 'auto',
-                  maxWidth: 'calc(100% - 440px)',
+                  bottom: 24,
+                  left: 440,
+                  maxWidth: 'calc(100vw - 480px)',
                   background: 'var(--surface)',
                   border: '1px solid var(--header-border)',
                   boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
@@ -608,7 +621,7 @@ export const Chapter1Workspace: React.FC = () => {
 
               {/* ─ Hint when nothing is selected ─ */}
               {!selNode && (
-                <div className="absolute bottom-3 right-3 z-10 text-[11px] italic pointer-events-none" style={{ color: 'var(--text-subtle)' }}>
+                <div className="absolute z-10 text-[11px] italic pointer-events-none" style={{ bottom: 24, right: 24, color: 'var(--text-subtle)' }}>
                   {lang === 'hi' ? '💡 Diagram pe kisi component pe click karo' : '💡 Click any component in the diagram'}
                 </div>
               )}
