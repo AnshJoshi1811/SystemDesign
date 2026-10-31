@@ -172,7 +172,7 @@ export const PowerLab: React.FC = () => {
               <li
                 key={u}
                 className={`flex items-baseline justify-between gap-3 rounded-lg px-3 py-1.5 text-sm ${
-                  here ? 'bg-[var(--accent)] text-white' : 'text-[var(--text-muted)] dark:text-[var(--text-muted)]'
+                  here ? 'bg-[var(--accent)] text-[var(--accent-fg)]' : 'text-[var(--text-muted)] dark:text-[var(--text-muted)]'
                 }`}
               >
                 <span className={here ? 'font-medium' : ''}>{u}</span>
@@ -508,7 +508,7 @@ export const TwitterWalk: React.FC = () => {
           <li key={s.title} className={`flex gap-3 ${i < shown ? 'opacity-70' : ''}`}>
             <span
               className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${
-                i < shown ? 'bg-emerald-500 text-white' : 'bg-[var(--accent)] text-white'
+                i < shown ? 'bg-emerald-500 text-white' : 'bg-[var(--accent)] text-[var(--accent-fg)]'
               }`}
             >
               {i + 1}
