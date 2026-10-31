@@ -290,7 +290,7 @@ export const HashRingCanvas: React.FC<HashRingCanvasProps> = ({
       {showLegend && (
         <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5 mt-3 px-2">
           {servers.map((s) => (
-            <span key={s.id} className="flex items-center gap-1.5 text-xs text-slate-700 dark:text-slate-300">
+            <span key={s.id} className="flex items-center gap-1.5 text-xs text-[var(--text-muted)] dark:text-[var(--text-muted)]">
               <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: s.color }} />
               {s.name}
             </span>
@@ -298,7 +298,7 @@ export const HashRingCanvas: React.FC<HashRingCanvasProps> = ({
         </div>
       )}
       {!drawNodeDots && (
-        <p className="mt-1 text-xs text-center text-slate-500 dark:text-slate-400">
+        <p className="mt-1 text-xs text-center text-[var(--text-subtle)] dark:text-[var(--text-subtle)]">
           {vnodes.length} tokens are too many to draw as dots; the ring colours still show which server owns each arc.
         </p>
       )}
