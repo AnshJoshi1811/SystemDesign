@@ -49,39 +49,43 @@ const MediumLink: React.FC<{ url: string; lang: 'en' | 'hi' }> = ({ url, lang })
   </a>
 );
 
-/** Vertical edge tab that expands horizontally on hover to reveal its label — modern "reveal" micro-interaction. */
-const ReopenTab: React.FC<{ onClick: () => void; label: string }> = ({ onClick, label }) => {
+/** One icon button in the left vertical toolbar — active state, danger tone for destructive actions, tooltip flyout on hover. */
+const ToolbarIcon: React.FC<{
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  onClick: () => void;
+  active?: boolean;
+  tone?: 'default' | 'danger';
+}> = ({ icon: Icon, label, onClick, active = false, tone = 'default' }) => {
   const [hover, setHover] = useState(false);
+  const danger = tone === 'danger';
   return (
-    <button
-      onClick={onClick}
-      onMouseEnter={() => setHover(true)}
-      onMouseLeave={() => setHover(false)}
-      className="absolute z-30 flex items-center gap-2 overflow-hidden rounded-xl transition-all duration-200 ease-out"
-      style={{
-        left: 24,
-        top: '50%',
-        transform: hover ? 'translateY(-50%) translateX(2px)' : 'translateY(-50%)',
-        padding: hover ? '10px 14px' : '12px 9px',
-        background: 'var(--surface)',
-        border: '1px solid var(--header-border)',
-        boxShadow: hover ? 'var(--shadow-float)' : 'var(--shadow-float-sm)',
-        color: hover ? 'var(--text-base)' : 'var(--text-subtle)',
-      }}
-      title={label}
-      aria-label={label}
-    >
-      <BookOpen className="h-4 w-4 shrink-0" />
-      <span
-        className="whitespace-nowrap text-xs font-medium transition-all duration-200 ease-out"
+    <div className="relative">
+      <button
+        onClick={onClick}
+        onMouseEnter={() => setHover(true)}
+        onMouseLeave={() => setHover(false)}
+        className="flex h-9 w-9 items-center justify-center rounded-lg transition-all duration-150"
         style={{
-          maxWidth: hover ? 160 : 0,
-          opacity: hover ? 1 : 0,
+          background: active ? 'var(--accent)' : hover ? (danger ? 'rgba(225,29,72,0.1)' : 'var(--surface-muted)') : 'transparent',
+          color: danger ? '#e11d48' : active ? 'var(--accent-fg)' : 'var(--text-subtle)',
+          transform: hover ? 'scale(1.06)' : 'scale(1)',
         }}
+        aria-label={label}
+        title={label}
       >
-        {label}
-      </span>
-    </button>
+        <Icon className="h-[18px] w-[18px]" />
+      </button>
+
+      {hover && (
+        <span
+          className="pointer-events-none absolute left-full top-1/2 z-50 ml-2.5 -translate-y-1/2 whitespace-nowrap rounded-lg px-2.5 py-1.5 text-xs font-medium"
+          style={{ background: 'var(--surface)', border: '1px solid var(--header-border)', boxShadow: 'var(--shadow-float-sm)', color: 'var(--text-base)' }}
+        >
+          {label}
+        </span>
+      )}
+    </div>
   );
 };
 
@@ -133,7 +137,8 @@ export const Chapter1Workspace: React.FC = () => {
   const [storedTab, setTab] = usePersistentState<Tab>('chapter1:tab', 'concepts');
   const tab: Tab = storedTab === 'concepts' ? 'concepts' : 'architecture';
   const [sidebarCollapsed, setSidebarCollapsed] = usePersistentState<boolean>('chapter1:sidebar:collapsed', false);
-  const [conceptsHidden, setConceptsHidden] = useState(false);
+  // Which panel sits on the right in Miro mode. A clicked component always overrides this to 'components'.
+  const [rightPanel, setRightPanel] = useState<'concepts' | 'components' | 'simControls' | null>('concepts');
   const { lang } = useLang();
 
   // When in Miro mode, add a body class so the global main padding tightens
@@ -161,6 +166,7 @@ export const Chapter1Workspace: React.FC = () => {
 
   const [fail, setFail] = useState<Failures>(noFailures);
   const [selected, setSelected] = useState<string | null>(meta.keyNode);
+  const rightPanelOpen = !!selected || rightPanel !== null;
   const [now, setNow] = useState(Date.now());
 
   // Clock for timed effects (replica promotion, queue draining).
@@ -592,14 +598,14 @@ export const Chapter1Workspace: React.FC = () => {
               }}
             >
               {/* ─ BACKGROUND LAYER: Architecture canvas, fills everything. Drag anywhere empty to pan. ─ */}
-              <div className="absolute inset-0" style={{ paddingLeft: 440, paddingRight: 40, paddingTop: 80, paddingBottom: 80 }}>
+              <div className="absolute inset-0" style={{ paddingLeft: 86, paddingRight: rightPanelOpen ? 440 : 40, paddingTop: 80, paddingBottom: 40, transition: 'padding 0.15s ease-out' }}>
                 <div className="w-full h-full">
                   <Diagram arch={arch} sim={sim} selected={selected} onSelect={select} running={sim.success > 0} canvasMode />
                 </div>
               </div>
 
-              {/* ─ TOP: Status + Actions toolbar ─ */}
-              <div className="absolute top-4 flex items-start justify-between gap-2 z-20 pointer-events-none" style={{ left: 440, right: 24 }}>
+              {/* ─ TOP: Status + version toggle ─ */}
+              <div className="absolute top-4 flex items-start justify-between gap-2 z-20 pointer-events-none" style={{ left: 86, right: rightPanelOpen ? 440 : 24, transition: 'right 0.15s ease-out' }}>
                 <div className="flex items-center gap-2 pointer-events-auto rounded-xl px-3 py-1.5 backdrop-blur" style={{ background: 'var(--surface)', border: '1px solid var(--header-border)', boxShadow: 'var(--shadow-float-sm)' }}>
                   <span className={`h-2 w-2 rounded-full ${health === 'ok' ? 'bg-emerald-500' : health === 'degraded' ? 'bg-amber-500' : 'bg-rose-500'}`} />
                   <span className="text-xs font-semibold" style={{ color: 'var(--text-base)' }}>{content.title}</span>
@@ -610,30 +616,73 @@ export const Chapter1Workspace: React.FC = () => {
                   }`}>{health === 'ok' ? (lang === 'hi' ? 'Chal raha' : 'Running') : health === 'degraded' ? (lang === 'hi' ? 'Dheela' : 'Degraded') : (lang === 'hi' ? 'Band' : 'Outage')}</span>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-1.5 pointer-events-auto rounded-xl px-2 py-1.5 backdrop-blur" style={{ background: 'var(--surface)', border: '1px solid var(--header-border)', boxShadow: 'var(--shadow-float-sm)' }}>
-                  {meta.experiments.map((ex) => (
-                    <button key={ex.id} onClick={() => runExperiment(ex)} title={ex.description}
-                      className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-rose-700 ring-1 ring-rose-200 transition-all duration-150 hover:bg-rose-50 hover:-translate-y-0.5 hover:shadow-sm dark:text-rose-300 dark:ring-rose-400/30 dark:hover:bg-rose-400/10">
-                      <Flame className="h-3 w-3" /> {ex.label}
-                    </button>
-                  ))}
-                  {hasFix(i) && (
+                {hasFix(i) && (
+                  <div className="flex items-center gap-1.5 pointer-events-auto rounded-xl px-2 py-1.5 backdrop-blur" style={{ background: 'var(--surface)', border: '1px solid var(--header-border)', boxShadow: 'var(--shadow-float-sm)' }}>
                     <Segmented label="Version" value={after ? 'after' : 'before'}
                       options={[{ value: 'before', label: meta.toggle?.[0] ?? 'Before' }, { value: 'after', label: meta.toggle?.[1] ?? 'After' }]}
                       onChange={(v) => setAfter(v === 'after')} />
-                  )}
-                  <button onClick={clearFailures} className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs ring-1 ring-[var(--header-border)] transition-all duration-150 hover:bg-[var(--surface-muted)] hover:-translate-y-0.5 hover:shadow-sm" style={{ color: 'var(--text-muted)' }}>
-                    <RotateCcw className="h-3 w-3" /> Reset
-                  </button>
-                </div>
+                  </div>
+                )}
               </div>
 
-              {/* ─ LEFT: unified panel — Concepts by default, swaps to Inspector when a component is clicked ─ */}
-              {(selNode || !conceptsHidden) && (
+              {/* ─ LEFT: vertical icon toolbar, Miro-style ─ */}
+              <div
+                className="absolute z-30 flex flex-col items-center gap-1 rounded-2xl p-1.5"
+                style={{
+                  left: 20,
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  background: 'var(--surface)',
+                  border: '1px solid var(--header-border)',
+                  boxShadow: 'var(--shadow-float)',
+                }}
+              >
+                <ToolbarIcon
+                  icon={BookOpen}
+                  label={lang === 'hi' ? 'Concepts' : 'Concepts'}
+                  active={!selNode && rightPanel === 'concepts'}
+                  onClick={() => { setSelected(null); setRightPanel(p => (p === 'concepts' ? null : 'concepts')); }}
+                />
+                <ToolbarIcon
+                  icon={Boxes}
+                  label={lang === 'hi' ? 'Components' : 'Components'}
+                  active={!!selNode || rightPanel === 'components'}
+                  onClick={() => setRightPanel(p => (p === 'components' && !selNode ? null : 'components'))}
+                />
+
+                <div className="w-6 h-px my-1" style={{ background: 'var(--header-border)' }} />
+
+                {meta.experiments.map((ex) => (
+                  <ToolbarIcon
+                    key={ex.id}
+                    icon={Flame}
+                    label={ex.label}
+                    tone="danger"
+                    onClick={() => runExperiment(ex)}
+                  />
+                ))}
+                <ToolbarIcon
+                  icon={RotateCcw}
+                  label={lang === 'hi' ? 'Reset' : 'Reset'}
+                  onClick={clearFailures}
+                />
+
+                <div className="w-6 h-px my-1" style={{ background: 'var(--header-border)' }} />
+
+                <ToolbarIcon
+                  icon={Settings2}
+                  label={lang === 'hi' ? 'Simulation controls' : 'Simulation controls'}
+                  active={rightPanel === 'simControls' && !selNode}
+                  onClick={() => { setSelected(null); setRightPanel(p => (p === 'simControls' ? null : 'simControls')); }}
+                />
+              </div>
+
+              {/* ─ RIGHT: content panel — Concepts, Components (Inspector), or Simulation controls ─ */}
+              {rightPanelOpen && (
                 <div
                   className="absolute z-30 flex flex-col rounded-xl overflow-hidden"
                   style={{
-                    left: 24,
+                    right: 24,
                     top: 24,
                     bottom: 24,
                     width: 400,
@@ -648,6 +697,20 @@ export const Chapter1Workspace: React.FC = () => {
                         <KindIconBadge icon={KIND_ICON[selNode.kind]} />
                         <span className="text-sm font-semibold truncate" style={{ color: 'var(--text-base)' }}>{selNode.label}</span>
                       </>
+                    ) : rightPanel === 'simControls' ? (
+                      <>
+                        <KindIconBadge icon={Settings2} />
+                        <span className="text-xs font-bold tracking-widest uppercase" style={{ color: 'var(--text-subtle)' }}>
+                          {lang === 'hi' ? 'Simulation Controls' : 'Simulation Controls'}
+                        </span>
+                      </>
+                    ) : rightPanel === 'components' ? (
+                      <>
+                        <KindIconBadge icon={Boxes} />
+                        <span className="text-xs font-bold tracking-widest uppercase" style={{ color: 'var(--text-subtle)' }}>
+                          {lang === 'hi' ? 'Components' : 'Components'}
+                        </span>
+                      </>
                     ) : (
                       <>
                         <KindIconBadge icon={BookOpen} />
@@ -660,8 +723,8 @@ export const Chapter1Workspace: React.FC = () => {
                       Stage {i + 1} / {N}
                     </span>
                     <PanelCloseButton
-                      onClose={selNode ? () => setSelected(null) : () => setConceptsHidden(true)}
-                      label={selNode ? (lang === 'hi' ? 'Band karo' : 'Close') : (lang === 'hi' ? 'Concepts chupao' : 'Hide concepts')}
+                      onClose={() => { if (selNode) setSelected(null); else setRightPanel(null); }}
+                      label={lang === 'hi' ? 'Band karo' : 'Close'}
                     />
                   </div>
 
@@ -677,6 +740,57 @@ export const Chapter1Workspace: React.FC = () => {
                         onCrash={() => crash(selNode.id)}
                         onRecover={() => recover(selNode.id)}
                       />
+                    ) : rightPanel === 'simControls' ? (
+                      <div className="p-4 space-y-5">
+                        <p className="text-xs leading-relaxed" style={{ color: 'var(--text-muted)' }}>
+                          {lang === 'hi'
+                            ? 'In sliders se tum khud traffic badla sakte ho aur dekh sakte ho ki architecture kaise react karta hai.'
+                            : 'Drag these to change the traffic hitting the system and watch how the architecture responds.'}
+                        </p>
+
+                        <ExplainedControl
+                          label={lang === 'hi' ? 'Traffic (requests/sec)' : 'Traffic (requests/sec)'}
+                          value={`${inputs.rps.toLocaleString()} RPS`}
+                          explain={lang === 'hi'
+                            ? 'Har second kitne requests (jaise page load, API call) system pe aa rahe hain. Jitna zyada RPS, utna load servers par.'
+                            : 'How many requests (page loads, API calls) hit the system every second. Higher RPS = more load on every server.'}
+                        >
+                          <input type="range" min={0} max={100} value={rpsToPos(inputs.rps)} onChange={(e) => setInputs({ rps: posToRps(Number(e.target.value)) })} className="w-full accent-[var(--accent)]" />
+                        </ExplainedControl>
+
+                        <ExplainedControl
+                          label={lang === 'hi' ? 'Read / Write mix' : 'Read / Write mix'}
+                          value={`${inputs.readPct}% read / ${100 - inputs.readPct}% write`}
+                          explain={lang === 'hi'
+                            ? `Read = data sirf dekhna (jaise profile khol na, feed scroll karna). Write = naya data save karna (jaise post karna, like karna). Default ${inputs.readPct}% read rakha hai kyunki real apps mein log likhne se zyada padhte hain — Twitter pe 100 log scroll karte hain per 1 jo post karta hai. Isiliye reads ko replicas pe bhi bhej sakte ho, par writes hamesha master server ko hi jaana padta hai — isliye write % badhane se master pe load jaldi badhta hai.`
+                            : `Reads just fetch data (opening a profile, scrolling a feed). Writes change data (posting, liking). It defaults to ${inputs.readPct}% read because real apps are read-heavy — on Twitter, far more people scroll than post. Reads can be served from replicas, but writes always go to the one master — so pushing write% up loads the master much faster.`}
+                        >
+                          <input type="range" min={50} max={99} value={inputs.readPct} onChange={(e) => setInputs({ readPct: Number(e.target.value) })} className="w-full accent-emerald-600" />
+                        </ExplainedControl>
+
+                        <ExplainedControl
+                          label={arch.f.multiDc ? (lang === 'hi' ? 'Servers per DC' : 'Servers per data center') : (lang === 'hi' ? 'Web servers' : 'Web servers')}
+                          value={arch.f.lb ? `${inputs.websPerDc} nodes` : '1 node'}
+                          explain={lang === 'hi'
+                            ? 'Kitne web server machines mil ke traffic handle kar rahe hain. Zyada servers = zyada parallel capacity, par load balancer chahiye unke beech traffic baantne ke liye.'
+                            : 'How many web server machines are splitting the traffic between them. More servers means more parallel capacity, but you need a load balancer to spread requests across them.'}
+                        >
+                          {arch.f.lb ? (
+                            <div className="flex items-center gap-2">
+                              <StepBtn label="Remove" onClick={() => setInputs({ websPerDc: Math.max(1, inputs.websPerDc - 1) })} disabled={inputs.websPerDc <= 1}><Minus className="h-3.5 w-3.5" /></StepBtn>
+                              <span className="w-6 text-center text-xs tabular-nums">{inputs.websPerDc}</span>
+                              <StepBtn label="Add" onClick={() => setInputs({ websPerDc: Math.min(4, inputs.websPerDc + 1) })} disabled={inputs.websPerDc >= 4}><Plus className="h-3.5 w-3.5" /></StepBtn>
+                            </div>
+                          ) : <p className="text-[11px]" style={{ color: 'var(--text-subtle)' }}>{lang === 'hi' ? 'Pehle load balancer chahiye' : 'Needs a load balancer first.'}</p>}
+                        </ExplainedControl>
+                      </div>
+                    ) : rightPanel === 'components' ? (
+                      <div className="p-2">
+                        <p className="px-2 pt-2 pb-3 text-xs leading-relaxed" style={{ color: 'var(--text-muted)' }}>
+                          {lang === 'hi' ? 'Kisi bhi component pe click karo use inspect karne ke liye.' : 'Click any component below to inspect it.'}
+                        </p>
+                        <TechStack arch={arch} selected={selected} onSelect={select} />
+                      </div>
                     ) : (
                       <div className="p-4 space-y-4">
                         {lang === 'hi' && content.hinglish && (
@@ -701,67 +815,17 @@ export const Chapter1Workspace: React.FC = () => {
                 </div>
               )}
 
-              {/* ─ Reopen tab — shown only when Concepts is hidden and nothing is selected ─ */}
-              {conceptsHidden && !selNode && (
-                <ReopenTab onClick={() => setConceptsHidden(false)} label={lang === 'hi' ? 'Concepts dikhao' : 'Show concepts'} />
-              )}
-
-              {/* ─ BOTTOM, CENTERED: Simulation controls floating ─ */}
-              <div
-                className="absolute z-20 rounded-xl overflow-hidden transition-shadow duration-150 hover:shadow-lg"
-                style={{
-                  bottom: 24,
-                  left: '58%',
-                  transform: 'translateX(-50%)',
-                  width: 'max-content',
-                  maxWidth: 'min(560px, calc(92vw - 480px))',
-                  background: 'var(--surface)',
-                  border: '1px solid var(--header-border)',
-                  boxShadow: 'var(--shadow-float-sm)',
-                }}
-              >
-                <details className="group">
-                  <summary className="cursor-pointer flex items-center gap-2 px-3 py-2 text-xs font-semibold select-none" style={{ color: 'var(--text-base)' }}>
-                    <Settings2 className="h-3.5 w-3.5" style={{ color: 'var(--text-subtle)' }} />
-                    {lang === 'hi' ? 'Simulation controls' : 'Simulation controls'}
-                    <span className="ml-auto text-[10px] font-normal" style={{ color: 'var(--text-subtle)' }}>
-                      {inputs.rps.toLocaleString()} RPS · {arch.f.lb ? `${inputs.websPerDc} servers` : '1 server'}
-                    </span>
-                    <ChevronDown className="h-3 w-3 transition-transform group-open:rotate-180" style={{ color: 'var(--text-subtle)' }} />
-                  </summary>
-                  <div className="px-4 py-3 space-y-3" style={{ borderTop: '1px solid var(--header-border)', minWidth: 480 }}>
-                    <div className="grid grid-cols-3 gap-4">
-                      <Control label={lang === 'hi' ? 'Traffic (req/sec)' : 'Traffic (req/sec)'} value={`${inputs.rps.toLocaleString()} RPS`}>
-                        <input type="range" min={0} max={100} value={rpsToPos(inputs.rps)} onChange={(e) => setInputs({ rps: posToRps(Number(e.target.value)) })} className="w-full accent-[var(--accent)]" />
-                      </Control>
-                      <Control label={lang === 'hi' ? 'Read / write' : 'Read / write'} value={`${inputs.readPct}% / ${100 - inputs.readPct}%`}>
-                        <input type="range" min={50} max={99} value={inputs.readPct} onChange={(e) => setInputs({ readPct: Number(e.target.value) })} className="w-full accent-emerald-600" />
-                      </Control>
-                      <Control label={arch.f.multiDc ? (lang === 'hi' ? 'Servers per DC' : 'Servers per DC') : (lang === 'hi' ? 'Web servers' : 'Web servers')} value={arch.f.lb ? `${inputs.websPerDc} nodes` : '1 node'}>
-                        {arch.f.lb ? (
-                          <div className="flex items-center gap-2">
-                            <StepBtn label="Remove" onClick={() => setInputs({ websPerDc: Math.max(1, inputs.websPerDc - 1) })} disabled={inputs.websPerDc <= 1}><Minus className="h-3.5 w-3.5" /></StepBtn>
-                            <span className="w-6 text-center text-xs tabular-nums">{inputs.websPerDc}</span>
-                            <StepBtn label="Add" onClick={() => setInputs({ websPerDc: Math.min(4, inputs.websPerDc + 1) })} disabled={inputs.websPerDc >= 4}><Plus className="h-3.5 w-3.5" /></StepBtn>
-                          </div>
-                        ) : <p className="text-[11px]" style={{ color: 'var(--text-subtle)' }}>{lang === 'hi' ? 'Pehle load balancer chahiye' : 'Needs a load balancer first.'}</p>}
-                      </Control>
-                    </div>
-                  </div>
-                </details>
-              </div>
-
               {/* ─ Floating failure callout at top center ─ */}
               {failing && (
-                <div className="absolute top-16 left-1/2 -translate-x-1/2 z-25 pointer-events-auto max-w-md" style={{ marginLeft: 200 }}>
+                <div className="absolute top-16 z-25 pointer-events-auto max-w-md" style={{ left: 86, right: rightPanelOpen ? 440 : 24, marginInline: 'auto', width: 'fit-content' }}>
                   <Callout tone={health === 'ok' ? 'success' : health === 'outage' ? 'danger' : 'warning'} title={health === 'ok' ? (lang === 'hi' ? 'Architecture ne failure handle kiya' : 'Architecture absorbed the failure') : sim.headline}>
                     <FailureSummary sim={sim} after={after} stage={i} withLabel={meta.toggle?.[1]} withoutLabel={meta.toggle?.[0]} />
                   </Callout>
                 </div>
               )}
 
-              {/* ─ Hint when nothing is selected ─ */}
-              {!selNode && (
+              {/* ─ Hint when nothing is selected and no panel open ─ */}
+              {!selNode && !rightPanelOpen && (
                 <div className="absolute z-10 text-[11px] italic pointer-events-none" style={{ bottom: 24, right: 24, color: 'var(--text-subtle)' }}>
                   {lang === 'hi' ? '💡 Diagram pe kisi component pe click karo' : '💡 Click any component in the diagram'}
                 </div>
@@ -830,6 +894,18 @@ const FailureSummary: React.FC<{ sim: ReturnType<typeof simulate>; after: boolea
     </>
   );
 };
+
+/** A slider control with its explanation always visible underneath — used in the full-width Simulation Controls panel. */
+const ExplainedControl: React.FC<{ label: string; value: string; explain: string; children: React.ReactNode }> = ({ label, value, explain, children }) => (
+  <div>
+    <div className="flex items-baseline justify-between mb-1.5">
+      <span className="text-xs font-semibold" style={{ color: 'var(--text-base)' }}>{label}</span>
+      <span className="text-xs tabular-nums font-medium" style={{ color: 'var(--text-subtle)' }}>{value}</span>
+    </div>
+    {children}
+    <p className="mt-1.5 text-[11px] leading-relaxed" style={{ color: 'var(--text-subtle)' }}>{explain}</p>
+  </div>
+);
 
 const Control: React.FC<{ label: string; value: string; children: React.ReactNode }> = ({ label, value, children }) => (
   <div className="rounded-lg bg-[var(--surface)] p-3 ring-1 ring-[var(--header-border)] dark:bg-[var(--surface)] dark:ring-[var(--header-border)]">
