@@ -17,6 +17,8 @@ import {
   Plus,
   Settings2,
   X,
+  PanelLeftClose,
+  PanelLeftOpen,
 } from 'lucide-react';
 import { usePersistentState } from '../../lib/usePersistentState';
 import { WhatChanged, Quiz } from '../learn/LearningKit';
@@ -52,6 +54,7 @@ export const Chapter1Workspace: React.FC = () => {
   const [stage, setStage] = usePersistentState<number>('chapter1:stage', 0);
   const [storedTab, setTab] = usePersistentState<Tab>('chapter1:tab', 'concepts');
   const tab: Tab = storedTab === 'concepts' ? 'concepts' : 'architecture';
+  const [sidebarCollapsed, setSidebarCollapsed] = usePersistentState<boolean>('chapter1:sidebar:collapsed', false);
   const [flows, setFlows] = usePersistentState<Record<number, Flow>>('chapter1:flow', {});
   const [afterMap, setAfterMap] = usePersistentState<Record<number, boolean>>('chapter1:after', {});
   const [inputsMap, setInputsMap] = usePersistentState<Record<number, Inputs>>('chapter1:inputs', {});
@@ -208,18 +211,18 @@ export const Chapter1Workspace: React.FC = () => {
   );
 
   return (
-    <div className="lg:grid lg:grid-cols-[250px_minmax(0,1fr)] lg:gap-8">
+    <div className={`lg:grid lg:gap-10 transition-all duration-200 ${sidebarCollapsed ? 'lg:grid-cols-[0px_minmax(0,1fr)]' : 'lg:grid-cols-[250px_minmax(0,1fr)]'}`}>
       {/* ---------- Stage rail ---------- */}
-      <aside className="hidden lg:block">
-        <div className="sticky top-20 space-y-5">
+      <aside className={`hidden lg:block overflow-hidden transition-all duration-200 ${sidebarCollapsed ? 'w-0 opacity-0 pointer-events-none' : 'w-[250px] opacity-100'}`}>
+        <div className="sticky top-20 space-y-4 pr-2">
           <div>
-            <p className="text-xs font-semibold text-[var(--accent)] dark:text-[var(--text-muted)]">Chapter 1</p>
-            <p className="text-xs text-[var(--text-subtle)] dark:text-[var(--text-subtle)]">System design foundations</p>
-            <p className="mt-1 text-lg font-bold leading-snug text-[var(--text-base)] dark:text-[var(--text-base)]">Scale from 0 → 1M users</p>
+            <p className="text-[10px] font-bold tracking-widest uppercase mb-0.5" style={{ color: 'var(--text-subtle)' }}>Chapter 1</p>
+            <p className="text-xs mb-1" style={{ color: 'var(--text-subtle)' }}>System design foundations</p>
+            <p className="text-base font-bold leading-snug" style={{ color: 'var(--text-base)' }}>Scale from 0 → 1M users</p>
           </div>
           {stageList}
           {progressCard}
-          <button onClick={resetChapter} className="flex items-center gap-1.5 px-2.5 text-xs text-[var(--text-subtle)] hover:text-[var(--text-muted)] dark:text-[var(--text-subtle)] dark:hover:text-slate-200">
+          <button onClick={resetChapter} className="flex items-center gap-1.5 px-1 text-xs transition-opacity hover:opacity-60" style={{ color: 'var(--text-subtle)' }}>
             <RotateCcw className="h-3 w-3" /> Restart this chapter
           </button>
         </div>
@@ -238,11 +241,21 @@ export const Chapter1Workspace: React.FC = () => {
           {pickerOpen && <div className="space-y-3 p-3" style={{ borderTop: '1px solid var(--header-border)' }}>{stageList}{progressCard}</div>}
         </div>
 
-        {/* ---------- Compact stage header (replaces the big decorative card) ---------- */}
+        {/* ---------- Compact stage header ---------- */}
         <header className="flex items-start justify-between gap-4 pt-1">
           <div className="min-w-0">
-            {/* Breadcrumb */}
+            {/* Breadcrumb with sidebar toggle */}
             <div className="flex items-center gap-2 mb-1.5">
+              <button
+                onClick={() => setSidebarCollapsed(c => !c)}
+                className="hidden lg:flex items-center justify-center w-7 h-7 rounded-lg transition-colors -ml-1 shrink-0"
+                style={{ color: 'var(--text-subtle)' }}
+                onMouseEnter={e => (e.currentTarget.style.background = 'var(--surface-muted)')}
+                onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                title={sidebarCollapsed ? 'Show stage list' : 'Hide stage list'}
+              >
+                {sidebarCollapsed ? <PanelLeftOpen className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
+              </button>
               <span className="text-xs font-medium" style={{ color: 'var(--text-subtle)' }}>Stage {i + 1} / {N}</span>
               <span style={{ color: 'var(--text-subtle)' }}>·</span>
               <span className="flex items-center gap-1 text-xs" style={{ color: 'var(--text-subtle)' }}>
@@ -415,26 +428,32 @@ export const Chapter1Workspace: React.FC = () => {
           </div>
         )}
 
-        {/* ---------- Concepts ---------- */}
+        {/* ---------- Concepts — single readable column, same as ChapterPlayer lessons ---------- */}
         {tab === 'concepts' && (
-          <section className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-            <div className="space-y-5">
-              <div className="rounded-2xl bg-[var(--surface)] p-5 ring-1 ring-[var(--header-border)] dark:bg-[var(--surface)] dark:ring-[var(--header-border)] lesson-prose max-w-none">
-                <p>{content.why}</p>
-                <p>
-                  <strong>Weak spot: </strong>
-                  {content.weakSpot}
-                </p>
-                <p>
-                  <strong>{i === N - 1 ? 'Next: ' : 'The fix: '}</strong>
-                  {content.fix}
-                </p>
-              </div>
-              {i > 0 && <WhatChanged before={content.before} after={content.after} reason={content.reason} />}
-              <Callout tone="idea" title="Key takeaway">
-                {content.takeaway}
-              </Callout>
+          <section className="max-w-3xl space-y-6">
+            {/* Why / weak spot / fix */}
+            <div className="lesson-prose">
+              <p>{content.why}</p>
+              <p><strong>Weak spot: </strong>{content.weakSpot}</p>
+              <p><strong>{i === N - 1 ? 'Next: ' : 'The fix: '}</strong>{content.fix}</p>
             </div>
+
+            {/* What changed (only after stage 0) */}
+            {i > 0 && <WhatChanged before={content.before} after={content.after} reason={content.reason} />}
+
+            {/* Key takeaway */}
+            <Callout tone="idea" title="Key takeaway">
+              {content.takeaway}
+            </Callout>
+
+            {/* Nudge to try the architecture before answering */}
+            {!effFlow.explore && (
+              <p className="text-sm" style={{ color: 'var(--text-subtle)' }}>
+                → Switch to <button className="underline underline-offset-2" onClick={() => openTab('architecture')} style={{ color: 'var(--text-muted)' }}>Architecture</button> to explore the diagram, then come back to answer the check.
+              </p>
+            )}
+
+            {/* Quiz — full width, not crammed beside content */}
             <div id="ch1-check">
               <Quiz
                 key={i}
