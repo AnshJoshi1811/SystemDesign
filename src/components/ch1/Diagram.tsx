@@ -1,6 +1,7 @@
 import React, { useLayoutEffect, useRef, useState } from 'react';
-import { Globe, Network, Server, Database, HardDrive, Zap, KeyRound, Inbox, Cog, Cloud, Plus, Minus, Maximize2 } from 'lucide-react';
+import { Globe, Network, Server, Database, HardDrive, Zap, KeyRound, Inbox, Cog, Cloud, Plus, Minus, Maximize2, Search } from 'lucide-react';
 import { Arch, ArchEdge, ArchNode, Kind, NodeState, SimResult } from './model';
+import { COMPONENT_INFO } from './meta';
 
 export const ICON: Record<Kind, React.ComponentType<{ className?: string }>> = {
   dns: Globe,
@@ -38,15 +39,16 @@ const NodeCard: React.FC<{ node: ArchNode; state: NodeState; selected: boolean; 
   const Icon = ICON[node.kind];
   const down = state.status === 'down';
   const tint = TINT[node.kind];
+  const info = COMPONENT_INFO[node.kind];
   return (
     <button
       data-node={node.id}
       onClick={onSelect}
       aria-pressed={selected}
       aria-label={`${node.label}: ${down ? 'down' : state.status}`}
-      className={`relative flex w-[176px] items-center gap-2.5 rounded-xl px-3 py-2.5 text-left ring-1 transition-all ${
+      className={`group/node relative flex w-[176px] items-center gap-2.5 rounded-xl px-3 py-2.5 text-left ring-1 transition-all duration-150 ${
         down ? 'bg-rose-50/60 ring-rose-300 dark:bg-rose-500/[0.08] dark:ring-rose-500/40' : tint.box
-      } ${selected ? 'ring-2 !ring-[var(--accent)] shadow-md' : 'hover:shadow-sm'}`}
+      } ${selected ? 'ring-2 !ring-[var(--accent)] shadow-md' : 'hover:shadow-lg hover:-translate-y-0.5'}`}
     >
       <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--surface-muted)] ${down ? 'text-rose-500' : tint.icon}`}>
         <Icon className="h-5 w-5" />
@@ -71,6 +73,18 @@ const NodeCard: React.FC<{ node: ArchNode; state: NodeState; selected: boolean; 
           {state.badge}
         </span>
       )}
+
+      {/* Modern hover preview — fades & scales in, no click needed to see what this does */}
+      <span
+        className="pointer-events-none absolute left-1/2 bottom-full z-30 mb-2.5 w-60 -translate-x-1/2 translate-y-1 scale-95 rounded-xl px-3.5 py-3 text-left opacity-0 shadow-lg transition-all duration-150 group-hover/node:translate-y-0 group-hover/node:scale-100 group-hover/node:opacity-100"
+        style={{ background: 'var(--surface)', border: '1px solid var(--header-border)', boxShadow: 'var(--shadow-float-sm)' }}
+      >
+        <span className="block text-[13px] font-semibold" style={{ color: 'var(--text-base)' }}>{node.label}</span>
+        <span className="mt-1 block text-xs leading-relaxed" style={{ color: 'var(--text-muted)' }}>{info.what}</span>
+        <span className="mt-1.5 flex items-center gap-1 text-[10px] font-medium" style={{ color: 'var(--text-subtle)' }}>
+          <Search className="h-2.5 w-2.5" /> Click to inspect
+        </span>
+      </span>
     </button>
   );
 };
