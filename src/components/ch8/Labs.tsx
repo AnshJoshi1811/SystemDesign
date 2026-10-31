@@ -27,20 +27,20 @@ import {
 // ---------------------------------------------------------------------------
 // Shared bits
 // ---------------------------------------------------------------------------
-const box = 'rounded-xl bg-slate-50 dark:bg-white/[0.04] p-4 sm:p-5';
-const labelCls = 'text-xs font-medium text-slate-500 dark:text-slate-400';
-const muted = 'text-sm text-slate-600 dark:text-slate-300';
+const box = 'rounded-xl bg-[var(--surface-muted)] dark:bg-[var(--surface-muted)] p-4 sm:p-5';
+const labelCls = 'text-xs font-medium text-[var(--text-subtle)] dark:text-[var(--text-subtle)]';
+const muted = 'text-sm text-[var(--text-muted)] dark:text-[var(--text-muted)]';
 const inputCls =
-  'w-full min-w-0 rounded-lg px-3 py-2 text-sm font-mono bg-white ring-1 ring-slate-300 text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-white/[0.04] dark:ring-white/15 dark:text-white';
+  'w-full min-w-0 rounded-lg px-3 py-2 text-sm font-mono bg-[var(--surface)] ring-1 ring-[var(--header-border)] text-[var(--text-base)] focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-[var(--surface-muted)] dark:ring-[var(--header-border)] dark:text-[var(--text-base)]';
 const chipOk = 'bg-emerald-100 text-emerald-800 dark:bg-emerald-400/15 dark:text-emerald-300';
 const chipBad = 'bg-rose-100 text-rose-800 dark:bg-rose-400/15 dark:text-rose-300';
-const chipNeutral = 'bg-slate-200 text-slate-700 dark:bg-white/10 dark:text-slate-300';
+const chipNeutral = 'bg-slate-200 text-[var(--text-muted)] dark:bg-[var(--surface-muted)] dark:text-[var(--text-muted)]';
 
 const Settings: React.FC<{ summary: React.ReactNode; children: React.ReactNode }> = ({ summary, children }) => (
-  <details className="group rounded-xl ring-1 ring-slate-200 dark:ring-white/10 [&_summary::-webkit-details-marker]:hidden">
-    <summary className="cursor-pointer select-none px-4 py-3 text-sm font-medium text-slate-700 dark:text-slate-200">
+  <details className="group rounded-xl ring-1 ring-[var(--header-border)] dark:ring-[var(--header-border)] [&_summary::-webkit-details-marker]:hidden">
+    <summary className="cursor-pointer select-none px-4 py-3 text-sm font-medium text-[var(--text-muted)] dark:text-[var(--text-muted)]">
       Change the settings
-      <span className="ml-2 font-normal text-slate-500 dark:text-slate-400">{summary}</span>
+      <span className="ml-2 font-normal text-[var(--text-subtle)] dark:text-[var(--text-subtle)]">{summary}</span>
     </summary>
     <div className="space-y-3 px-4 pb-4">{children}</div>
   </details>
@@ -86,7 +86,7 @@ const Node: React.FC<{ x: number; y: number; w: number; label: string; sub?: str
   dashed,
   highlight,
 }) => (
-  <g className={highlight ? 'text-indigo-600 dark:text-indigo-300' : ''}>
+  <g className={highlight ? 'text-[var(--accent)] dark:text-[var(--text-muted)]' : ''}>
     <rect
       x={x}
       y={y}
@@ -209,11 +209,11 @@ export const ShortenLab: React.FC = () => {
               <li key={l.code} className="flex min-w-0 flex-col gap-0.5 sm:flex-row sm:items-baseline sm:gap-3">
                 <button
                   onClick={() => open(l)}
-                  className="self-start shrink-0 font-mono text-sm font-medium text-indigo-600 underline decoration-indigo-300 underline-offset-2 hover:text-indigo-500 dark:text-indigo-300 dark:decoration-indigo-400/40"
+                  className="self-start shrink-0 font-mono text-sm font-medium text-[var(--accent)] underline decoration-indigo-300 underline-offset-2 hover:text-indigo-500 dark:text-[var(--text-muted)] dark:decoration-indigo-400/40"
                 >
                   {shortUrl(l.code)}
                 </button>
-                <span className="min-w-0 truncate font-mono text-xs text-slate-500 dark:text-slate-400" title={l.longUrl}>
+                <span className="min-w-0 truncate font-mono text-xs text-[var(--text-subtle)] dark:text-[var(--text-subtle)]" title={l.longUrl}>
                   {l.longUrl}
                 </span>
               </li>
@@ -253,7 +253,7 @@ const useUrlsPerDay = () => usePersistentState<number>('chapter8:lab:urlsPerDay'
 
 const VolumePicker: React.FC<{ value: number; onChange: (v: number) => void }> = ({ value, onChange }) => (
   <div className="flex flex-wrap items-center gap-3">
-    <span className="text-sm font-medium text-slate-700 dark:text-slate-200">New URLs per day</span>
+    <span className="text-sm font-medium text-[var(--text-muted)] dark:text-[var(--text-muted)]">New URLs per day</span>
     <Segmented label="New URLs per day" value={String(value)} options={VOLUMES} onChange={(v) => onChange(Number(v))} />
   </div>
 );
@@ -318,7 +318,7 @@ export const RedirectLab: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center gap-3">
-        <span className="text-sm font-medium text-slate-700 dark:text-slate-200">Server answers with</span>
+        <span className="text-sm font-medium text-[var(--text-muted)] dark:text-[var(--text-muted)]">Server answers with</span>
         <Segmented
           label="Redirect status code"
           value={mode}
@@ -331,11 +331,11 @@ export const RedirectLab: React.FC = () => {
       </div>
 
       <div className={box}>
-        <svg viewBox="0 0 500 150" className="w-full h-auto text-slate-700 dark:text-slate-300" role="img" aria-label="Path of the last click: browser, shortener, long URL site">
+        <svg viewBox="0 0 500 150" className="w-full h-auto text-[var(--text-muted)] dark:text-[var(--text-muted)]" role="img" aria-label="Path of the last click: browser, shortener, long URL site">
           <Node x={5} y={54} w={110} label="Browser" sub={last ? (last.hitServer ? `user ${last.user}` : 'cached 301') : undefined} highlight={!!last} />
           <Node x={195} y={4} w={130} label="Shortener" sub="tinyurl.com" highlight={!!last?.hitServer} />
           <Node x={385} y={54} w={110} label="Long URL site" highlight={!!last} />
-          <g className="text-indigo-600 dark:text-indigo-300">
+          <g className="text-[var(--accent)] dark:text-[var(--text-muted)]">
             <Arrow x1={90} y1={54} x2={200} y2={30} lx={112} ly={30} label="1. GET /zn9edcu" active={!!last?.hitServer} />
             <Arrow x1={210} y1={48} x2={110} y2={72} lx={176} ly={78} label={`2. ${mode} + Location`} active={!!last?.hitServer} />
             <Arrow x1={115} y1={96} x2={383} y2={96} lx={250} ly={118} label="3. GET long URL" active={!!last} />
@@ -357,7 +357,7 @@ export const RedirectLab: React.FC = () => {
 
       <div className="space-y-3">
         <div className="flex flex-wrap gap-1.5 min-h-[28px]" aria-label="Clicks so far">
-          {clicks.length === 0 && <span className="text-sm text-slate-500 dark:text-slate-400">No clicks yet.</span>}
+          {clicks.length === 0 && <span className="text-sm text-[var(--text-subtle)] dark:text-[var(--text-subtle)]">No clicks yet.</span>}
           {clicks.slice(-24).map((c) => (
             <span
               key={c.id}
@@ -423,7 +423,7 @@ export const StorageLab: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center gap-3">
-        <span className="text-sm font-medium text-slate-700 dark:text-slate-200">Mappings live in</span>
+        <span className="text-sm font-medium text-[var(--text-muted)] dark:text-[var(--text-muted)]">Mappings live in</span>
         <Segmented
           label="Where mappings live"
           value={mode}
@@ -444,12 +444,12 @@ export const StorageLab: React.FC = () => {
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <tbody className="divide-y divide-slate-200 dark:divide-white/10">
+              <tbody className="divide-y divide-[var(--header-border)] dark:divide-[var(--header-border)]">
                 {rows.map((r) => (
                   <tr key={r.code}>
-                    {mode === 'db' && <td className="py-1.5 pr-3 font-mono text-xs text-slate-500 dark:text-slate-400">{r.id}</td>}
-                    <td className="py-1.5 pr-3 font-mono font-medium text-slate-900 dark:text-white">{r.code}</td>
-                    <td className="py-1.5 font-mono text-xs text-slate-600 dark:text-slate-300 max-w-[220px] truncate" title={r.longUrl}>
+                    {mode === 'db' && <td className="py-1.5 pr-3 font-mono text-xs text-[var(--text-subtle)] dark:text-[var(--text-subtle)]">{r.id}</td>}
+                    <td className="py-1.5 pr-3 font-mono font-medium text-[var(--text-base)] dark:text-[var(--text-base)]">{r.code}</td>
+                    <td className="py-1.5 font-mono text-xs text-[var(--text-muted)] dark:text-[var(--text-muted)] max-w-[220px] truncate" title={r.longUrl}>
                       {r.longUrl}
                     </td>
                   </tr>
@@ -508,7 +508,7 @@ export const LengthLab: React.FC = () => {
       <div className={box}>
         <div className="flex items-baseline justify-between gap-3 mb-3">
           <p className={labelCls}>Codes available with n characters (62ⁿ)</p>
-          <p className="text-xs text-slate-500 dark:text-slate-400">
+          <p className="text-xs text-[var(--text-subtle)] dark:text-[var(--text-subtle)]">
             line = <span className="text-rose-600 dark:text-rose-400">{fmtBig(need)}</span> needed
           </p>
         </div>
@@ -518,20 +518,20 @@ export const LengthLab: React.FC = () => {
             const ok = cap >= need;
             return (
               <div key={n} className="grid grid-cols-[1.25rem_minmax(0,1fr)_6.5rem] items-center gap-2">
-                <span className={`font-mono text-sm ${n === smallest ? 'font-semibold text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400'}`}>{n}</span>
-                <div className="relative h-5 rounded bg-slate-200/70 dark:bg-white/[0.06]">
+                <span className={`font-mono text-sm ${n === smallest ? 'font-semibold text-[var(--text-base)] dark:text-[var(--text-base)]' : 'text-[var(--text-subtle)] dark:text-[var(--text-subtle)]'}`}>{n}</span>
+                <div className="relative h-5 rounded bg-slate-200/70 dark:bg-[var(--surface-muted)]">
                   <div
-                    className={`h-full rounded transition-all ${ok ? (n === smallest ? 'bg-emerald-500' : 'bg-emerald-300 dark:bg-emerald-500/40') : 'bg-slate-300 dark:bg-white/15'}`}
+                    className={`h-full rounded transition-all ${ok ? (n === smallest ? 'bg-emerald-500' : 'bg-emerald-300 dark:bg-emerald-500/40') : 'bg-slate-300 dark:bg-[var(--surface)]/15'}`}
                     style={{ width: `${(n / 8) * 100}%` }}
                   />
                   <span className="absolute inset-y-[-3px] w-0.5 bg-rose-500" style={{ left: `${marker}%` }} aria-hidden />
                 </div>
-                <span className={`text-right font-mono text-xs ${ok ? 'text-emerald-700 dark:text-emerald-400' : 'text-slate-500 dark:text-slate-400'}`}>{fmtBig(cap)}</span>
+                <span className={`text-right font-mono text-xs ${ok ? 'text-emerald-700 dark:text-emerald-400' : 'text-[var(--text-subtle)] dark:text-[var(--text-subtle)]'}`}>{fmtBig(cap)}</span>
               </div>
             );
           })}
         </div>
-        <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">Log scale: each extra character multiplies the capacity by 62.</p>
+        <p className="mt-3 text-xs text-[var(--text-subtle)] dark:text-[var(--text-subtle)]">Log scale: each extra character multiplies the capacity by 62.</p>
       </div>
 
       <div className="grid grid-cols-2 gap-3">
@@ -601,14 +601,14 @@ export const HashLab: React.FC = () => {
         ) : (
           <ol className="space-y-2">
             {last.attempts.map((a, i) => (
-              <li key={i} className="rounded-lg bg-white ring-1 ring-slate-200 dark:bg-white/[0.03] dark:ring-white/10 px-3 py-2">
-                <p className="break-all font-mono text-xs text-slate-600 dark:text-slate-300">
+              <li key={i} className="rounded-lg bg-[var(--surface)] ring-1 ring-[var(--header-border)] dark:bg-[var(--surface)] dark:ring-[var(--header-border)] px-3 py-2">
+                <p className="break-all font-mono text-xs text-[var(--text-muted)] dark:text-[var(--text-muted)]">
                   {i + 1}. CRC32("{tail(a.input)}")
                 </p>
                 <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1.5">
                   <span className="font-mono text-base">
-                    <strong className="font-semibold text-slate-900 dark:text-white">{a.hex.slice(0, len)}</strong>
-                    <span className="text-slate-400 dark:text-slate-500">{a.hex.slice(len)}</span>
+                    <strong className="font-semibold text-[var(--text-base)] dark:text-[var(--text-base)]">{a.hex.slice(0, len)}</strong>
+                    <span className="text-slate-400 dark:text-[var(--text-subtle)]">{a.hex.slice(len)}</span>
                   </span>
                   {a.outcome === 'collision' ? (
                     <span className={`rounded-md px-2 py-0.5 text-xs font-medium ${chipBad}`}>
@@ -625,13 +625,13 @@ export const HashLab: React.FC = () => {
 
         <p className={`${labelCls} mt-5 mb-2`}>Codes in the table ({rows.length})</p>
         <div className="flex flex-wrap gap-1.5 min-h-[28px]">
-          {rows.length === 0 && <span className="text-sm text-slate-500 dark:text-slate-400">Empty.</span>}
+          {rows.length === 0 && <span className="text-sm text-[var(--text-subtle)] dark:text-[var(--text-subtle)]">Empty.</span>}
           {rows.map((r) => (
             <span
               key={r.code}
               title={r.longUrl}
               className={`inline-flex h-7 items-center rounded-md px-2 font-mono text-xs font-medium ${
-                r.code === last?.code ? 'bg-indigo-600 text-white' : chipNeutral
+                r.code === last?.code ? 'bg-[var(--accent)] text-white' : chipNeutral
               }`}
             >
               {r.code}
@@ -689,7 +689,7 @@ export const HashLab: React.FC = () => {
           ]}
           onChange={(v) => reset(Number(v))}
         />
-        <p className="text-xs text-slate-500 dark:text-slate-400">
+        <p className="text-xs text-[var(--text-subtle)] dark:text-[var(--text-subtle)]">
           CRC32 prints 8 hex digits, 16 values each. The book keeps 7 (about 268 million codes), where a small demo would almost never collide. The lab keeps 2 so
           collisions show up after a handful of URLs. Changing this empties the table.
         </p>
@@ -739,7 +739,7 @@ export const Base62Lab: React.FC = () => {
         <p className={`${labelCls} mb-3`}>Short code, filled in from the right</p>
         <div className="flex flex-wrap gap-1.5">
           {rows.length === 0 ? (
-            <span className="flex h-11 w-10 items-center justify-center rounded-lg bg-indigo-600 font-mono text-lg font-semibold text-white">0</span>
+            <span className="flex h-11 w-10 items-center justify-center rounded-lg bg-[var(--accent)] font-mono text-lg font-semibold text-white">0</span>
           ) : (
             rows
               .slice()
@@ -751,7 +751,7 @@ export const Base62Lab: React.FC = () => {
                   <span
                     key={j}
                     className={`flex h-11 w-10 items-center justify-center rounded-lg font-mono text-lg font-semibold transition-colors ${
-                      filled ? 'bg-indigo-600 text-white' : 'border-2 border-dashed border-slate-300 text-transparent dark:border-white/20'
+                      filled ? 'bg-[var(--accent)] text-white' : 'border-2 border-dashed border-slate-300 text-transparent dark:border-white/20'
                     }`}
                   >
                     {filled ? r.char : '·'}
@@ -764,11 +764,11 @@ export const Base62Lab: React.FC = () => {
         {shown > 0 && (
           <ol className="mt-4 space-y-1.5">
             {rows.slice(0, shown).map((r, i) => (
-              <li key={i} className="rounded-lg bg-white ring-1 ring-slate-200 dark:bg-white/[0.03] dark:ring-white/10 px-3 py-2 text-sm">
-                <span className="font-mono text-slate-900 dark:text-white">
+              <li key={i} className="rounded-lg bg-[var(--surface)] ring-1 ring-[var(--header-border)] dark:bg-[var(--surface)] dark:ring-[var(--header-border)] px-3 py-2 text-sm">
+                <span className="font-mono text-[var(--text-base)] dark:text-[var(--text-base)]">
                   {r.dividend.toLocaleString()} ÷ 62 = {r.quotient.toLocaleString()} remainder {r.remainder} → {r.char}
                 </span>
-                <span className="block text-xs text-slate-500 dark:text-slate-400">{charRange(r.remainder)}</span>
+                <span className="block text-xs text-[var(--text-subtle)] dark:text-[var(--text-subtle)]">{charRange(r.remainder)}</span>
               </li>
             ))}
           </ol>
@@ -800,7 +800,7 @@ export const Base62Lab: React.FC = () => {
 // Lesson 9: the shortening flow and its Bloom filter
 // ---------------------------------------------------------------------------
 export const ShortenFlowFigure: React.FC = () => {
-  const step = 'rounded-lg ring-1 ring-slate-300 dark:ring-white/15 px-3 py-2 text-sm';
+  const step = 'rounded-lg ring-1 ring-[var(--header-border)] dark:ring-[var(--header-border)] px-3 py-2 text-sm';
   const arrow = <div className="pl-5 text-slate-400" aria-hidden>↓</div>;
   return (
     <div className="space-y-1.5">
@@ -812,7 +812,7 @@ export const ShortenFlowFigure: React.FC = () => {
         <span>2. Is longURL already in the database?</span>
         <span className="text-emerald-700 dark:text-emerald-400">yes → return the stored shortURL</span>
       </div>
-      <div className="pl-5 text-sm text-slate-500 dark:text-slate-400">↓ no</div>
+      <div className="pl-5 text-sm text-[var(--text-subtle)] dark:text-[var(--text-subtle)]">↓ no</div>
       <div className={step}>
         3. Get a new ID from the unique ID generator: <span className="font-mono">{FIRST_ID}</span>
       </div>
@@ -881,7 +881,7 @@ export const BloomLab: React.FC = () => {
           <p className={labelCls}>
             Bloom filter: {BLOOM_BITS} bits, {BLOOM_HASHES} hash functions
           </p>
-          <p className="text-xs text-slate-500 dark:text-slate-400">outlined = bits the probe checks</p>
+          <p className="text-xs text-[var(--text-subtle)] dark:text-[var(--text-subtle)]">outlined = bits the probe checks</p>
         </div>
         <div
           className="grid gap-1"
@@ -893,7 +893,7 @@ export const BloomLab: React.FC = () => {
             <span
               key={i}
               title={`bit ${i}: ${on ? 1 : 0}`}
-              className={`aspect-square rounded-sm ${on ? 'bg-indigo-500' : 'bg-white ring-1 ring-slate-200 dark:bg-white/[0.04] dark:ring-white/10'} ${
+              className={`aspect-square rounded-sm ${on ? 'bg-[var(--accent)]' : 'bg-[var(--surface)] ring-1 ring-[var(--header-border)] dark:bg-[var(--surface-muted)] dark:ring-[var(--header-border)]'} ${
                 probed.includes(i) ? 'outline outline-2 outline-offset-1 outline-slate-900 dark:outline-white' : ''
               }`}
             />
@@ -902,7 +902,7 @@ export const BloomLab: React.FC = () => {
 
         <p className={`${labelCls} mt-5 mb-2`}>Stored codes ({keys.length})</p>
         <div className="flex flex-wrap gap-1.5 min-h-[28px]">
-          {keys.length === 0 && <span className="text-sm text-slate-500 dark:text-slate-400">None yet.</span>}
+          {keys.length === 0 && <span className="text-sm text-[var(--text-subtle)] dark:text-[var(--text-subtle)]">None yet.</span>}
           {keys.map((k) => (
             <button
               key={k}
@@ -910,7 +910,7 @@ export const BloomLab: React.FC = () => {
                 setProbe(k);
                 setSearchMsg(null);
               }}
-              className={`inline-flex h-7 items-center rounded-md px-2 font-mono text-xs font-medium ${k === key ? 'bg-indigo-600 text-white' : chipNeutral}`}
+              className={`inline-flex h-7 items-center rounded-md px-2 font-mono text-xs font-medium ${k === key ? 'bg-[var(--accent)] text-white' : chipNeutral}`}
             >
               {k}
             </button>
@@ -943,7 +943,7 @@ export const BloomLab: React.FC = () => {
             className={`${inputCls} mt-1`}
           />
         </label>
-        {searchMsg && <p className="text-sm text-slate-600 dark:text-slate-300">{searchMsg}</p>}
+        {searchMsg && <p className="text-sm text-[var(--text-muted)] dark:text-[var(--text-muted)]">{searchMsg}</p>}
         {key &&
           (!maybe ? (
             <Callout tone="success" title="Definitely absent">
@@ -1040,7 +1040,7 @@ export const CacheLab: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center gap-3">
-        <span className="text-sm font-medium text-slate-700 dark:text-slate-200">Cache</span>
+        <span className="text-sm font-medium text-[var(--text-muted)] dark:text-[var(--text-muted)]">Cache</span>
         <Segmented
           label="Cache in front of the database"
           value={mode}
@@ -1053,12 +1053,12 @@ export const CacheLab: React.FC = () => {
       </div>
 
       <div className={box}>
-        <svg viewBox="0 0 500 178" className="w-full h-auto text-slate-700 dark:text-slate-300" role="img" aria-label="Redirect path: browser to web server, then cache, then database on a miss">
+        <svg viewBox="0 0 500 178" className="w-full h-auto text-[var(--text-muted)] dark:text-[var(--text-muted)]" role="img" aria-label="Redirect path: browser to web server, then cache, then database on a miss">
           <Node x={5} y={67} w={110} label="Browser" sub={last ? `/${last.code}` : 'GET /code'} highlight={!!last} />
           <Node x={170} y={67} w={130} label="Web server" sub="behind the LB" highlight={!!last} />
           <Node x={360} y={8} w={135} label="Cache" sub={on ? `${cacheRef.current.size} link${cacheRef.current.size === 1 ? '' : 's'} cached` : 'off'} dashed={!on} highlight={k === 'cache'} />
           <Node x={360} y={126} w={135} label="Database" sub="id, shortURL, longURL" highlight={k === 'db' || k === 'invalid'} />
-          <g className="text-indigo-600 dark:text-indigo-300">
+          <g className="text-[var(--accent)] dark:text-[var(--text-muted)]">
             <Arrow x1={115} y1={89} x2={168} y2={89} lx={142} ly={82} label="GET" active={!!last} />
             <Arrow x1={300} y1={80} x2={358} y2={34} lx={316} ly={48} label="1. check" active={!!last && on} />
             <Arrow x1={300} y1={98} x2={358} y2={144} lx={314} ly={138} label="2. on miss" active={k === 'db' || k === 'invalid'} />
