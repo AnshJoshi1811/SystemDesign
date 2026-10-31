@@ -17,7 +17,6 @@ import {
   Plus,
   Settings2,
   X,
-  Layers,
 } from 'lucide-react';
 import { usePersistentState } from '../../lib/usePersistentState';
 import { WhatChanged, Quiz } from '../learn/LearningKit';
@@ -51,7 +50,7 @@ const rpsToPos = (r: number) => Math.round((Math.log(r / 50) / Math.log(400)) * 
 export const Chapter1Workspace: React.FC = () => {
   const { resetChapter } = useNav();
   const [stage, setStage] = usePersistentState<number>('chapter1:stage', 0);
-  const [storedTab, setTab] = usePersistentState<Tab>('chapter1:tab', 'architecture');
+  const [storedTab, setTab] = usePersistentState<Tab>('chapter1:tab', 'concepts');
   const tab: Tab = storedTab === 'concepts' ? 'concepts' : 'architecture';
   const [flows, setFlows] = usePersistentState<Record<number, Flow>>('chapter1:flow', {});
   const [afterMap, setAfterMap] = usePersistentState<Record<number, boolean>>('chapter1:after', {});
@@ -226,74 +225,70 @@ export const Chapter1Workspace: React.FC = () => {
         </div>
       </aside>
 
-      <div className="min-w-0 space-y-5">
+      <div className="min-w-0 space-y-4">
         {/* ---------- Mobile stage picker ---------- */}
-        <div className="lg:hidden rounded-xl bg-[var(--surface)] ring-1 ring-[var(--header-border)] dark:bg-[var(--surface)] dark:ring-[var(--header-border)]">
+        <div className="lg:hidden rounded-xl bg-[var(--surface)] ring-1 ring-[var(--header-border)]">
           <button onClick={() => setPickerOpen((o) => !o)} aria-expanded={pickerOpen} className="w-full flex items-center justify-between gap-3 px-4 py-3 text-left">
             <span className="min-w-0">
-              <span className="block text-xs text-[var(--text-subtle)] dark:text-[var(--text-subtle)]">
-                Chapter 1 · Stage {i + 1} of {N}
-              </span>
-              <span className="block truncate text-sm font-medium text-[var(--text-base)] dark:text-[var(--text-base)]">{content.title}</span>
+              <span className="block text-xs" style={{ color: 'var(--text-subtle)' }}>Stage {i + 1} of {N}</span>
+              <span className="block truncate text-sm font-medium" style={{ color: 'var(--text-base)' }}>{content.title}</span>
             </span>
-            <ChevronDown className={`h-4 w-4 shrink-0 text-slate-400 transition-transform ${pickerOpen ? 'rotate-180' : ''}`} />
+            <ChevronDown className={`h-4 w-4 shrink-0 transition-transform ${pickerOpen ? 'rotate-180' : ''}`} style={{ color: 'var(--text-subtle)' }} />
           </button>
-          {pickerOpen && <div className="space-y-3 border-t border-[var(--header-border)] p-3 dark:border-[var(--header-border)]">{stageList}{progressCard}</div>}
+          {pickerOpen && <div className="space-y-3 p-3" style={{ borderTop: '1px solid var(--header-border)' }}>{stageList}{progressCard}</div>}
         </div>
 
-        {/* ---------- Stage header ---------- */}
-        <header className="rounded-2xl bg-[var(--surface)] ring-1 ring-[var(--header-border)] p-5 dark:bg-[var(--surface)] dark:ring-[var(--header-border)]">
-          <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-            <div className="flex gap-4 min-w-0">
-              <span className="hidden sm:flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[var(--surface-muted)] text-[var(--accent)] ring-1 ring-indigo-100 dark:bg-[var(--surface-muted)] dark:text-[var(--text-muted)] dark:ring-[var(--header-border)]">
-                <Layers className="h-7 w-7" />
+        {/* ---------- Compact stage header (replaces the big decorative card) ---------- */}
+        <header className="flex items-start justify-between gap-4 pt-1">
+          <div className="min-w-0">
+            {/* Breadcrumb */}
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className="text-xs font-medium" style={{ color: 'var(--text-subtle)' }}>Stage {i + 1} / {N}</span>
+              <span style={{ color: 'var(--text-subtle)' }}>·</span>
+              <span className="flex items-center gap-1 text-xs" style={{ color: 'var(--text-subtle)' }}>
+                <Clock className="h-3 w-3" /> ~{meta.minutes} min
               </span>
-              <div className="min-w-0">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="rounded-md bg-[var(--surface-muted)] px-2 py-0.5 text-xs text-[var(--text-muted)] dark:bg-[var(--surface-muted)] dark:text-[var(--text-muted)]">
-                    Stage {i + 1} of {N}
-                  </span>
-                  <span className="flex items-center gap-1 rounded-md bg-[var(--surface-muted)] px-2 py-0.5 text-xs text-[var(--text-muted)] dark:bg-[var(--surface-muted)] dark:text-[var(--text-muted)]">
-                    <Clock className="h-3 w-3" /> ~{meta.minutes} min
-                  </span>
-                </div>
-                <h1 className="mt-1.5 text-2xl font-bold tracking-tight text-[var(--text-base)] dark:text-[var(--text-base)]">{content.title}</h1>
-                <p className="mt-1 max-w-2xl text-sm leading-relaxed text-[var(--text-muted)] dark:text-[var(--text-muted)]">{content.goal}</p>
-              </div>
             </div>
-            <div className="flex shrink-0 gap-2">
-              <button
-                onClick={() => goStage(i - 1)}
-                disabled={i === 0}
-                className="inline-flex items-center gap-2 rounded-lg bg-[var(--surface)] px-4 py-2 text-sm font-medium text-[var(--text-muted)] ring-1 ring-[var(--header-border)] hover:bg-[var(--surface-muted)] disabled:opacity-40 dark:bg-[var(--surface-muted)] dark:text-[var(--text-muted)] dark:ring-[var(--header-border)]"
-              >
-                <ArrowLeft className="h-4 w-4" /> Previous
-              </button>
-              <button
-                onClick={() => goStage(Math.min(N - 1, i + 1))}
-                disabled={i === N - 1}
-                className="inline-flex items-center gap-2 rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[var(--accent-hover)] disabled:opacity-40"
-              >
-                Next <ArrowRight className="h-4 w-4" />
-              </button>
-            </div>
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight" style={{ color: 'var(--text-base)' }}>{content.title}</h1>
+            <p className="mt-1 text-sm leading-relaxed max-w-2xl" style={{ color: 'var(--text-muted)' }}>{content.goal}</p>
+          </div>
+          {/* Prev / Next — compact, right-aligned */}
+          <div className="flex shrink-0 items-center gap-1.5 mt-0.5">
+            <button
+              onClick={() => goStage(i - 1)}
+              disabled={i === 0}
+              className="inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm font-medium ring-1 ring-[var(--header-border)] hover:bg-[var(--surface-muted)] disabled:opacity-30 transition-colors"
+              style={{ color: 'var(--text-muted)' }}
+            >
+              <ArrowLeft className="h-3.5 w-3.5" /> Prev
+            </button>
+            <button
+              onClick={() => goStage(Math.min(N - 1, i + 1))}
+              disabled={i === N - 1}
+              className="inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm font-medium disabled:opacity-30 transition-colors"
+              style={{ background: 'var(--accent)', color: 'var(--accent-fg)' }}
+            >
+              Next <ArrowRight className="h-3.5 w-3.5" />
+            </button>
           </div>
         </header>
 
-        {/* ---------- Tabs ---------- */}
+        {/* ---------- Tabs — Concepts first, then Architecture ---------- */}
         <nav className="flex gap-1 overflow-x-auto no-scrollbar" aria-label="Stage views">
           {(
             [
-              ['architecture', 'Architecture', Boxes],
               ['concepts', 'Concepts', BookOpen],
+              ['architecture', 'Architecture', Boxes],
             ] as [Tab, string, React.ComponentType<{ className?: string }>][]
           ).map(([id, label, Icon]) => (
             <button
               key={id}
               onClick={() => openTab(id)}
               aria-current={tab === id ? 'page' : undefined}
-              className={`flex shrink-0 items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-colors ${
-                tab === id ? 'bg-[var(--accent)] text-white shadow-sm' : 'text-[var(--text-muted)] hover:bg-[var(--surface)] hover:ring-1 hover:ring-[var(--header-border)] dark:text-[var(--text-muted)] dark:hover:bg-[var(--surface-muted)] dark:hover:ring-white/10'
+              className={`flex shrink-0 items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium transition-colors ${
+                tab === id
+                  ? 'bg-[var(--accent)] text-white shadow-sm'
+                  : 'text-[var(--text-muted)] hover:bg-[var(--surface-muted)] ring-1 ring-[var(--header-border)]'
               }`}
             >
               <Icon className="h-4 w-4" />
@@ -304,7 +299,7 @@ export const Chapter1Workspace: React.FC = () => {
 
         {/* ---------- Architecture ---------- */}
         {tab === 'architecture' && (
-          <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
+          <div className={`grid gap-5 ${selNode ? 'xl:grid-cols-[minmax(0,1fr)_300px]' : 'xl:grid-cols-1'}`}>
             <section className="min-w-0 rounded-2xl bg-[var(--surface)] ring-1 ring-[var(--header-border)] p-4 sm:p-5 dark:bg-[var(--surface)] dark:ring-[var(--header-border)]">
               <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
                 <div className="flex items-center gap-2.5">
