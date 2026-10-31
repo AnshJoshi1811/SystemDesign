@@ -50,8 +50,8 @@ const Note: React.FC<{ tone: Tone; label?: string; children: React.ReactNode }> 
 const optionClass = (on: boolean) =>
   `w-full flex items-start gap-3 rounded-xl px-4 py-3 text-left text-sm transition-colors ring-1 ${
     on
-      ? 'bg-indigo-50 ring-indigo-400 text-indigo-950 dark:bg-indigo-400/[0.1] dark:ring-indigo-400/50 dark:text-white'
-      : 'bg-white ring-slate-200 text-slate-800 hover:ring-slate-300 dark:bg-white/[0.03] dark:ring-white/10 dark:text-slate-100 dark:hover:ring-white/20'
+      ? 'bg-[var(--surface-muted)] ring-indigo-400 text-indigo-950 dark:bg-indigo-400/[0.1] dark:ring-indigo-400/50 dark:text-[var(--text-base)]'
+      : 'bg-[var(--surface)] ring-[var(--header-border)] text-[var(--text-base)] hover:ring-[var(--header-border)] dark:bg-[var(--surface)] dark:ring-[var(--header-border)] dark:text-[var(--text-base)] dark:hover:ring-white/20'
   }`;
 
 /** A toggleable choice; its "why" appears once picked. */
@@ -66,7 +66,7 @@ const ChoiceRow: React.FC<{ picked: boolean; onClick: () => void; text: string; 
     <button onClick={onClick} aria-pressed={picked} className={optionClass(picked)}>
       <span
         className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded ring-1 ${
-          picked ? 'bg-indigo-600 ring-indigo-600 text-white' : 'ring-slate-400 dark:ring-white/30'
+          picked ? 'bg-[var(--accent)] ring-indigo-600 text-white' : 'ring-slate-400 dark:ring-white/30'
         }`}
       >
         {picked && <CheckIcon className="w-3 h-3" strokeWidth={3} />}
@@ -78,12 +78,12 @@ const ChoiceRow: React.FC<{ picked: boolean; onClick: () => void; text: string; 
 );
 
 const GroupTitle: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <h3 className="text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">{children}</h3>
+  <h3 className="text-sm font-medium text-[var(--text-muted)] dark:text-[var(--text-muted)] mb-2">{children}</h3>
 );
 
 const InterviewerLine: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <p className="rounded-xl bg-slate-50 dark:bg-white/[0.04] px-4 py-3 text-sm leading-6 text-slate-700 dark:text-slate-200">
-    <span className="font-medium text-slate-900 dark:text-white">Interviewer: </span>
+  <p className="rounded-xl bg-[var(--surface-muted)] dark:bg-[var(--surface-muted)] px-4 py-3 text-sm leading-6 text-[var(--text-muted)] dark:text-[var(--text-muted)]">
+    <span className="font-medium text-[var(--text-base)] dark:text-[var(--text-base)]">Interviewer: </span>
     {children}
   </p>
 );
@@ -148,8 +148,8 @@ const BlueprintBoard: React.FC<{
               }}
               className={`rounded-xl px-3 py-2.5 text-left text-sm transition-colors ring-1 ${
                 on
-                  ? 'bg-indigo-50 ring-indigo-400 font-medium text-indigo-950 dark:bg-indigo-400/[0.1] dark:ring-indigo-400/50 dark:text-white'
-                  : 'bg-white ring-slate-200 text-slate-700 hover:ring-slate-300 dark:bg-white/[0.03] dark:ring-white/10 dark:text-slate-200'
+                  ? 'bg-[var(--surface-muted)] ring-indigo-400 font-medium text-indigo-950 dark:bg-indigo-400/[0.1] dark:ring-indigo-400/50 dark:text-[var(--text-base)]'
+                  : 'bg-[var(--surface)] ring-[var(--header-border)] text-[var(--text-muted)] hover:ring-[var(--header-border)] dark:bg-[var(--surface)] dark:ring-[var(--header-border)] dark:text-[var(--text-muted)]'
               }`}
             >
               {c.name}
@@ -172,8 +172,8 @@ const BlueprintBoard: React.FC<{
         >
           {buyIn.status === 'approved' ? 'Interviewer agrees' : 'Present to the interviewer'}
         </Button>
-        <span className="text-sm text-slate-500 dark:text-slate-400">
-          Core pieces: <span className="tabular-nums font-medium text-slate-900 dark:text-white">{coreIn} of {core.length}</span>
+        <span className="text-sm text-[var(--text-subtle)] dark:text-[var(--text-subtle)]">
+          Core pieces: <span className="tabular-nums font-medium text-[var(--text-base)] dark:text-[var(--text-base)]">{coreIn} of {core.length}</span>
           {buyIn.attempts > 0 && <> · presented {buyIn.attempts}×</>}
         </span>
       </div>
@@ -199,7 +199,7 @@ const DeepDiveBoard: React.FC<{ problem: ProblemId; picks: Record<string, number
             {t.options.map((o, i) => (
               <button key={o.text} role="radio" aria-checked={p === i} onClick={() => onPick(t.id, i)} className={optionClass(p === i)}>
                 <span
-                  className={`mt-0.5 h-4 w-4 shrink-0 rounded-full ring-1 ${p === i ? 'bg-indigo-600 ring-indigo-600 ring-offset-2 ring-offset-white dark:ring-offset-slate-900' : 'ring-slate-400 dark:ring-white/30'}`}
+                  className={`mt-0.5 h-4 w-4 shrink-0 rounded-full ring-1 ${p === i ? 'bg-[var(--accent)] ring-indigo-600 ring-offset-2 ring-offset-white dark:ring-offset-slate-900' : 'ring-slate-400 dark:ring-white/30'}`}
                 />
                 <span>{o.text}</span>
               </button>
@@ -301,11 +301,11 @@ export const TimeBudgetLab: React.FC = () => {
   const deepColor = status === 'good' ? 'bg-emerald-600' : status === 'ok' ? 'bg-amber-600' : 'bg-rose-600';
 
   const segs = [
-    { label: 'Understand', min: step1, cls: 'bg-indigo-600 text-white' },
-    { label: 'High-level design', min: STEP2_MIN, cls: 'bg-slate-600 text-white dark:bg-slate-500' },
+    { label: 'Understand', min: step1, cls: 'bg-[var(--accent)] text-white' },
+    { label: 'High-level design', min: STEP2_MIN, cls: 'bg-slate-600 text-white dark:bg-[var(--surface-muted)]0' },
     { label: 'Deep dive', min: deep, cls: `${deepColor} text-white` },
-    { label: 'Wrap up', min: WRAP_MIN, cls: 'bg-slate-300 text-slate-800 dark:bg-slate-600 dark:text-white' },
-    ...(slack > 0 ? [{ label: 'Spare', min: slack, cls: 'bg-slate-100 text-slate-500 dark:bg-white/[0.06] dark:text-slate-400' }] : []),
+    { label: 'Wrap up', min: WRAP_MIN, cls: 'bg-slate-300 text-[var(--text-base)] dark:bg-slate-600 dark:text-[var(--text-base)]' },
+    ...(slack > 0 ? [{ label: 'Spare', min: slack, cls: 'bg-[var(--surface-muted)] text-[var(--text-subtle)] dark:bg-[var(--surface-muted)] dark:text-[var(--text-subtle)]' }] : []),
   ];
 
   return (
@@ -329,7 +329,7 @@ export const TimeBudgetLab: React.FC = () => {
           <span>30</span>
           <span>45 min</span>
         </div>
-        <ul className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-600 dark:text-slate-300">
+        <ul className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-[var(--text-muted)] dark:text-[var(--text-muted)]">
           {segs.map((s) => (
             <li key={s.label} className="flex items-center gap-1.5">
               <span className={`h-2.5 w-2.5 rounded-sm ${s.cls}`} />
@@ -377,7 +377,7 @@ export const PracticeInterview: React.FC = () => {
 
   const nav = (back: SimState['step'] | null, next: React.ReactNode, onNext: () => void, disabled: boolean, hint?: string) => (
     <div className="space-y-2 pt-2">
-      {disabled && hint && <p className="text-sm text-slate-500 dark:text-slate-400">{hint}</p>}
+      {disabled && hint && <p className="text-sm text-[var(--text-subtle)] dark:text-[var(--text-subtle)]">{hint}</p>}
       <div className="flex items-center justify-between gap-3">
         {back ? (
           <Button variant="ghost" onClick={() => go(back)}>
@@ -406,12 +406,12 @@ export const PracticeInterview: React.FC = () => {
 
       {sim.step <= 4 && (
         <div>
-          <p className="text-sm text-slate-500 dark:text-slate-400">
-            Stage {sim.step} of 4 · <span className="font-medium text-slate-900 dark:text-white">{STAGES[sim.step - 1]}</span>
+          <p className="text-sm text-[var(--text-subtle)] dark:text-[var(--text-subtle)]">
+            Stage {sim.step} of 4 · <span className="font-medium text-[var(--text-base)] dark:text-[var(--text-base)]">{STAGES[sim.step - 1]}</span>
           </p>
           <div className="mt-2 grid grid-cols-4 gap-1.5" aria-hidden>
             {STAGES.map((s, i) => (
-              <span key={s} className={`h-1.5 rounded-full ${i + 1 < sim.step ? 'bg-emerald-500' : i + 1 === sim.step ? 'bg-indigo-600' : 'bg-slate-200 dark:bg-white/10'}`} />
+              <span key={s} className={`h-1.5 rounded-full ${i + 1 < sim.step ? 'bg-emerald-500' : i + 1 === sim.step ? 'bg-[var(--accent)]' : 'bg-slate-200 dark:bg-[var(--surface-muted)]'}`} />
             ))}
           </div>
         </div>
@@ -485,13 +485,13 @@ const Report: React.FC<{ sim: SimState; onRetry: () => void }> = ({ sim, onRetry
 
   return (
     <div className="space-y-6">
-      <div className="rounded-xl bg-slate-50 dark:bg-white/[0.04] p-5 text-center">
-        <p className="text-sm text-slate-500 dark:text-slate-400">Your score · {P.short}</p>
-        <p className={`mt-1 text-4xl font-semibold tabular-nums ${total >= 75 ? 'text-emerald-600 dark:text-emerald-400' : total >= 50 ? 'text-slate-900 dark:text-white' : 'text-rose-600 dark:text-rose-400'}`}>
+      <div className="rounded-xl bg-[var(--surface-muted)] dark:bg-[var(--surface-muted)] p-5 text-center">
+        <p className="text-sm text-[var(--text-subtle)] dark:text-[var(--text-subtle)]">Your score · {P.short}</p>
+        <p className={`mt-1 text-4xl font-semibold tabular-nums ${total >= 75 ? 'text-emerald-600 dark:text-emerald-400' : total >= 50 ? 'text-[var(--text-base)] dark:text-[var(--text-base)]' : 'text-rose-600 dark:text-rose-400'}`}>
           {total}
-          <span className="text-base font-normal text-slate-500 dark:text-slate-400"> / 100</span>
+          <span className="text-base font-normal text-[var(--text-subtle)] dark:text-[var(--text-subtle)]"> / 100</span>
         </p>
-        <p className="mt-2 text-sm text-slate-600 dark:text-slate-300 max-w-md mx-auto">
+        <p className="mt-2 text-sm text-[var(--text-muted)] dark:text-[var(--text-muted)] max-w-md mx-auto">
           Each stage is worth 25 points and scores the quality of your choices: good picks add, weak or out-of-scope picks subtract, and pushbacks cost points.
         </p>
       </div>
@@ -500,13 +500,13 @@ const Report: React.FC<{ sim: SimState; onRetry: () => void }> = ({ sim, onRetry
         {STAGES.map((name, i) => (
           <div key={name}>
             <div className="flex items-baseline justify-between text-sm">
-              <span className="font-medium text-slate-900 dark:text-white">
+              <span className="font-medium text-[var(--text-base)] dark:text-[var(--text-base)]">
                 {i + 1}. {name}
               </span>
-              <span className="tabular-nums text-slate-600 dark:text-slate-300">{scores[i]} / 25</span>
+              <span className="tabular-nums text-[var(--text-muted)] dark:text-[var(--text-muted)]">{scores[i]} / 25</span>
             </div>
-            <div className="mt-1.5 h-1.5 rounded-full bg-slate-200 dark:bg-white/10 overflow-hidden">
-              <div className="h-full rounded-full bg-indigo-600" style={{ width: `${(scores[i] / 25) * 100}%` }} />
+            <div className="mt-1.5 h-1.5 rounded-full bg-slate-200 dark:bg-[var(--surface-muted)] overflow-hidden">
+              <div className="h-full rounded-full bg-[var(--accent)]" style={{ width: `${(scores[i] / 25) * 100}%` }} />
             </div>
             {strengths[i].map((s) => (
               <Note key={s} tone="good" label="Did well">
@@ -526,7 +526,7 @@ const Report: React.FC<{ sim: SimState; onRetry: () => void }> = ({ sim, onRetry
         <Button variant="primary" onClick={onRetry}>
           <RotateCcw className="w-4 h-4" /> Retry this problem
         </Button>
-        <span className="text-sm text-slate-500 dark:text-slate-400">or pick another problem at the top.</span>
+        <span className="text-sm text-[var(--text-subtle)] dark:text-[var(--text-subtle)]">or pick another problem at the top.</span>
       </div>
     </div>
   );
