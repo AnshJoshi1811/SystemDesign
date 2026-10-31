@@ -141,7 +141,7 @@ export const Header: React.FC<HeaderProps> = ({ view, onNavigate, isDarkMode, se
         </div>
 
         {/* Search */}
-        <div className="flex-1 flex justify-center px-2 max-w-xs hidden sm:flex">
+        <div className="hidden sm:flex flex-1 justify-center px-4 max-w-sm">
           <SearchBar />
         </div>
 
