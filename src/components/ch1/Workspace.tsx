@@ -57,6 +57,16 @@ export const Chapter1Workspace: React.FC = () => {
   const tab: Tab = storedTab === 'concepts' ? 'concepts' : 'architecture';
   const [sidebarCollapsed, setSidebarCollapsed] = usePersistentState<boolean>('chapter1:sidebar:collapsed', false);
   const { lang } = useLang();
+
+  // When in Miro mode, add a body class so the global main padding tightens
+  useEffect(() => {
+    if (sidebarCollapsed) {
+      document.body.classList.add('miro-mode');
+    } else {
+      document.body.classList.remove('miro-mode');
+    }
+    return () => { document.body.classList.remove('miro-mode'); };
+  }, [sidebarCollapsed]);
   const [flows, setFlows] = usePersistentState<Record<number, Flow>>('chapter1:flow', {});
   const [afterMap, setAfterMap] = usePersistentState<Record<number, boolean>>('chapter1:after', {});
   const [inputsMap, setInputsMap] = usePersistentState<Record<number, Inputs>>('chapter1:inputs', {});
@@ -233,7 +243,7 @@ export const Chapter1Workspace: React.FC = () => {
         </div>
       </aside>
 
-      <div className="min-w-0 space-y-4">
+      <div className={sidebarCollapsed ? 'min-w-0' : 'min-w-0 space-y-4'}>
         {/* ---------- Mobile stage picker ---------- */}
         <div className="lg:hidden rounded-xl bg-[var(--surface)] ring-1 ring-[var(--header-border)]">
           <button onClick={() => setPickerOpen((o) => !o)} aria-expanded={pickerOpen} className="w-full flex items-center justify-between gap-3 px-4 py-3 text-left">
@@ -246,44 +256,73 @@ export const Chapter1Workspace: React.FC = () => {
           {pickerOpen && <div className="space-y-3 p-3" style={{ borderTop: '1px solid var(--header-border)' }}>{stageList}{progressBar}</div>}
         </div>
 
-        {/* ---------- Compact stage header ---------- */}
+        {/* ---------- Stage header: compact strip in Miro mode, full header otherwise ---------- */}
         <header
-          className="flex items-start justify-between gap-4"
+          className={sidebarCollapsed ? 'flex items-center gap-3' : 'flex items-start justify-between gap-4'}
           style={
             sidebarCollapsed
               ? {
-                  // Break out to full viewport width in Miro mode
+                  // Thin single-line strip, edge-to-edge
                   width: '100vw',
                   marginLeft: 'calc(-50vw + 50%)',
-                  padding: '4px 32px 12px',
+                  padding: '10px 32px',
+                  borderBottom: '1px solid var(--header-border)',
+                  background: 'var(--surface)',
                 }
               : { paddingTop: 4 }
           }
         >
-          <div className="min-w-0">
-            {/* Breadcrumb with sidebar toggle */}
-            <div className="flex items-center gap-2 mb-1.5">
+          {sidebarCollapsed ? (
+            /* ─── MIRO MODE: thin strip ─── */
+            <>
               <button
                 onClick={() => setSidebarCollapsed(c => !c)}
-                className="hidden lg:flex items-center justify-center w-7 h-7 rounded-lg transition-colors -ml-1 shrink-0"
+                className="flex items-center justify-center w-7 h-7 rounded-lg transition-colors shrink-0"
                 style={{ color: 'var(--text-subtle)' }}
                 onMouseEnter={e => (e.currentTarget.style.background = 'var(--surface-muted)')}
                 onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
-                title={sidebarCollapsed ? 'Show stage list' : 'Hide stage list'}
+                title={lang === 'hi' ? 'Stage list dikhao' : 'Show stage list'}
               >
-                {sidebarCollapsed ? <PanelLeftOpen className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
+                <PanelLeftOpen className="h-4 w-4" />
               </button>
-              <span className="text-xs font-medium" style={{ color: 'var(--text-subtle)' }}>Stage {i + 1} / {N}</span>
+              <span className="text-xs font-medium whitespace-nowrap" style={{ color: 'var(--text-subtle)' }}>
+                Stage {i + 1} / {N}
+              </span>
               <span style={{ color: 'var(--text-subtle)' }}>·</span>
-              <span className="flex items-center gap-1 text-xs" style={{ color: 'var(--text-subtle)' }}>
+              <span className="flex items-center gap-1 text-xs whitespace-nowrap" style={{ color: 'var(--text-subtle)' }}>
                 <Clock className="h-3 w-3" /> ~{meta.minutes} min
               </span>
+              <span className="hidden md:inline" style={{ color: 'var(--text-subtle)' }}>·</span>
+              <span className="hidden md:inline text-sm font-semibold truncate" style={{ color: 'var(--text-base)' }}>
+                {content.title}
+              </span>
+            </>
+          ) : (
+            /* ─── FOCUSED MODE: full header ─── */
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 mb-1.5">
+                <button
+                  onClick={() => setSidebarCollapsed(c => !c)}
+                  className="hidden lg:flex items-center justify-center w-7 h-7 rounded-lg transition-colors -ml-1 shrink-0"
+                  style={{ color: 'var(--text-subtle)' }}
+                  onMouseEnter={e => (e.currentTarget.style.background = 'var(--surface-muted)')}
+                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                  title="Hide stage list"
+                >
+                  <PanelLeftClose className="h-4 w-4" />
+                </button>
+                <span className="text-xs font-medium" style={{ color: 'var(--text-subtle)' }}>Stage {i + 1} / {N}</span>
+                <span style={{ color: 'var(--text-subtle)' }}>·</span>
+                <span className="flex items-center gap-1 text-xs" style={{ color: 'var(--text-subtle)' }}>
+                  <Clock className="h-3 w-3" /> ~{meta.minutes} min
+                </span>
+              </div>
+              <h1 className="text-xl sm:text-2xl font-bold tracking-tight" style={{ color: 'var(--text-base)' }}>{content.title}</h1>
+              <p className="mt-1 text-sm leading-relaxed max-w-2xl" style={{ color: 'var(--text-muted)' }}>{content.goal}</p>
             </div>
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight" style={{ color: 'var(--text-base)' }}>{content.title}</h1>
-            <p className="mt-1 text-sm leading-relaxed max-w-2xl" style={{ color: 'var(--text-muted)' }}>{content.goal}</p>
-          </div>
-          {/* Prev / Next — compact, right-aligned */}
-          <div className="flex shrink-0 items-center gap-1.5 mt-0.5">
+          )}
+          {/* Prev / Next — pushed right */}
+          <div className={`flex shrink-0 items-center gap-1.5 ${sidebarCollapsed ? 'ml-auto' : 'mt-0.5'}`}>
             <button
               onClick={() => goStage(i - 1)}
               disabled={i === 0}
@@ -459,9 +498,8 @@ export const Chapter1Workspace: React.FC = () => {
                 /* Break out of the max-w-[1280px] parent container to true viewport width */
                 width: '100vw',
                 marginLeft: 'calc(-50vw + 50%)',
-                height: 'calc(100vh - 170px)',
-                minHeight: 600,
-                borderTop: '1px solid var(--header-border)',
+                height: 'calc(100vh - 230px)',
+                minHeight: 540,
                 borderBottom: '1px solid var(--header-border)',
                 background: 'var(--surface)',
                 backgroundImage: `radial-gradient(var(--header-border) 1px, transparent 1px)`,
@@ -648,7 +686,7 @@ export const Chapter1Workspace: React.FC = () => {
               ? {
                   width: '100vw',
                   marginLeft: 'calc(-50vw + 50%)',
-                  padding: '20px 32px 0',
+                  padding: '14px 32px 4px',
                 }
               : { marginTop: 20 }
           }
