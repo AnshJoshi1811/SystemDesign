@@ -82,7 +82,7 @@ export const AskAI: React.FC = () => {
         <div
           className="w-[340px] sm:w-[400px] rounded-2xl overflow-hidden flex flex-col"
           style={{
-            background: 'var(--surface)',
+            background: 'var(--surface-solid)',
             border: '1px solid var(--header-border)',
             boxShadow: '0 16px 48px rgba(0,0,0,0.2)',
             maxHeight: '520px',
