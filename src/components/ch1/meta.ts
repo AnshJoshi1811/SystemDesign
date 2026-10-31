@@ -5,6 +5,7 @@ import { StageContent } from './content';
 export const FINAL_STAGE: StageContent = {
   title: 'Final architecture',
   goal: 'Put every piece together and explain what each one is for, and what breaks without it.',
+  mediumUrl: 'https://medium.com/@josephakayesi/scale-from-zero-to-millions-of-users-3e91daa771d9',
   why: 'This is the design the chapter builds, from one server to millions of users. Click any component and crash it: most failures should now be graceful.',
   before: 'One server running everything.',
   after:
