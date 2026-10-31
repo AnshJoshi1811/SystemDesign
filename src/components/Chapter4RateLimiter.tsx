@@ -254,7 +254,7 @@ const LimiterLab: React.FC<{ algo: RateLimiterAlgo }> = ({ algo }) => {
   return (
     <div className="space-y-6">
       {/* 1. The picture of the limiter's state */}
-      <div className="rounded-xl bg-slate-50 dark:bg-white/[0.04] p-4 sm:p-5">
+      <div className="rounded-xl bg-[var(--surface-muted)] dark:bg-[var(--surface-muted)] p-4 sm:p-5">
         <StateView algo={algo} e={e} cfg={cfgRef.current} now={now} elapsed={elapsed} />
       </div>
 
@@ -279,7 +279,7 @@ const LimiterLab: React.FC<{ algo: RateLimiterAlgo }> = ({ algo }) => {
       {/* 3. What happened */}
       <div className="space-y-3">
         <div className="flex flex-wrap gap-1.5 min-h-[28px]" aria-label="Recent requests">
-          {reqs.length === 0 && <span className="text-sm text-slate-500 dark:text-slate-400">No requests yet.</span>}
+          {reqs.length === 0 && <span className="text-sm text-[var(--text-subtle)] dark:text-[var(--text-subtle)]">No requests yet.</span>}
           {reqs.map((r) => (
             <span
               key={r.id}
@@ -319,10 +319,10 @@ const LimiterLab: React.FC<{ algo: RateLimiterAlgo }> = ({ algo }) => {
       </div>
 
       {/* 4. Settings, secondary */}
-      <details className="group rounded-xl ring-1 ring-slate-200 dark:ring-white/10 [&_summary::-webkit-details-marker]:hidden">
-        <summary className="cursor-pointer select-none px-4 py-3 text-sm font-medium text-slate-700 dark:text-slate-200">
+      <details className="group rounded-xl ring-1 ring-[var(--header-border)] dark:ring-[var(--header-border)] [&_summary::-webkit-details-marker]:hidden">
+        <summary className="cursor-pointer select-none px-4 py-3 text-sm font-medium text-[var(--text-muted)] dark:text-[var(--text-muted)]">
           Change the settings
-          <span className="ml-2 font-normal text-slate-500 dark:text-slate-400">
+          <span className="ml-2 font-normal text-[var(--text-subtle)] dark:text-[var(--text-subtle)]">
             {algo === 'tokenBucket' && `size ${capacity}, refill ${rate}/s`}
             {algo === 'leakyBucket' && `queue ${capacity}, outflow ${rate}/s`}
             {isWindowAlgo(algo) && `${capacity} per ${windowSec}s`}
@@ -354,7 +354,7 @@ const LimiterLab: React.FC<{ algo: RateLimiterAlgo }> = ({ algo }) => {
 const StateView: React.FC<{ algo: RateLimiterAlgo; e: Engine; cfg: Config; now: number; elapsed: number }> = ({ algo, e, cfg, now, elapsed }) => {
   const N = cfg.capacity;
   const W = cfg.windowSec * 1000;
-  const label = 'text-xs font-medium text-slate-500 dark:text-slate-400';
+  const label = 'text-xs font-medium text-[var(--text-subtle)] dark:text-[var(--text-subtle)]';
 
   if (algo === 'tokenBucket') {
     const whole = Math.floor(e.tokens);
@@ -363,7 +363,7 @@ const StateView: React.FC<{ algo: RateLimiterAlgo; e: Engine; cfg: Config; now: 
       <div className="space-y-3">
         <div className="flex items-baseline justify-between">
           <p className={label}>Tokens in the bucket</p>
-          <p className="text-sm tabular-nums text-slate-600 dark:text-slate-300">{nextIn ? `next token in ${nextIn}s` : 'bucket is full'}</p>
+          <p className="text-sm tabular-nums text-[var(--text-muted)] dark:text-[var(--text-muted)]">{nextIn ? `next token in ${nextIn}s` : 'bucket is full'}</p>
         </div>
         <div className="flex flex-wrap gap-2">
           {Array.from({ length: N }).map((_, i) => (
@@ -375,8 +375,8 @@ const StateView: React.FC<{ algo: RateLimiterAlgo; e: Engine; cfg: Config; now: 
             />
           ))}
         </div>
-        <p className="text-sm text-slate-600 dark:text-slate-300">
-          <strong className="text-slate-900 dark:text-white tabular-nums">{whole}</strong> of {N} tokens. Each request takes one. {cfg.rate} token{cfg.rate > 1 ? 's' : ''} drip back
+        <p className="text-sm text-[var(--text-muted)] dark:text-[var(--text-muted)]">
+          <strong className="text-[var(--text-base)] dark:text-[var(--text-base)] tabular-nums">{whole}</strong> of {N} tokens. Each request takes one. {cfg.rate} token{cfg.rate > 1 ? 's' : ''} drip back
           in every second.
         </p>
       </div>
@@ -390,7 +390,7 @@ const StateView: React.FC<{ algo: RateLimiterAlgo; e: Engine; cfg: Config; now: 
       <div className="space-y-3">
         <div className="flex items-baseline justify-between">
           <p className={label}>Queue (first in, first out)</p>
-          <p className="text-sm tabular-nums text-slate-600 dark:text-slate-300">{nextIn ? `next one served in ${nextIn}s` : 'queue is empty'}</p>
+          <p className="text-sm tabular-nums text-[var(--text-muted)] dark:text-[var(--text-muted)]">{nextIn ? `next one served in ${nextIn}s` : 'queue is empty'}</p>
         </div>
         <div className="flex items-center gap-2">
           <div className="flex flex-row-reverse gap-1.5">
@@ -404,12 +404,12 @@ const StateView: React.FC<{ algo: RateLimiterAlgo; e: Engine; cfg: Config; now: 
             ))}
           </div>
           <span className="text-slate-400">→</span>
-          <span className="rounded-lg bg-slate-900 text-white dark:bg-white dark:text-slate-900 px-3 py-2 text-xs font-medium">
+          <span className="rounded-lg bg-slate-900 text-white dark:bg-[var(--surface)] dark:text-[var(--text-base)] px-3 py-2 text-xs font-medium">
             server, {cfg.rate}/s
           </span>
         </div>
-        <p className="text-sm text-slate-600 dark:text-slate-300">
-          <strong className="text-slate-900 dark:text-white tabular-nums">{e.queue.length}</strong> of {N} slots used. Requests leave at a steady {cfg.rate} per second, however
+        <p className="text-sm text-[var(--text-muted)] dark:text-[var(--text-muted)]">
+          <strong className="text-[var(--text-base)] dark:text-[var(--text-base)] tabular-nums">{e.queue.length}</strong> of {N} slots used. Requests leave at a steady {cfg.rate} per second, however
           fast they arrive.
         </p>
       </div>
@@ -418,12 +418,12 @@ const StateView: React.FC<{ algo: RateLimiterAlgo; e: Engine; cfg: Config; now: 
 
   const windowBar = (
     <div>
-      <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400 mb-1">
+      <div className="flex justify-between text-xs text-[var(--text-subtle)] dark:text-[var(--text-subtle)] mb-1">
         <span>current window</span>
         <span className="tabular-nums">resets in {Math.max(0, (e.windowStart + W - now) / 1000).toFixed(1)}s</span>
       </div>
-      <div className="h-2 rounded-full bg-slate-200 dark:bg-white/10 overflow-hidden">
-        <div className="h-full bg-indigo-500" style={{ width: `${elapsed * 100}%` }} />
+      <div className="h-2 rounded-full bg-slate-200 dark:bg-[var(--surface-muted)] overflow-hidden">
+        <div className="h-full bg-[var(--accent)]" style={{ width: `${elapsed * 100}%` }} />
       </div>
     </div>
   );
@@ -434,12 +434,12 @@ const StateView: React.FC<{ algo: RateLimiterAlgo; e: Engine; cfg: Config; now: 
         <p className={label}>Counter for this window</p>
         <div className="flex flex-wrap gap-1.5">
           {Array.from({ length: N }).map((_, i) => (
-            <span key={i} className={`h-8 w-8 rounded-md transition-colors ${i < e.currCount ? 'bg-indigo-500' : 'border-2 border-dashed border-slate-300 dark:border-white/20'}`} />
+            <span key={i} className={`h-8 w-8 rounded-md transition-colors ${i < e.currCount ? 'bg-[var(--accent)]' : 'border-2 border-dashed border-slate-300 dark:border-white/20'}`} />
           ))}
         </div>
         {windowBar}
-        <p className="text-sm text-slate-600 dark:text-slate-300">
-          <strong className="text-slate-900 dark:text-white tabular-nums">{e.currCount}</strong> of {N} used. When the window ends, the counter drops straight back to 0.
+        <p className="text-sm text-[var(--text-muted)] dark:text-[var(--text-muted)]">
+          <strong className="text-[var(--text-base)] dark:text-[var(--text-base)] tabular-nums">{e.currCount}</strong> of {N} used. When the window ends, the counter drops straight back to 0.
         </p>
       </div>
     );
@@ -451,11 +451,11 @@ const StateView: React.FC<{ algo: RateLimiterAlgo; e: Engine; cfg: Config; now: 
       <div className="space-y-4">
         <div className="flex items-baseline justify-between">
           <p className={label}>Timestamps in the last {cfg.windowSec}s</p>
-          <p className="text-sm tabular-nums text-slate-600 dark:text-slate-300">
+          <p className="text-sm tabular-nums text-[var(--text-muted)] dark:text-[var(--text-muted)]">
             {inWindow.length} stored · limit {N}
           </p>
         </div>
-        <div className="relative h-12 rounded-lg bg-white ring-1 ring-slate-200 dark:bg-white/[0.03] dark:ring-white/10">
+        <div className="relative h-12 rounded-lg bg-[var(--surface)] ring-1 ring-[var(--header-border)] dark:bg-[var(--surface)] dark:ring-[var(--header-border)]">
           {inWindow.map((x, i) => {
             const pos = 1 - (now - x.t) / W; // 0 = window start (left), 1 = now (right)
             return (
@@ -467,10 +467,10 @@ const StateView: React.FC<{ algo: RateLimiterAlgo; e: Engine; cfg: Config; now: 
               />
             );
           })}
-          <span className="absolute bottom-1 left-2 text-[11px] text-slate-500 dark:text-slate-400">{cfg.windowSec}s ago</span>
-          <span className="absolute bottom-1 right-2 text-[11px] text-slate-500 dark:text-slate-400">now</span>
+          <span className="absolute bottom-1 left-2 text-[11px] text-[var(--text-subtle)] dark:text-[var(--text-subtle)]">{cfg.windowSec}s ago</span>
+          <span className="absolute bottom-1 right-2 text-[11px] text-[var(--text-subtle)] dark:text-[var(--text-subtle)]">now</span>
         </div>
-        <p className="text-sm text-slate-600 dark:text-slate-300">
+        <p className="text-sm text-[var(--text-muted)] dark:text-[var(--text-muted)]">
           Dots slide left and drop off as they age. <span className="text-emerald-600 dark:text-emerald-400">Green</span> were allowed,{' '}
           <span className="text-rose-600 dark:text-rose-400">red</span> were rejected but still take memory and still count.
         </p>
@@ -485,22 +485,22 @@ const StateView: React.FC<{ algo: RateLimiterAlgo; e: Engine; cfg: Config; now: 
     <div className="space-y-4">
       <p className={label}>Estimated requests in the rolling window</p>
       <div className="grid grid-cols-2 gap-3">
-        <div className="rounded-lg bg-white ring-1 ring-slate-200 dark:bg-white/[0.03] dark:ring-white/10 p-3">
-          <p className="text-xs text-slate-500 dark:text-slate-400">Previous window</p>
-          <p className="text-xl font-semibold tabular-nums text-slate-900 dark:text-white">{e.prevCount}</p>
-          <p className="text-xs text-slate-500 dark:text-slate-400">counts {Math.round(overlap * 100)}%</p>
+        <div className="rounded-lg bg-[var(--surface)] ring-1 ring-[var(--header-border)] dark:bg-[var(--surface)] dark:ring-[var(--header-border)] p-3">
+          <p className="text-xs text-[var(--text-subtle)] dark:text-[var(--text-subtle)]">Previous window</p>
+          <p className="text-xl font-semibold tabular-nums text-[var(--text-base)] dark:text-[var(--text-base)]">{e.prevCount}</p>
+          <p className="text-xs text-[var(--text-subtle)] dark:text-[var(--text-subtle)]">counts {Math.round(overlap * 100)}%</p>
         </div>
-        <div className="rounded-lg bg-white ring-1 ring-slate-200 dark:bg-white/[0.03] dark:ring-white/10 p-3">
-          <p className="text-xs text-slate-500 dark:text-slate-400">Current window</p>
-          <p className="text-xl font-semibold tabular-nums text-slate-900 dark:text-white">{e.currCount}</p>
-          <p className="text-xs text-slate-500 dark:text-slate-400">counts 100%</p>
+        <div className="rounded-lg bg-[var(--surface)] ring-1 ring-[var(--header-border)] dark:bg-[var(--surface)] dark:ring-[var(--header-border)] p-3">
+          <p className="text-xs text-[var(--text-subtle)] dark:text-[var(--text-subtle)]">Current window</p>
+          <p className="text-xl font-semibold tabular-nums text-[var(--text-base)] dark:text-[var(--text-base)]">{e.currCount}</p>
+          <p className="text-xs text-[var(--text-subtle)] dark:text-[var(--text-subtle)]">counts 100%</p>
         </div>
       </div>
       {windowBar}
-      <p className="text-sm text-slate-700 dark:text-slate-200 tabular-nums">
+      <p className="text-sm text-[var(--text-muted)] dark:text-[var(--text-muted)] tabular-nums">
         {e.currCount} + {e.prevCount} × {overlap.toFixed(2)} ={' '}
-        <strong className={Math.floor(est) >= N ? 'text-rose-600 dark:text-rose-400' : 'text-slate-900 dark:text-white'}>{est.toFixed(1)}</strong>{' '}
-        <span className="text-slate-500 dark:text-slate-400">(limit {N})</span>
+        <strong className={Math.floor(est) >= N ? 'text-rose-600 dark:text-rose-400' : 'text-[var(--text-base)] dark:text-[var(--text-base)]'}>{est.toFixed(1)}</strong>{' '}
+        <span className="text-[var(--text-subtle)] dark:text-[var(--text-subtle)]">(limit {N})</span>
       </p>
     </div>
   );
@@ -593,8 +593,8 @@ const PlacementPicker: React.FC = () => {
             aria-pressed={picked === x.id}
             className={`rounded-xl px-4 py-3 text-left text-sm font-medium transition-colors ring-1 ${
               picked === x.id
-                ? 'bg-indigo-50 ring-indigo-400 text-indigo-900 dark:bg-indigo-400/[0.1] dark:ring-indigo-400/50 dark:text-white'
-                : 'bg-white ring-slate-200 text-slate-800 hover:ring-slate-300 dark:bg-white/[0.03] dark:ring-white/10 dark:text-slate-100'
+                ? 'bg-[var(--surface-muted)] ring-indigo-400 text-[var(--text-base)] dark:bg-indigo-400/[0.1] dark:ring-indigo-400/50 dark:text-[var(--text-base)]'
+                : 'bg-[var(--surface)] ring-[var(--header-border)] text-[var(--text-base)] hover:ring-[var(--header-border)] dark:bg-[var(--surface)] dark:ring-[var(--header-border)] dark:text-[var(--text-base)]'
             }`}
           >
             {x.title}
@@ -606,7 +606,7 @@ const PlacementPicker: React.FC = () => {
           {p.text}
         </Callout>
       ) : (
-        <p className="text-sm text-slate-500 dark:text-slate-400">Pick a place to see the trade-off.</p>
+        <p className="text-sm text-[var(--text-subtle)] dark:text-[var(--text-subtle)]">Pick a place to see the trade-off.</p>
       )}
     </div>
   );
@@ -642,12 +642,12 @@ const RaceLab: React.FC = () => {
       {mode && (
         <>
           <ol className="space-y-1.5 text-sm">
-            <li className="flex justify-between rounded-lg bg-slate-50 dark:bg-white/[0.04] px-3 py-2 text-slate-500 dark:text-slate-400">
+            <li className="flex justify-between rounded-lg bg-[var(--surface-muted)] dark:bg-[var(--surface-muted)] px-3 py-2 text-[var(--text-subtle)] dark:text-[var(--text-subtle)]">
               <span>Start</span>
               <span className="tabular-nums">counter = 3</span>
             </li>
             {steps.map(([what, val], i) => (
-              <li key={i} className="flex justify-between rounded-lg bg-slate-50 dark:bg-white/[0.04] px-3 py-2 text-slate-800 dark:text-slate-100" style={{ animation: `fadein .25s ease-out ${i * 0.15}s both` }}>
+              <li key={i} className="flex justify-between rounded-lg bg-[var(--surface-muted)] dark:bg-[var(--surface-muted)] px-3 py-2 text-[var(--text-base)] dark:text-[var(--text-base)]" style={{ animation: `fadein .25s ease-out ${i * 0.15}s both` }}>
                 <span>{what}</span>
                 <span className="tabular-nums font-medium">counter = {val}</span>
               </li>
@@ -932,14 +932,14 @@ const LESSONS: Lesson[] = [
           <div className="overflow-x-auto -mx-1">
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-left text-slate-500 dark:text-slate-400">
+                <tr className="text-left text-[var(--text-subtle)] dark:text-[var(--text-subtle)]">
                   <th className="py-2 px-1 font-medium">Algorithm</th>
                   <th className="py-2 px-1 font-medium">Memory</th>
                   <th className="py-2 px-1 font-medium">Bursts</th>
                   <th className="py-2 px-1 font-medium">Best for</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-200 dark:divide-white/10">
+              <tbody className="divide-y divide-[var(--header-border)] dark:divide-[var(--header-border)]">
                 {[
                   ['Token bucket', 'tiny', 'allowed, up to bucket size', 'bursty APIs, flash sales'],
                   ['Leaky bucket', 'bounded queue', 'queued, then smoothed', 'a downstream needing a steady rate'],
@@ -949,7 +949,7 @@ const LESSONS: Lesson[] = [
                 ].map((row) => (
                   <tr key={row[0]}>
                     {row.map((c, i) => (
-                      <td key={i} className={`py-2 px-1 align-top ${i === 0 ? 'font-medium text-slate-900 dark:text-white' : ''}`}>
+                      <td key={i} className={`py-2 px-1 align-top ${i === 0 ? 'font-medium text-[var(--text-base)] dark:text-[var(--text-base)]' : ''}`}>
                         {c}
                       </td>
                     ))}
