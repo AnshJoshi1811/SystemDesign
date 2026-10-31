@@ -48,7 +48,7 @@ export const formatDuration = (sec: number) => {
 export const Step: React.FC<{ label: React.ReactNode; math: React.ReactNode }> = ({ label, math }) => (
   <p>
     <span>{label} </span>
-    <span className="font-mono text-slate-900 dark:text-white">{math}</span>
+    <span className="font-mono text-[var(--text-base)] dark:text-[var(--text-base)]">{math}</span>
   </p>
 );
 
@@ -88,8 +88,8 @@ export const EstimateCheck: React.FC<{
 
   return (
     <div className="space-y-4">
-      <div className="text-[15px] leading-7 text-slate-800 dark:text-slate-100">{prompt}</div>
-      {hint && !state.revealed && <p className="text-sm text-slate-500 dark:text-slate-400">Hint: {hint}</p>}
+      <div className="text-[15px] leading-7 text-[var(--text-base)] dark:text-[var(--text-base)]">{prompt}</div>
+      {hint && !state.revealed && <p className="text-sm text-[var(--text-subtle)] dark:text-[var(--text-subtle)]">Hint: {hint}</p>}
       <div className="flex flex-wrap items-center gap-2">
         <input
           type="text"
@@ -100,9 +100,9 @@ export const EstimateCheck: React.FC<{
           onKeyDown={(e) => e.key === 'Enter' && reveal()}
           placeholder="e.g. 3500 or 3.5k"
           aria-label={`Your estimate in ${unit}`}
-          className="w-44 rounded-lg px-3 py-2 text-sm font-mono bg-white ring-1 ring-slate-300 text-slate-900 dark:bg-white/[0.04] dark:ring-white/15 dark:text-white disabled:opacity-70"
+          className="w-44 rounded-lg px-3 py-2 text-sm font-mono bg-[var(--surface)] ring-1 ring-[var(--header-border)] text-[var(--text-base)] dark:bg-[var(--surface-muted)] dark:ring-[var(--header-border)] dark:text-[var(--text-base)] disabled:opacity-70"
         />
-        <span className="text-sm text-slate-600 dark:text-slate-300">{unit}</span>
+        <span className="text-sm text-[var(--text-muted)] dark:text-[var(--text-muted)]">{unit}</span>
         {!state.revealed ? (
           <Button variant="primary" onClick={reveal}>
             <Eye className="w-4 h-4" />
@@ -126,7 +126,7 @@ export const EstimateCheck: React.FC<{
             />
           </div>
           {verdict && <Callout tone={verdict.tone}>{verdict.text}</Callout>}
-          <div className="rounded-xl bg-slate-50 dark:bg-white/[0.04] p-4 text-sm leading-6 text-slate-600 dark:text-slate-300 space-y-1">{worked}</div>
+          <div className="rounded-xl bg-[var(--surface-muted)] dark:bg-[var(--surface-muted)] p-4 text-sm leading-6 text-[var(--text-muted)] dark:text-[var(--text-muted)] space-y-1">{worked}</div>
         </div>
       )}
     </div>
@@ -161,8 +161,8 @@ export const PowerLab: React.FC = () => {
         onChange={setP}
         options={POWERS.map((r) => ({ value: String(r.p), label: `2^${r.p}` }))}
       />
-      <div className="rounded-xl bg-slate-50 dark:bg-white/[0.04] p-4 space-y-2">
-        <p className="text-xs font-medium text-slate-500 dark:text-slate-400">2^{row.p} written in each unit (1 unit = 1,024 of the one before)</p>
+      <div className="rounded-xl bg-[var(--surface-muted)] dark:bg-[var(--surface-muted)] p-4 space-y-2">
+        <p className="text-xs font-medium text-[var(--text-subtle)] dark:text-[var(--text-subtle)]">2^{row.p} written in each unit (1 unit = 1,024 of the one before)</p>
         <ul className="space-y-1.5">
           {UNIT_NAMES.map((u, i) => {
             const v = exact / Math.pow(1024, i);
@@ -172,7 +172,7 @@ export const PowerLab: React.FC = () => {
               <li
                 key={u}
                 className={`flex items-baseline justify-between gap-3 rounded-lg px-3 py-1.5 text-sm ${
-                  here ? 'bg-indigo-600 text-white' : 'text-slate-700 dark:text-slate-300'
+                  here ? 'bg-[var(--accent)] text-white' : 'text-[var(--text-muted)] dark:text-[var(--text-muted)]'
                 }`}
               >
                 <span className={here ? 'font-medium' : ''}>{u}</span>
@@ -225,17 +225,17 @@ export const LatencyBars: React.FC<{ highlight?: string[] }> = ({ highlight = []
         return (
           <div key={item.op} className={`transition-opacity ${on ? '' : 'opacity-35'}`}>
             <div className="flex items-baseline justify-between gap-3 text-sm">
-              <span className="text-slate-800 dark:text-slate-200 min-w-0">{item.op}</span>
-              <span className="font-mono tabular-nums text-slate-900 dark:text-white shrink-0">{fmtLatency(item.ns)}</span>
+              <span className="text-[var(--text-base)] dark:text-[var(--text-muted)] min-w-0">{item.op}</span>
+              <span className="font-mono tabular-nums text-[var(--text-base)] dark:text-[var(--text-base)] shrink-0">{fmtLatency(item.ns)}</span>
             </div>
-            <div className="relative mt-1 h-2 rounded-full bg-slate-200 dark:bg-white/10 overflow-hidden">
-              <div className="h-full rounded-full bg-indigo-500" style={{ width: `${logPct(item.ns)}%` }} />
+            <div className="relative mt-1 h-2 rounded-full bg-slate-200 dark:bg-[var(--surface-muted)] overflow-hidden">
+              <div className="h-full rounded-full bg-[var(--accent)]" style={{ width: `${logPct(item.ns)}%` }} />
             </div>
           </div>
         );
       })}
     </div>
-    <div className="relative mt-2 h-4 text-[11px] text-slate-500 dark:text-slate-400">
+    <div className="relative mt-2 h-4 text-[11px] text-[var(--text-subtle)] dark:text-[var(--text-subtle)]">
       {[
         { ns: 1, l: '1 ns' },
         { ns: 1e3, l: '1 µs' },
@@ -278,7 +278,7 @@ export const SlowerGame: React.FC = () => {
 
   return (
     <div className="space-y-5">
-      <p className="text-sm text-slate-500 dark:text-slate-400">
+      <p className="text-sm text-[var(--text-subtle)] dark:text-[var(--text-subtle)]">
         Pair {(i % PAIRS.length) + 1} of {PAIRS.length}: which one is slower?
       </p>
       <div className="grid gap-2 sm:grid-cols-2">
@@ -291,7 +291,7 @@ export const SlowerGame: React.FC = () => {
               disabled={!!pick}
               className={`rounded-xl px-4 py-3 text-left text-sm font-medium ring-1 transition-colors ${
                 state === 'idle'
-                  ? 'bg-white ring-slate-200 text-slate-800 hover:ring-indigo-300 dark:bg-white/[0.03] dark:ring-white/10 dark:text-slate-100'
+                  ? 'bg-[var(--surface)] ring-[var(--header-border)] text-[var(--text-base)] hover:ring-indigo-300 dark:bg-[var(--surface)] dark:ring-[var(--header-border)] dark:text-[var(--text-base)]'
                   : state === 'slow'
                   ? 'bg-rose-50 ring-rose-300 text-rose-900 dark:bg-rose-400/[0.1] dark:ring-rose-400/40 dark:text-rose-100'
                   : 'bg-emerald-50 ring-emerald-300 text-emerald-900 dark:bg-emerald-400/[0.1] dark:ring-emerald-400/40 dark:text-emerald-100'
@@ -365,21 +365,21 @@ export const NinesLab: React.FC = () => {
       <div className="overflow-x-auto -mx-1 px-1">
         <Segmented label="Availability target" value={pick} onChange={setPick} options={NINES.map((n) => ({ value: String(n), label: `${n}%` }))} />
       </div>
-      <div className="rounded-xl bg-slate-50 dark:bg-white/[0.04] p-4 space-y-2.5">
-        <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Allowed downtime per year (log scale)</p>
+      <div className="rounded-xl bg-[var(--surface-muted)] dark:bg-[var(--surface-muted)] p-4 space-y-2.5">
+        <p className="text-xs font-medium text-[var(--text-subtle)] dark:text-[var(--text-subtle)]">Allowed downtime per year (log scale)</p>
         {NINES.map((n) => {
           const y = downtimeFor(n).year;
           const on = n === pct;
           return (
             <div key={n}>
-              <div className={`flex justify-between text-sm ${on ? 'font-medium text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400'}`}>
+              <div className={`flex justify-between text-sm ${on ? 'font-medium text-[var(--text-base)] dark:text-[var(--text-base)]' : 'text-[var(--text-subtle)] dark:text-[var(--text-subtle)]'}`}>
                 <span>
                   <span className="font-mono">{n}%</span> {NINE_NAMES[n]}
                 </span>
                 <span className="font-mono tabular-nums">{formatDuration(y)}</span>
               </div>
-              <div className="mt-1 h-2 rounded-full bg-slate-200 dark:bg-white/10 overflow-hidden">
-                <div className={`h-full rounded-full ${on ? 'bg-indigo-500' : 'bg-slate-400/60 dark:bg-white/25'}`} style={{ width: `${bar(y)}%` }} />
+              <div className="mt-1 h-2 rounded-full bg-slate-200 dark:bg-[var(--surface-muted)] overflow-hidden">
+                <div className={`h-full rounded-full ${on ? 'bg-[var(--accent)]' : 'bg-slate-400/60 dark:bg-[var(--surface)]/25'}`} style={{ width: `${bar(y)}%` }} />
               </div>
             </div>
           );
@@ -508,13 +508,13 @@ export const TwitterWalk: React.FC = () => {
           <li key={s.title} className={`flex gap-3 ${i < shown ? 'opacity-70' : ''}`}>
             <span
               className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${
-                i < shown ? 'bg-emerald-500 text-white' : 'bg-indigo-600 text-white'
+                i < shown ? 'bg-emerald-500 text-white' : 'bg-[var(--accent)] text-white'
               }`}
             >
               {i + 1}
             </span>
-            <div className="min-w-0 flex-1 space-y-2 text-sm leading-6 text-slate-700 dark:text-slate-300">
-              <p className="font-medium text-slate-900 dark:text-white">{s.title}</p>
+            <div className="min-w-0 flex-1 space-y-2 text-sm leading-6 text-[var(--text-muted)] dark:text-[var(--text-muted)]">
+              <p className="font-medium text-[var(--text-base)] dark:text-[var(--text-base)]">{s.title}</p>
               {s.body}
             </div>
           </li>
@@ -583,7 +583,7 @@ const NumField: React.FC<{
 }> = ({ label, unit, value, min, max, step, help, onChange }) => (
   <div className="space-y-1.5">
     <div className="flex items-center justify-between gap-2 text-sm">
-      <span className="font-medium text-slate-700 dark:text-slate-200">{label}</span>
+      <span className="font-medium text-[var(--text-muted)] dark:text-[var(--text-muted)]">{label}</span>
       <span className="flex items-center gap-1.5">
         <input
           type="number"
@@ -595,10 +595,10 @@ const NumField: React.FC<{
             const v = Number(e.target.value);
             if (!Number.isNaN(v)) onChange(Math.min(max, Math.max(min, v)));
           }}
-          className="w-24 rounded-md px-2 py-1 text-right text-sm font-mono bg-white ring-1 ring-slate-300 text-slate-900 dark:bg-white/[0.04] dark:ring-white/15 dark:text-white"
+          className="w-24 rounded-md px-2 py-1 text-right text-sm font-mono bg-[var(--surface)] ring-1 ring-[var(--header-border)] text-[var(--text-base)] dark:bg-[var(--surface-muted)] dark:ring-[var(--header-border)] dark:text-[var(--text-base)]"
           aria-label={typeof label === 'string' ? label : unit}
         />
-        <span className="w-16 text-xs text-slate-500 dark:text-slate-400">{unit}</span>
+        <span className="w-16 text-xs text-[var(--text-subtle)] dark:text-[var(--text-subtle)]">{unit}</span>
       </span>
     </div>
     <input
@@ -608,18 +608,18 @@ const NumField: React.FC<{
       step={step}
       value={Math.min(value, max)}
       onChange={(e) => onChange(Number(e.target.value))}
-      className="w-full accent-indigo-600"
+      className="w-full accent-[var(--accent)]"
       aria-label={typeof label === 'string' ? label : unit}
     />
-    {help && <p className="text-xs text-slate-500 dark:text-slate-400">{help}</p>}
+    {help && <p className="text-xs text-[var(--text-subtle)] dark:text-[var(--text-subtle)]">{help}</p>}
   </div>
 );
 
 const Section: React.FC<{ title: string; summary: string; open?: boolean; children: React.ReactNode }> = ({ title, summary, open, children }) => (
-  <details open={open} className="group rounded-xl ring-1 ring-slate-200 dark:ring-white/10 [&_summary::-webkit-details-marker]:hidden">
-    <summary className="cursor-pointer select-none px-4 py-3 text-sm font-medium text-slate-700 dark:text-slate-200">
+  <details open={open} className="group rounded-xl ring-1 ring-[var(--header-border)] dark:ring-[var(--header-border)] [&_summary::-webkit-details-marker]:hidden">
+    <summary className="cursor-pointer select-none px-4 py-3 text-sm font-medium text-[var(--text-muted)] dark:text-[var(--text-muted)]">
       {title}
-      <span className="ml-2 font-normal text-slate-500 dark:text-slate-400">{summary}</span>
+      <span className="ml-2 font-normal text-[var(--text-subtle)] dark:text-[var(--text-subtle)]">{summary}</span>
     </summary>
     <div className="grid gap-5 sm:grid-cols-2 px-4 pb-4">{children}</div>
   </details>
@@ -673,7 +673,7 @@ export const Playground: React.FC = () => {
             ]}
           />
         </div>
-        <p className="text-sm text-slate-500 dark:text-slate-400">
+        <p className="text-sm text-[var(--text-subtle)] dark:text-[var(--text-subtle)]">
           {pg.preset === 'twitter'
             ? "Users, activity, media and retention match the book. The read ratio, cache share and per-server capacity are illustrative."
             : pg.preset === 'custom'
@@ -708,19 +708,19 @@ export const Playground: React.FC = () => {
         <Section title="Infrastructure" summary={`cache ${pg.hotPct}% hot, ${pg.qpsPerServer.toLocaleString()} QPS per server`}>
           <NumField label="Hot share to cache" unit="%" value={pg.hotPct} min={1} max={100} step={1} help="80/20 rule: cache the hottest ~20% of each day's new data." onChange={(v) => setField('hotPct', v)} />
           <NumField label="QPS one server handles" unit="QPS" value={pg.qpsPerServer} min={50} max={50000} step={50} help="A rough assumption. Benchmark the real workload." onChange={(v) => setField('qpsPerServer', v)} />
-          <label className="flex items-start gap-2 text-sm text-slate-700 dark:text-slate-200 cursor-pointer">
-            <input type="checkbox" checked={pg.cacheMedia} onChange={(e) => setField('cacheMedia', e.target.checked)} className="mt-1 h-4 w-4 accent-indigo-600" />
+          <label className="flex items-start gap-2 text-sm text-[var(--text-muted)] dark:text-[var(--text-muted)] cursor-pointer">
+            <input type="checkbox" checked={pg.cacheMedia} onChange={(e) => setField('cacheMedia', e.target.checked)} className="mt-1 h-4 w-4 accent-[var(--accent)]" />
             <span>
               <span className="font-medium">Cache media in RAM too</span>
-              <span className="block text-xs text-slate-500 dark:text-slate-400">Usually off: media is served from object storage through a CDN.</span>
+              <span className="block text-xs text-[var(--text-subtle)] dark:text-[var(--text-subtle)]">Usually off: media is served from object storage through a CDN.</span>
             </span>
           </label>
         </Section>
       </div>
 
-      <details className="rounded-xl bg-slate-50 dark:bg-white/[0.03] [&_summary::-webkit-details-marker]:hidden">
-        <summary className="cursor-pointer select-none px-4 py-3 text-sm font-medium text-slate-700 dark:text-slate-200">Show the arithmetic</summary>
-        <div className="px-4 pb-4 space-y-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
+      <details className="rounded-xl bg-[var(--surface-muted)] dark:bg-[var(--surface)] [&_summary::-webkit-details-marker]:hidden">
+        <summary className="cursor-pointer select-none px-4 py-3 text-sm font-medium text-[var(--text-muted)] dark:text-[var(--text-muted)]">Show the arithmetic</summary>
+        <div className="px-4 pb-4 space-y-2 text-sm leading-6 text-[var(--text-muted)] dark:text-[var(--text-muted)]">
           <Step label="Write QPS:" math={`${fmtCount(dau)} DAU × ${pg.writesPerUser} = ${fmtCount(writesPerDay)}/day ÷ 86,400 = ${fmtCount(avgWriteQps)}; × ${pg.peakFactor} peak`} />
           <Step label="Read QPS:" math={`write QPS × ${pg.readsPerWrite} reads per write`} />
           <Step label="Storage:" math={`${fmtCount(writesPerDay)} × (${pg.textBytes} B + ${pg.mediaPct}% × ${sig(pg.mediaKB)} KB) = ${fmtBytes(storagePerDay)}/day; × 365 × ${pg.retentionYears}`} />
