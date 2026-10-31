@@ -80,7 +80,7 @@ const ToolbarIcon: React.FC<{
       {hover && (
         <span
           className="pointer-events-none absolute left-full top-1/2 z-50 ml-2.5 -translate-y-1/2 whitespace-nowrap rounded-lg px-2.5 py-1.5 text-xs font-medium"
-          style={{ background: 'var(--surface)', border: '1px solid var(--header-border)', boxShadow: 'var(--shadow-float-sm)', color: 'var(--text-base)' }}
+          style={{ background: 'var(--surface-solid)', border: '1px solid var(--header-border)', boxShadow: 'var(--shadow-float-sm)', color: 'var(--text-base)' }}
         >
           {label}
         </span>
@@ -606,7 +606,7 @@ export const Chapter1Workspace: React.FC = () => {
 
               {/* ─ TOP: Status + version toggle ─ */}
               <div className="absolute top-4 flex items-start justify-between gap-2 z-20 pointer-events-none" style={{ left: 86, right: rightPanelOpen ? 440 : 24, transition: 'right 0.15s ease-out' }}>
-                <div className="flex items-center gap-2 pointer-events-auto rounded-xl px-3 py-1.5 backdrop-blur" style={{ background: 'var(--surface)', border: '1px solid var(--header-border)', boxShadow: 'var(--shadow-float-sm)' }}>
+                <div className="flex items-center gap-2 pointer-events-auto rounded-xl px-3 py-1.5 backdrop-blur" style={{ background: 'var(--surface-solid)', border: '1px solid var(--header-border)', boxShadow: 'var(--shadow-float-sm)' }}>
                   <span className={`h-2 w-2 rounded-full ${health === 'ok' ? 'bg-emerald-500' : health === 'degraded' ? 'bg-amber-500' : 'bg-rose-500'}`} />
                   <span className="text-xs font-semibold" style={{ color: 'var(--text-base)' }}>{content.title}</span>
                   <span className={`rounded px-1.5 py-0.5 text-[10px] font-medium ${
@@ -617,7 +617,7 @@ export const Chapter1Workspace: React.FC = () => {
                 </div>
 
                 {hasFix(i) && (
-                  <div className="flex items-center gap-1.5 pointer-events-auto rounded-xl px-2 py-1.5 backdrop-blur" style={{ background: 'var(--surface)', border: '1px solid var(--header-border)', boxShadow: 'var(--shadow-float-sm)' }}>
+                  <div className="flex items-center gap-1.5 pointer-events-auto rounded-xl px-2 py-1.5 backdrop-blur" style={{ background: 'var(--surface-solid)', border: '1px solid var(--header-border)', boxShadow: 'var(--shadow-float-sm)' }}>
                     <Segmented label="Version" value={after ? 'after' : 'before'}
                       options={[{ value: 'before', label: meta.toggle?.[0] ?? 'Before' }, { value: 'after', label: meta.toggle?.[1] ?? 'After' }]}
                       onChange={(v) => setAfter(v === 'after')} />
@@ -632,7 +632,7 @@ export const Chapter1Workspace: React.FC = () => {
                   left: 20,
                   top: '50%',
                   transform: 'translateY(-50%)',
-                  background: 'var(--surface)',
+                  background: 'var(--surface-solid)',
                   border: '1px solid var(--header-border)',
                   boxShadow: 'var(--shadow-float)',
                 }}
@@ -686,12 +686,12 @@ export const Chapter1Workspace: React.FC = () => {
                     top: 24,
                     bottom: 24,
                     width: 400,
-                    background: 'var(--surface)',
+                    background: 'var(--surface-solid)',
                     border: '1px solid var(--header-border)',
                     boxShadow: 'var(--shadow-float)',
                   }}
                 >
-                  <div className="shrink-0 flex items-center gap-2 px-3 py-2.5" style={{ borderBottom: '1px solid var(--header-border)', background: 'var(--surface-muted)' }}>
+                  <div className="shrink-0 flex items-center gap-2 px-3 py-2.5" style={{ borderBottom: '1px solid var(--header-border)', background: 'var(--surface-solid-muted)' }}>
                     {selNode ? (
                       <>
                         <KindIconBadge icon={KIND_ICON[selNode.kind]} />
