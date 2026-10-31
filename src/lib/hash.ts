@@ -56,11 +56,11 @@ export function murmur3Hash(key: string, seed = 0): number {
   }
 
   let k1 = 0;
+  // Intentional fall-through: each case accumulates bytes into k1 before the final mix.
+  // eslint-disable-next-line no-fallthrough
   switch (remainder) {
-    case 3:
-      k1 ^= (key.charCodeAt(i + 2) & 0xff) << 16;
-    case 2:
-      k1 ^= (key.charCodeAt(i + 1) & 0xff) << 8;
+    case 3: k1 ^= (key.charCodeAt(i + 2) & 0xff) << 16; // falls through
+    case 2: k1 ^= (key.charCodeAt(i + 1) & 0xff) << 8;  // falls through
     case 1:
       k1 ^= key.charCodeAt(i) & 0xff;
       k1 = Math.imul(k1, c1);
@@ -194,18 +194,11 @@ export function getLookupPath(
 } | null {
   if (sortedRingNodes.length === 0) return null;
 
-  let targetNodeIndex = sortedRingNodes.findIndex((node) => node.angle >= key.angle);
-  let traversedCount = 0;
-
-  if (targetNodeIndex === -1) {
-    // Wrap around
-    targetNodeIndex = 0;
-    traversedCount = sortedRingNodes.length;
-  } else {
-    traversedCount = targetNodeIndex + 1;
-  }
-
-  const targetNode = sortedRingNodes[targetNodeIndex];
+  // Re-use the binary search already used by assignKeysToRingNodes — O(log n) vs O(n).
+  const idx = clockwiseIndex(sortedRingNodes, key.angle);
+  const wrapped = idx === 0 && sortedRingNodes[0].angle < key.angle;
+  const traversedCount = wrapped ? sortedRingNodes.length : idx + 1;
+  const targetNode = sortedRingNodes[idx];
 
   return {
     targetNode,
@@ -308,13 +301,20 @@ export function computeDistributionStats(
 }
 
 /**
- * Generate batch sample keys for realistic load testing
+ * Generate batch sample keys for realistic load testing.
+ * Memoised: the same (count, prefix) pair always produces identical hashes,
+ * so we cache the result and avoid re-hashing on every render.
  */
+const _sampleKeysCache = new Map<string, HashKey[]>();
 export function generateSampleKeys(count: number, prefix = 'User'): HashKey[] {
+  const cacheKey = `${prefix}:${count}`;
+  const cached = _sampleKeysCache.get(cacheKey);
+  if (cached) return cached;
   const keys: HashKey[] = [];
   for (let i = 1; i <= count; i++) {
     keys.push(hashToKey(`${prefix}_${i}`));
   }
+  _sampleKeysCache.set(cacheKey, keys);
   return keys;
 }
 
