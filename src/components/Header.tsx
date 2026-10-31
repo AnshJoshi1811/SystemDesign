@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Sun, Moon, ChevronDown, LayoutGrid, Check } from 'lucide-react';
 import { CHAPTERS, chapterById, readProgress } from '../chapters';
 import { View } from './lesson/ChapterPlayer';
+import { SearchBar } from './SearchBar';
 
 interface HeaderProps {
   view: View;
@@ -29,13 +30,31 @@ export const Header: React.FC<HeaderProps> = ({ view, onNavigate, isDarkMode, se
   }, [open]);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/90 backdrop-blur-md dark:border-white/[0.06] dark:bg-[#0c0c0e]/90">
+    <header className="sticky top-0 z-50" style={{ background: 'var(--header-bg)', borderBottom: '1px solid var(--header-border)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}>
       <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between gap-3">
+        {/* Logo + chapter switcher */}
         <div className="flex items-center gap-2 min-w-0">
-          <button onClick={() => onNavigate('home')} className="flex items-center gap-2.5 shrink-0 rounded-lg px-1.5 py-1 -ml-1.5 hover:bg-slate-100 dark:hover:bg-white/[0.06]">
-            <span className="rounded-md bg-slate-900 px-1.5 py-0.5 text-[11px] font-black tracking-widest text-white dark:bg-white dark:text-black">SD</span>
-            <span className="hidden sm:inline text-sm font-semibold text-slate-900 dark:text-white">System Design</span>
+          <button
+            onClick={() => onNavigate('home')}
+            className="flex items-center gap-2.5 shrink-0 rounded-lg px-1.5 py-1 -ml-1.5 transition-colors"
+            style={{ color: 'var(--text-base)' }}
+            onMouseEnter={e => (e.currentTarget.style.background = 'var(--surface-muted)')}
+            onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+          >
+            {/* SD wordmark — black pill, mirrors OpenClaw's horizontal brand mark approach */}
+            <span
+              className="rounded-md px-2 py-0.5 text-[11px] font-black tracking-[0.18em]"
+              style={{ background: 'var(--accent)', color: 'var(--accent-fg)' }}
+            >
+              SD
+            </span>
+            <span className="hidden sm:inline text-sm font-semibold" style={{ color: 'var(--text-base)' }}>
+              System Design
+            </span>
           </button>
+
+          {/* Breadcrumb divider */}
+          <span className="text-sm" style={{ color: 'var(--text-subtle)' }}>/</span>
 
           {/* Chapter switcher */}
           <div className="relative min-w-0" ref={menuRef}>
@@ -43,59 +62,73 @@ export const Header: React.FC<HeaderProps> = ({ view, onNavigate, isDarkMode, se
               onClick={() => setOpen((o) => !o)}
               aria-haspopup="menu"
               aria-expanded={open}
-              className="flex items-center gap-1.5 min-w-0 rounded-lg px-2.5 py-1.5 text-sm text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-white/[0.06]"
+              className="flex items-center gap-1.5 min-w-0 rounded-lg px-2.5 py-1.5 text-sm transition-colors"
+              style={{ color: 'var(--text-muted)' }}
+              onMouseEnter={e => (e.currentTarget.style.background = 'var(--surface-muted)')}
+              onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
             >
-              <span className="text-slate-300 dark:text-slate-600">/</span>
               {current ? (
                 <span className="truncate">
-                  <span className="text-slate-400 dark:text-slate-500">Ch {current.num}</span>{' '}
-                  <span className="font-medium text-slate-900 dark:text-white">{current.short}</span>
+                  <span style={{ color: 'var(--text-subtle)' }}>Ch {current.num}</span>{' '}
+                  <span className="font-medium" style={{ color: 'var(--text-base)' }}>{current.short}</span>
                 </span>
               ) : (
-                <span className="font-medium text-slate-900 dark:text-white">All chapters</span>
+                <span className="font-medium" style={{ color: 'var(--text-base)' }}>All chapters</span>
               )}
-              <ChevronDown className="w-4 h-4 shrink-0 text-slate-400" />
+              <ChevronDown className="w-4 h-4 shrink-0" style={{ color: 'var(--text-subtle)' }} />
             </button>
 
             {open && (
-              <div role="menu" className="absolute left-0 mt-2 w-80 max-w-[calc(100vw-2rem)] rounded-xl bg-white p-1.5 shadow-xl ring-1 ring-slate-200 dark:bg-[#18181b] dark:ring-white/10">
+              <div
+                role="menu"
+                className="absolute left-0 mt-2 w-80 max-w-[calc(100vw-2rem)] rounded-xl p-1.5"
+                style={{
+                  background: isDarkMode ? '#111111' : '#ffffff',
+                  boxShadow: '0 8px 32px rgba(0,0,0,0.18)',
+                  border: '1px solid var(--header-border)',
+                }}
+              >
                 <button
                   role="menuitem"
-                  onClick={() => {
-                    onNavigate('home');
-                    setOpen(false);
-                  }}
-                  className="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-white/[0.06]"
+                  onClick={() => { onNavigate('home'); setOpen(false); }}
+                  className="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors"
+                  style={{ color: 'var(--text-muted)' }}
+                  onMouseEnter={e => (e.currentTarget.style.background = 'var(--surface-muted)')}
+                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
                 >
-                  <LayoutGrid className="w-4 h-4 text-slate-400" />
+                  <LayoutGrid className="w-4 h-4" style={{ color: 'var(--text-subtle)' }} />
                   Course overview
                 </button>
-                <div className="my-1 h-px bg-slate-100 dark:bg-white/10" />
+                <div className="my-1 h-px" style={{ background: 'var(--header-border)' }} />
                 {CHAPTERS.map((c) => {
                   const p = readProgress(c.id);
                   const complete = p && p.total > 0 && p.done >= p.total;
+                  const isActive = c.id === view;
                   return (
                     <button
                       key={c.id}
                       role="menuitem"
-                      onClick={() => {
-                        onNavigate(c.id);
-                        setOpen(false);
+                      onClick={() => { onNavigate(c.id); setOpen(false); }}
+                      className="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-left text-sm transition-colors"
+                      style={{
+                        background: isActive ? 'var(--surface-muted)' : 'transparent',
+                        color: 'var(--text-base)',
                       }}
-                      className={`w-full flex items-center gap-3 rounded-lg px-3 py-2 text-left text-sm hover:bg-slate-100 dark:hover:bg-white/[0.06] ${
-                        c.id === view ? 'bg-indigo-50 dark:bg-indigo-400/[0.1]' : ''
-                      }`}
+                      onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = 'var(--surface-muted)'; }}
+                      onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent'; }}
                     >
                       <span
-                        className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${
-                          complete ? 'bg-emerald-500 text-white' : 'bg-slate-100 text-slate-600 dark:bg-white/10 dark:text-slate-300'
-                        }`}
+                        className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold"
+                        style={{
+                          background: complete ? 'var(--accent)' : 'var(--surface-muted)',
+                          color: complete ? 'var(--accent-fg)' : 'var(--text-muted)',
+                        }}
                       >
                         {complete ? <Check className="w-3 h-3" strokeWidth={3} /> : c.num}
                       </span>
-                      <span className="flex-1 text-slate-800 dark:text-slate-100">{c.short}</span>
+                      <span className="flex-1">{c.short}</span>
                       {p && p.total > 0 && !complete && (
-                        <span className="text-xs tabular-nums text-slate-400">
+                        <span className="text-xs tabular-nums" style={{ color: 'var(--text-subtle)' }}>
                           {p.done}/{p.total}
                         </span>
                       )}
@@ -107,9 +140,18 @@ export const Header: React.FC<HeaderProps> = ({ view, onNavigate, isDarkMode, se
           </div>
         </div>
 
+        {/* Search */}
+        <div className="flex-1 flex justify-center px-2 max-w-xs hidden sm:flex">
+          <SearchBar />
+        </div>
+
+        {/* Dark mode toggle */}
         <button
           onClick={() => setIsDarkMode(!isDarkMode)}
-          className="shrink-0 rounded-lg p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-white/[0.06] dark:hover:text-white"
+          className="shrink-0 rounded-lg p-2 transition-colors"
+          style={{ color: 'var(--text-muted)' }}
+          onMouseEnter={e => (e.currentTarget.style.background = 'var(--surface-muted)')}
+          onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
           title={isDarkMode ? 'Switch to light theme' : 'Switch to dark theme'}
           aria-label={isDarkMode ? 'Switch to light theme' : 'Switch to dark theme'}
         >
