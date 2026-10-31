@@ -77,7 +77,7 @@ const NodeCard: React.FC<{ node: ArchNode; state: NodeState; selected: boolean; 
       {/* Modern hover preview — appears BELOW the card so it never collides with the top toolbar or failure callout */}
       <span
         className="pointer-events-none absolute left-1/2 top-full z-20 mt-2.5 w-60 -translate-x-1/2 -translate-y-1 scale-95 rounded-xl px-3.5 py-3 text-left opacity-0 shadow-lg transition-all duration-150 group-hover/node:translate-y-0 group-hover/node:scale-100 group-hover/node:opacity-100"
-        style={{ background: 'var(--surface)', border: '1px solid var(--header-border)', boxShadow: 'var(--shadow-float-sm)' }}
+        style={{ background: 'var(--surface-solid)', border: '1px solid var(--header-border)', boxShadow: 'var(--shadow-float-sm)' }}
       >
         <span className="block text-[13px] font-semibold" style={{ color: 'var(--text-base)' }}>{node.label}</span>
         <span className="mt-1 block text-xs leading-relaxed" style={{ color: 'var(--text-muted)' }}>{info.what}</span>
@@ -299,7 +299,7 @@ export const Diagram: React.FC<{
       </div>
 
       {/* Zoom */}
-      <div className="absolute right-2 top-2 flex flex-col overflow-hidden rounded-lg bg-[var(--surface)] ring-1 ring-[var(--header-border)] shadow-sm">
+      <div className="absolute right-2 top-2 flex flex-col overflow-hidden rounded-lg bg-[var(--surface-solid)] ring-1 ring-[var(--header-border)] shadow-sm">
         <ZoomBtn label="Zoom in" onClick={() => setZoom((z) => Math.min(1.6, z + 0.15))}>
           <Plus className="h-4 w-4" />
         </ZoomBtn>
