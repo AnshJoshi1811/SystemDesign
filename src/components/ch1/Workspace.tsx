@@ -55,6 +55,24 @@ export const Chapter1Workspace: React.FC = () => {
   const [storedTab, setTab] = usePersistentState<Tab>('chapter1:tab', 'concepts');
   const tab: Tab = storedTab === 'concepts' ? 'concepts' : 'architecture';
   const [sidebarCollapsed, setSidebarCollapsed] = usePersistentState<boolean>('chapter1:sidebar:collapsed', false);
+  // Split pane: concepts takes splitPct% width, architecture takes the rest
+  const [splitPct, setSplitPct] = usePersistentState<number>('chapter1:split', 55);
+  const splitRef = React.useRef<HTMLDivElement>(null);
+  const dragging = React.useRef(false);
+
+  const onDividerMouseDown = React.useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    dragging.current = true;
+    const onMove = (ev: MouseEvent) => {
+      if (!dragging.current || !splitRef.current) return;
+      const rect = splitRef.current.getBoundingClientRect();
+      const pct = Math.round(((ev.clientX - rect.left) / rect.width) * 100);
+      setSplitPct(Math.min(75, Math.max(30, pct)));
+    };
+    const onUp = () => { dragging.current = false; };
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp, { once: true });
+  }, [setSplitPct]);
   const [flows, setFlows] = usePersistentState<Record<number, Flow>>('chapter1:flow', {});
   const [afterMap, setAfterMap] = usePersistentState<Record<number, boolean>>('chapter1:after', {});
   const [inputsMap, setInputsMap] = usePersistentState<Record<number, Inputs>>('chapter1:inputs', {});
@@ -313,177 +331,215 @@ export const Chapter1Workspace: React.FC = () => {
           ))}
         </nav>
 
-        {/* ---------- Architecture ---------- */}
-        {tab === 'architecture' && (
-          <div className={`grid gap-5 transition-all duration-200 ${selNode ? 'xl:grid-cols-[minmax(0,1fr)_280px]' : 'grid-cols-1'}`}>
-            <section className="min-w-0 rounded-2xl bg-[var(--surface)] ring-1 ring-[var(--header-border)] p-4 sm:p-5 dark:bg-[var(--surface)] dark:ring-[var(--header-border)]">
-              <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-                <div className="flex items-center gap-2.5">
-                  <span className={`h-2.5 w-2.5 rounded-full ${health === 'ok' ? 'bg-emerald-500' : health === 'degraded' ? 'bg-amber-500' : 'bg-rose-500'}`} />
-                  <h2 className="font-semibold text-[var(--text-base)] dark:text-[var(--text-base)]">Stage {i + 1}: {content.title}</h2>
-                  <span
-                    className={`rounded-md px-2 py-0.5 text-xs font-medium ${
-                      health === 'ok'
-                        ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-400/10 dark:text-emerald-300'
-                        : health === 'degraded'
-                        ? 'bg-amber-50 text-amber-700 dark:bg-amber-400/10 dark:text-amber-300'
-                        : 'bg-rose-50 text-rose-700 dark:bg-rose-400/10 dark:text-rose-300'
-                    }`}
-                  >
-                    {health === 'ok' ? 'Running' : health === 'degraded' ? 'Degraded' : 'Outage'}
-                  </span>
-                </div>
-                <div className="flex flex-wrap items-center gap-2">
-                  {meta.experiments.map((ex) => (
-                    <button
-                      key={ex.id}
-                      onClick={() => runExperiment(ex)}
-                      title={ex.description}
-                      className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium text-rose-700 ring-1 ring-rose-200 hover:bg-rose-50 dark:text-rose-300 dark:ring-rose-400/30 dark:hover:bg-rose-400/10"
-                    >
-                      <Flame className="h-3.5 w-3.5" /> {ex.label}
-                    </button>
-                  ))}
-                  {hasFix(i) && (
-                    <Segmented
-                      label="Architecture version"
-                      value={after ? 'after' : 'before'}
-                      options={[
-                        { value: 'before', label: meta.toggle?.[0] ?? 'Before' },
-                        { value: 'after', label: meta.toggle?.[1] ?? 'After' },
-                      ]}
-                      onChange={(v) => setAfter(v === 'after')}
-                    />
-                  )}
-                  <button
-                    onClick={clearFailures}
-                    className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm text-[var(--text-muted)] ring-1 ring-[var(--header-border)] hover:bg-[var(--surface-muted)] dark:text-[var(--text-muted)] dark:ring-[var(--header-border)] dark:hover:bg-[var(--surface-muted)]"
-                  >
-                    <RotateCcw className="h-3.5 w-3.5" /> Reset
-                  </button>
-                </div>
+        {/* ══════════════════════════════════════════════════════
+            SPLIT PANE — visible on both tabs at desktop size
+            Left: concepts panel | Divider | Right: architecture
+            On mobile: tabs switch between them
+            ══════════════════════════════════════════════════════ */}
+
+        {/* Mobile: show only the active tab */}
+        <div className="lg:hidden space-y-4">
+          {tab === 'concepts' && (
+            <section className="space-y-5">
+              <div className="rounded-xl px-4 py-3 text-sm leading-relaxed" style={{ background: 'var(--surface-muted)', border: '1px solid var(--header-border)', color: 'var(--text-muted)' }}>
+                <span className="text-[10px] font-bold tracking-widest uppercase block mb-1" style={{ color: 'var(--text-subtle)' }}>🇮🇳 Simple mein samjho</span>
+                {content.hinglish ?? <span>Is stage mein hum <strong style={{ color: 'var(--text-base)' }}>{content.title.toLowerCase()}</strong> ke baare mein seekhenge.</span>}
               </div>
-
-              {failing && (
-                <Callout
-                  className="mb-4"
-                  tone={health === 'ok' ? 'success' : health === 'outage' ? 'danger' : 'warning'}
-                  title={health === 'ok' ? 'The architecture absorbed the failure' : sim.headline}
-                >
-                  <FailureSummary sim={sim} after={after} stage={i} withLabel={meta.toggle?.[1]} withoutLabel={meta.toggle?.[0]} />
-                </Callout>
-              )}
-
-              <Diagram arch={arch} sim={sim} selected={selected} onSelect={select} running={sim.success > 0} />
-
-              {/* Simulation controls */}
-              <div className="mt-5 rounded-xl bg-[var(--surface-muted)] p-4 dark:bg-[var(--surface)]">
-                <p className="mb-3 flex items-center gap-2 text-sm font-semibold text-[var(--text-base)] dark:text-[var(--text-base)]">
-                  <Settings2 className="h-4 w-4" /> Simulation controls
-                </p>
-                <div className="grid gap-4 sm:grid-cols-3">
-                  <Control label="Traffic (requests/sec)" value={`${inputs.rps.toLocaleString()} RPS`}>
-                    <input type="range" min={0} max={100} value={rpsToPos(inputs.rps)} onChange={(e) => setInputs({ rps: posToRps(Number(e.target.value)) })} className="w-full accent-[var(--accent)]" aria-label="Traffic" />
-                  </Control>
-                  <Control label="Read / write mix" value={`${inputs.readPct}% / ${100 - inputs.readPct}%`}>
-                    <input type="range" min={50} max={99} value={inputs.readPct} onChange={(e) => setInputs({ readPct: Number(e.target.value) })} className="w-full accent-emerald-600" aria-label="Read share" />
-                  </Control>
-                  <Control label={arch.f.multiDc ? 'Web servers per data center' : 'Web servers'} value={arch.f.lb ? `${inputs.websPerDc} nodes` : '1 node'}>
-                    {arch.f.lb ? (
-                      <div className="flex items-center gap-2">
-                        <StepBtn label="Remove a web server" onClick={() => setInputs({ websPerDc: Math.max(1, inputs.websPerDc - 1) })} disabled={inputs.websPerDc <= 1}>
-                          <Minus className="h-4 w-4" />
-                        </StepBtn>
-                        <span className="w-8 text-center text-sm tabular-nums">{inputs.websPerDc}</span>
-                        <StepBtn label="Add a web server" onClick={() => setInputs({ websPerDc: Math.min(4, inputs.websPerDc + 1) })} disabled={inputs.websPerDc >= 4}>
-                          <Plus className="h-4 w-4" />
-                        </StepBtn>
-                      </div>
-                    ) : (
-                      <p className="text-xs text-[var(--text-subtle)] dark:text-[var(--text-subtle)]">Needs a load balancer in front of the web servers.</p>
-                    )}
-                  </Control>
+              <div className="lesson-prose"><p>{content.why}</p><p><strong>Weak spot: </strong>{content.weakSpot}</p><p><strong>{i === N - 1 ? 'Next: ' : 'The fix: '}</strong>{content.fix}</p></div>
+              {i > 0 && <WhatChanged before={content.before} after={content.after} reason={content.reason} />}
+              <Callout tone="idea" title="Key takeaway">{content.takeaway}</Callout>
+              <div id="ch1-check"><Quiz key={i} persistKey={`chapter1:quiz:stage${i}`} questions={content.quiz} title="Quick check" onProgress={(s, t) => s === t && mark('check')} /></div>
+            </section>
+          )}
+          {tab === 'architecture' && (
+            <div className="space-y-4">
+              <div className="rounded-2xl bg-[var(--surface)] ring-1 ring-[var(--header-border)] p-4">
+                <div className="flex flex-wrap items-center gap-2 mb-3">
+                  {meta.experiments.map((ex) => (<button key={ex.id} onClick={() => runExperiment(ex)} className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium text-rose-700 ring-1 ring-rose-200 hover:bg-rose-50 dark:text-rose-300 dark:ring-rose-400/30"><Flame className="h-3.5 w-3.5" /> {ex.label}</button>))}
+                  {hasFix(i) && <Segmented label="Version" value={after ? 'after' : 'before'} options={[{ value: 'before', label: meta.toggle?.[0] ?? 'Before' }, { value: 'after', label: meta.toggle?.[1] ?? 'After' }]} onChange={(v) => setAfter(v === 'after')} />}
+                  <button onClick={clearFailures} className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm ring-1 ring-[var(--header-border)] hover:bg-[var(--surface-muted)]" style={{ color: 'var(--text-muted)' }}><RotateCcw className="h-3.5 w-3.5" /> Reset</button>
                 </div>
-                {arch.f.cache && (
-                  <details className="mt-4 [&_summary::-webkit-details-marker]:hidden">
-                    <summary className="cursor-pointer text-sm text-[var(--text-muted)] dark:text-[var(--text-muted)]">Advanced settings</summary>
-                    <div className="mt-3 max-w-sm">
-                      <Control label="Cache hit ratio" value={`${inputs.cacheHit}%`}>
-                        <input type="range" min={0} max={99} value={inputs.cacheHit} onChange={(e) => setInputs({ cacheHit: Number(e.target.value) })} className="w-full accent-amber-500" aria-label="Cache hit ratio" />
-                      </Control>
+                {failing && <Callout className="mb-3" tone={health === 'ok' ? 'success' : health === 'outage' ? 'danger' : 'warning'} title={health === 'ok' ? 'Architecture absorbed the failure' : sim.headline}><FailureSummary sim={sim} after={after} stage={i} withLabel={meta.toggle?.[1]} withoutLabel={meta.toggle?.[0]} /></Callout>}
+                <Diagram arch={arch} sim={sim} selected={selected} onSelect={select} running={sim.success > 0} />
+              </div>
+              <Inspector node={selNode} state={selNode ? sim.nodes[selNode.id] : undefined} crashed={selNode ? fail.crashed.includes(selNode.id) : false} count={selNode ? arch.all.filter((n) => n.kind === selNode.kind).length : 0} onClose={() => setSelected(null)} onCrash={() => selNode && crash(selNode.id)} onRecover={() => selNode && recover(selNode.id)} />
+              <TechStack arch={arch} selected={selected} onSelect={select} />
+            </div>
+          )}
+        </div>
+
+        {/* Desktop: split pane always visible */}
+        <div
+          ref={splitRef}
+          className="hidden lg:flex rounded-2xl overflow-hidden"
+          style={{ height: 'calc(100vh - 200px)', minHeight: 520, border: '1px solid var(--header-border)', background: 'var(--surface)' }}
+        >
+          {/* ── Left: Concepts ── */}
+          <div
+            className="flex flex-col overflow-y-auto"
+            style={{ width: `${splitPct}%`, minWidth: 280, borderRight: '1px solid var(--header-border)' }}
+          >
+            <div className="flex items-center justify-between px-4 py-3 shrink-0" style={{ borderBottom: '1px solid var(--header-border)', background: 'var(--surface-muted)' }}>
+              <span className="text-xs font-semibold" style={{ color: 'var(--text-subtle)' }}>CONCEPTS</span>
+              <button
+                onClick={() => openTab('architecture')}
+                className="text-[10px] px-2 py-0.5 rounded transition-colors lg:hidden"
+                style={{ background: 'var(--accent)', color: 'var(--accent-fg)' }}
+              >
+                → Architecture
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-5 space-y-5">
+              {/* Hinglish pill */}
+              <div className="rounded-xl px-4 py-3 text-sm leading-relaxed" style={{ background: 'var(--surface-muted)', border: '1px solid var(--header-border)', color: 'var(--text-muted)' }}>
+                <span className="text-[10px] font-bold tracking-widest uppercase block mb-1" style={{ color: 'var(--text-subtle)' }}>🇮🇳 Simple mein samjho</span>
+                {content.hinglish ?? <span>Is stage mein hum <strong style={{ color: 'var(--text-base)' }}>{content.title.toLowerCase()}</strong> ke baare mein seekhenge.</span>}
+              </div>
+              <div className="lesson-prose">
+                <p>{content.why}</p>
+                <p><strong>Weak spot: </strong>{content.weakSpot}</p>
+                <p><strong>{i === N - 1 ? 'Next: ' : 'The fix: '}</strong>{content.fix}</p>
+              </div>
+              {i > 0 && <WhatChanged before={content.before} after={content.after} reason={content.reason} />}
+              <Callout tone="idea" title="Key takeaway">{content.takeaway}</Callout>
+              <div id="ch1-check">
+                <Quiz key={i} persistKey={`chapter1:quiz:stage${i}`} questions={content.quiz} title="Quick check" onProgress={(s, t) => s === t && mark('check')} />
+              </div>
+            </div>
+          </div>
+
+          {/* ── Draggable divider ── */}
+          <div
+            onMouseDown={onDividerMouseDown}
+            className="w-1 shrink-0 cursor-col-resize flex items-center justify-center group select-none"
+            style={{ background: 'var(--header-border)', position: 'relative' }}
+            title="Drag to resize"
+          >
+            <div
+              className="absolute inset-y-0 -left-1 -right-1 flex items-center justify-center"
+              style={{ zIndex: 10 }}
+            >
+              <div
+                className="w-4 h-8 rounded-full flex flex-col items-center justify-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                style={{ background: 'var(--accent)' }}
+              >
+                <span className="w-0.5 h-2 rounded-full" style={{ background: 'var(--accent-fg)', opacity: 0.6 }} />
+                <span className="w-0.5 h-2 rounded-full" style={{ background: 'var(--accent-fg)', opacity: 0.6 }} />
+              </div>
+            </div>
+          </div>
+
+          {/* ── Right: Architecture ── */}
+          <div
+            className="flex flex-col min-w-0 overflow-hidden"
+            style={{ flex: 1 }}
+          >
+            {/* Architecture toolbar */}
+            <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-2.5 shrink-0" style={{ borderBottom: '1px solid var(--header-border)', background: 'var(--surface-muted)' }}>
+              <div className="flex items-center gap-2">
+                <span className={`h-2 w-2 rounded-full ${health === 'ok' ? 'bg-emerald-500' : health === 'degraded' ? 'bg-amber-500' : 'bg-rose-500'}`} />
+                <span className="text-xs font-semibold" style={{ color: 'var(--text-subtle)' }}>ARCHITECTURE</span>
+                <span className={`rounded px-1.5 py-0.5 text-[10px] font-medium ${
+                  health === 'ok' ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-400/10 dark:text-emerald-300'
+                  : health === 'degraded' ? 'bg-amber-50 text-amber-700 dark:bg-amber-400/10 dark:text-amber-300'
+                  : 'bg-rose-50 text-rose-700 dark:bg-rose-400/10 dark:text-rose-300'
+                }`}>{health === 'ok' ? 'Running' : health === 'degraded' ? 'Degraded' : 'Outage'}</span>
+              </div>
+              <div className="flex flex-wrap items-center gap-1.5">
+                {meta.experiments.map((ex) => (
+                  <button key={ex.id} onClick={() => runExperiment(ex)} title={ex.description}
+                    className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-rose-700 ring-1 ring-rose-200 hover:bg-rose-50 dark:text-rose-300 dark:ring-rose-400/30 dark:hover:bg-rose-400/10">
+                    <Flame className="h-3 w-3" /> {ex.label}
+                  </button>
+                ))}
+                {hasFix(i) && (
+                  <Segmented label="Architecture version" value={after ? 'after' : 'before'}
+                    options={[{ value: 'before', label: meta.toggle?.[0] ?? 'Before' }, { value: 'after', label: meta.toggle?.[1] ?? 'After' }]}
+                    onChange={(v) => setAfter(v === 'after')} />
+                )}
+                <button onClick={clearFailures}
+                  className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs ring-1 ring-[var(--header-border)] hover:bg-[var(--surface-muted)]"
+                  style={{ color: 'var(--text-muted)' }}>
+                  <RotateCcw className="h-3 w-3" /> Reset
+                </button>
+              </div>
+            </div>
+
+            {/* Main architecture area — diagram fills available height */}
+            <div className="flex flex-1 min-h-0 overflow-hidden">
+              {/* Diagram + sim controls column */}
+              <div className="flex flex-col flex-1 min-w-0 overflow-y-auto">
+                <div className="flex-1 p-4">
+                  {failing && (
+                    <Callout className="mb-3" tone={health === 'ok' ? 'success' : health === 'outage' ? 'danger' : 'warning'}
+                      title={health === 'ok' ? 'Architecture absorbed the failure' : sim.headline}>
+                      <FailureSummary sim={sim} after={after} stage={i} withLabel={meta.toggle?.[1]} withoutLabel={meta.toggle?.[0]} />
+                    </Callout>
+                  )}
+                  <Diagram arch={arch} sim={sim} selected={selected} onSelect={select} running={sim.success > 0} />
+                </div>
+                {/* Simulation controls — sticky at the bottom */}
+                <div className="shrink-0 px-4 pb-4">
+                  <details className="rounded-xl overflow-hidden" style={{ border: '1px solid var(--header-border)' }}>
+                    <summary
+                      className="cursor-pointer flex items-center gap-2 px-4 py-2.5 text-sm font-medium select-none"
+                      style={{ background: 'var(--surface-muted)', color: 'var(--text-base)' }}
+                    >
+                      <Settings2 className="h-4 w-4" style={{ color: 'var(--text-subtle)' }} />
+                      Simulation controls
+                    </summary>
+                    <div className="p-4" style={{ background: 'var(--surface)' }}>
+                      <div className="grid gap-4 sm:grid-cols-3">
+                        <Control label="Traffic (req/sec)" value={`${inputs.rps.toLocaleString()} RPS`}>
+                          <input type="range" min={0} max={100} value={rpsToPos(inputs.rps)} onChange={(e) => setInputs({ rps: posToRps(Number(e.target.value)) })} className="w-full accent-[var(--accent)]" />
+                        </Control>
+                        <Control label="Read / write mix" value={`${inputs.readPct}% / ${100 - inputs.readPct}%`}>
+                          <input type="range" min={50} max={99} value={inputs.readPct} onChange={(e) => setInputs({ readPct: Number(e.target.value) })} className="w-full accent-emerald-600" />
+                        </Control>
+                        <Control label={arch.f.multiDc ? 'Servers per DC' : 'Web servers'} value={arch.f.lb ? `${inputs.websPerDc} nodes` : '1 node'}>
+                          {arch.f.lb ? (
+                            <div className="flex items-center gap-2">
+                              <StepBtn label="Remove" onClick={() => setInputs({ websPerDc: Math.max(1, inputs.websPerDc - 1) })} disabled={inputs.websPerDc <= 1}><Minus className="h-4 w-4" /></StepBtn>
+                              <span className="w-8 text-center text-sm tabular-nums">{inputs.websPerDc}</span>
+                              <StepBtn label="Add" onClick={() => setInputs({ websPerDc: Math.min(4, inputs.websPerDc + 1) })} disabled={inputs.websPerDc >= 4}><Plus className="h-4 w-4" /></StepBtn>
+                            </div>
+                          ) : <p className="text-xs" style={{ color: 'var(--text-subtle)' }}>Needs a load balancer first.</p>}
+                        </Control>
+                      </div>
+                      {arch.f.cache && (
+                        <div className="mt-4 max-w-xs">
+                          <Control label="Cache hit ratio" value={`${inputs.cacheHit}%`}>
+                            <input type="range" min={0} max={99} value={inputs.cacheHit} onChange={(e) => setInputs({ cacheHit: Number(e.target.value) })} className="w-full accent-amber-500" />
+                          </Control>
+                        </div>
+                      )}
                     </div>
                   </details>
-                )}
+                </div>
               </div>
-            </section>
 
-            <Inspector
-              node={selNode}
-              state={selNode ? sim.nodes[selNode.id] : undefined}
-              crashed={selNode ? fail.crashed.includes(selNode.id) : false}
-              count={selNode ? arch.all.filter((n) => n.kind === selNode.kind).length : 0}
-              onClose={() => setSelected(null)}
-              onCrash={() => selNode && crash(selNode.id)}
-              onRecover={() => selNode && recover(selNode.id)}
-            />
-
-            <TechStack arch={arch} selected={selected} onSelect={select} />
-          </div>
-        )}
-
-        {/* ---------- Concepts — single readable column ---------- */}
-        {tab === 'concepts' && (
-          <section className="max-w-3xl space-y-6">
-            {/* Hinglish quick-summary pill */}
-            <div
-              className="rounded-xl px-4 py-3 text-sm leading-relaxed"
-              style={{ background: 'var(--surface-muted)', border: '1px solid var(--header-border)', color: 'var(--text-muted)' }}
-            >
-              <span className="text-[10px] font-bold tracking-widest uppercase block mb-1" style={{ color: 'var(--text-subtle)' }}>
-                🇮🇳 Simple mein samjho
-              </span>
-              {content.hinglish ?? (
-                <span>
-                  Is stage mein hum <strong style={{ color: 'var(--text-base)' }}>{content.title.toLowerCase()}</strong> ke baare mein seekhenge —
-                  kyun zaroori hai, kya problem hai, aur uska solution kya hai.
-                </span>
+              {/* Inspector — right 30%, only when node selected */}
+              {selNode && (
+                <div className="shrink-0 overflow-y-auto" style={{ width: 280, borderLeft: '1px solid var(--header-border)' }}>
+                  <Inspector
+                    node={selNode}
+                    state={sim.nodes[selNode.id]}
+                    crashed={fail.crashed.includes(selNode.id)}
+                    count={arch.all.filter((n) => n.kind === selNode.kind).length}
+                    onClose={() => setSelected(null)}
+                    onCrash={() => crash(selNode.id)}
+                    onRecover={() => recover(selNode.id)}
+                  />
+                  <div style={{ borderTop: '1px solid var(--header-border)' }}>
+                    <TechStack arch={arch} selected={selected} onSelect={select} />
+                  </div>
+                </div>
               )}
             </div>
+          </div>
+        </div>
 
-            {/* Why / weak spot / fix — English detail */}
-            <div className="lesson-prose">
-              <p>{content.why}</p>
-              <p><strong>Weak spot: </strong>{content.weakSpot}</p>
-              <p><strong>{i === N - 1 ? 'Next: ' : 'The fix: '}</strong>{content.fix}</p>
-            </div>
 
-            {/* What changed (only after stage 0) */}
-            {i > 0 && <WhatChanged before={content.before} after={content.after} reason={content.reason} />}
-
-            {/* Key takeaway */}
-            <Callout tone="idea" title="Key takeaway">
-              {content.takeaway}
-            </Callout>
-
-            {/* Nudge to try the architecture before answering */}
-            {!effFlow.explore && (
-              <p className="text-sm" style={{ color: 'var(--text-subtle)' }}>
-                → Switch to <button className="underline underline-offset-2" onClick={() => openTab('architecture')} style={{ color: 'var(--text-muted)' }}>Architecture</button> to explore the diagram, then come back to answer the check.
-              </p>
-            )}
-
-            {/* Quiz — full width, not crammed beside content */}
-            <div id="ch1-check">
-              <Quiz
-                key={i}
-                persistKey={`chapter1:quiz:stage${i}`}
-                questions={content.quiz}
-                title="Quick check"
-                onProgress={(s, t) => s === t && mark('check')}
-              />
-            </div>
-          </section>
-        )}
 
         {/* ---------- Learning flow ---------- */}
         <FlowBar
