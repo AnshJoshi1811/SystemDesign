@@ -472,7 +472,7 @@ export const Chapter1Workspace: React.FC = () => {
               <div className="lesson-prose"><p>{content.why}</p><p><strong>Weak spot: </strong>{content.weakSpot}</p><p><strong>{i === N - 1 ? 'Next: ' : 'The fix: '}</strong>{content.fix}</p></div>
               {i > 0 && <WhatChanged before={content.before} after={content.after} reason={content.reason} />}
               <Callout tone="idea" title="Key takeaway">{content.takeaway}</Callout>
-              {chapterMeta?.mediumUrl && <MediumLink url={chapterMeta.mediumUrl} lang={lang} />}
+              {(content.mediumUrl ?? chapterMeta?.mediumUrl) && <MediumLink url={(content.mediumUrl ?? chapterMeta?.mediumUrl)!} lang={lang} />}
               <div id="ch1-check"><Quiz key={i} persistKey={`chapter1:quiz:stage${i}`} questions={content.quiz} title="Quick check" onProgress={(s, t) => s === t && mark('check')} /></div>
             </section>
           )}
@@ -513,7 +513,7 @@ export const Chapter1Workspace: React.FC = () => {
                   </div>
                   {i > 0 && <WhatChanged before={content.before} after={content.after} reason={content.reason} />}
                   <Callout tone="idea" title={lang === 'hi' ? 'Key baat' : 'Key takeaway'}>{content.takeaway}</Callout>
-                  {chapterMeta?.mediumUrl && <MediumLink url={chapterMeta.mediumUrl} lang={lang} />}
+                  {(content.mediumUrl ?? chapterMeta?.mediumUrl) && <MediumLink url={(content.mediumUrl ?? chapterMeta?.mediumUrl)!} lang={lang} />}
                   <div id="ch1-check">
                     <Quiz key={i} persistKey={`chapter1:quiz:stage${i}`} questions={content.quiz} title={lang === 'hi' ? 'Quick test' : 'Quick check'} onProgress={(s, t) => s === t && mark('check')} />
                   </div>
@@ -805,7 +805,7 @@ export const Chapter1Workspace: React.FC = () => {
                         </div>
                         {i > 0 && <WhatChanged before={content.before} after={content.after} reason={content.reason} />}
                         <Callout tone="idea" title={lang === 'hi' ? 'Key baat' : 'Key takeaway'}>{content.takeaway}</Callout>
-                        {chapterMeta?.mediumUrl && <MediumLink url={chapterMeta.mediumUrl} lang={lang} />}
+                        {(content.mediumUrl ?? chapterMeta?.mediumUrl) && <MediumLink url={(content.mediumUrl ?? chapterMeta?.mediumUrl)!} lang={lang} />}
                         <div id="ch1-check">
                           <Quiz key={i} persistKey={`chapter1:quiz:stage${i}`} questions={content.quiz} title={lang === 'hi' ? 'Quick test' : 'Quick check'} onProgress={(s, t) => s === t && mark('check')} />
                         </div>
