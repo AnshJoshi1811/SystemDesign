@@ -227,7 +227,7 @@ const LESSONS: Lesson[] = [
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-left text-slate-500 dark:text-slate-400">
+                <tr className="text-left text-[var(--text-subtle)] dark:text-[var(--text-subtle)]">
                   <th className="py-2 pr-3 font-medium">Availability</th>
                   <th className="py-2 pr-3 font-medium">Per day</th>
                   <th className="py-2 pr-3 font-medium">Per week</th>
@@ -235,7 +235,7 @@ const LESSONS: Lesson[] = [
                   <th className="py-2 font-medium">Per year</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-200 dark:divide-white/10">
+              <tbody className="divide-y divide-[var(--header-border)] dark:divide-[var(--header-border)]">
                 {NINES.map((n) => {
                   const d = downtimeFor(n);
                   return (
