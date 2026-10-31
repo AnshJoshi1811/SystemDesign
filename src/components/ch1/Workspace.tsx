@@ -30,23 +30,27 @@ import { FINAL_STAGE, STAGE_META, COMPONENT_INFO, TECH, KIND_NAME, Experiment } 
 import { buildArch, simulate, Inputs, Failures, CAP, FAILOVER_MS, ArchNode, NodeState, Kind } from './model';
 import { Diagram, ICON as KIND_ICON } from './Diagram';
 
-/** Header icon slot that swaps to an X on hover — click closes whatever panel it sits in. */
-const PanelCloseIcon: React.FC<{ icon: React.ComponentType<{ className?: string }>; onClose: () => void; label: string }> = ({ icon: Icon, onClose, label }) => {
-  const [hover, setHover] = useState(false);
-  return (
-    <button
-      onClick={onClose}
-      onMouseEnter={() => setHover(true)}
-      onMouseLeave={() => setHover(false)}
-      className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg transition-colors"
-      style={{ color: hover ? 'var(--text-base)' : 'var(--text-subtle)', background: hover ? 'var(--surface-muted)' : 'transparent' }}
-      title={label}
-      aria-label={label}
-    >
-      {hover ? <X className="h-4 w-4" /> : <Icon className="h-4 w-4" />}
-    </button>
-  );
-};
+/** Small static icon badge shown next to a panel's title (component kind, or a book for Concepts). */
+const KindIconBadge: React.FC<{ icon: React.ComponentType<{ className?: string }> }> = ({ icon: Icon }) => (
+  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md" style={{ color: 'var(--text-subtle)', background: 'var(--surface)' }}>
+    <Icon className="h-3.5 w-3.5" />
+  </span>
+);
+
+/** Always-visible close button for a floating panel — no hover-to-reveal, so it works on touch too. */
+const PanelCloseButton: React.FC<{ onClose: () => void; label: string }> = ({ onClose, label }) => (
+  <button
+    onClick={onClose}
+    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg transition-colors"
+    style={{ color: 'var(--text-subtle)' }}
+    onMouseEnter={e => { e.currentTarget.style.background = 'var(--surface)'; e.currentTarget.style.color = 'var(--text-base)'; }}
+    onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-subtle)'; }}
+    title={label}
+    aria-label={label}
+  >
+    <X className="h-4 w-4" />
+  </button>
+);
 
 const ALL_STAGES: StageContent[] = [...STAGES, FINAL_STAGE];
 const N = ALL_STAGES.length;
@@ -583,12 +587,12 @@ export const Chapter1Workspace: React.FC = () => {
                   <div className="shrink-0 flex items-center gap-2 px-3 py-2.5" style={{ borderBottom: '1px solid var(--header-border)', background: 'var(--surface-muted)' }}>
                     {selNode ? (
                       <>
-                        <PanelCloseIcon icon={KIND_ICON[selNode.kind]} label="Close" onClose={() => setSelected(null)} />
+                        <KindIconBadge icon={KIND_ICON[selNode.kind]} />
                         <span className="text-sm font-semibold truncate" style={{ color: 'var(--text-base)' }}>{selNode.label}</span>
                       </>
                     ) : (
                       <>
-                        <PanelCloseIcon icon={BookOpen} label="Hide concepts" onClose={() => setConceptsHidden(true)} />
+                        <KindIconBadge icon={BookOpen} />
                         <span className="text-xs font-bold tracking-widest uppercase" style={{ color: 'var(--text-subtle)' }}>
                           Concepts
                         </span>
@@ -597,6 +601,10 @@ export const Chapter1Workspace: React.FC = () => {
                     <span className="ml-auto text-[10px] shrink-0" style={{ color: 'var(--text-subtle)' }}>
                       Stage {i + 1} / {N}
                     </span>
+                    <PanelCloseButton
+                      onClose={selNode ? () => setSelected(null) : () => setConceptsHidden(true)}
+                      label={selNode ? (lang === 'hi' ? 'Band karo' : 'Close') : (lang === 'hi' ? 'Concepts chupao' : 'Hide concepts')}
+                    />
                   </div>
 
                   <div className="flex-1 min-h-0 overflow-y-auto">
