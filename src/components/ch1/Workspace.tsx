@@ -292,7 +292,7 @@ export const Chapter1Workspace: React.FC = () => {
         </header>
 
         {/* ---------- Tabs — Concepts first, then Architecture ---------- */}
-        <nav className="flex gap-1 overflow-x-auto no-scrollbar" aria-label="Stage views">
+        <nav className={`${sidebarCollapsed ? 'lg:hidden' : ''} flex gap-1 overflow-x-auto no-scrollbar`} aria-label="Stage views">
           {(
             [
               ['concepts', 'Concepts', BookOpen],
@@ -353,111 +353,234 @@ export const Chapter1Workspace: React.FC = () => {
           )}
         </div>
 
-        {/* ─────────── DESKTOP — simple tabs always ─────────── */}
+        {/* ═══════════════ DESKTOP ═══════════════ */}
         <div className="hidden lg:block">
-          {/* CONCEPTS TAB */}
-          {tab === 'concepts' && (
-            <section className="max-w-3xl space-y-5">
-              {lang === 'hi' && content.hinglish && (
-                <div className="rounded-xl px-4 py-3 text-sm leading-relaxed" style={{ background: 'var(--surface-muted)', border: '1px solid var(--header-border)', color: 'var(--text-base)' }}>
-                  {content.hinglish}
+
+          {/* ───────── When sidebar is VISIBLE: focused tabs ───────── */}
+          {!sidebarCollapsed && (
+            <>
+              {tab === 'concepts' && (
+                <section className="max-w-3xl space-y-5">
+                  {lang === 'hi' && content.hinglish && (
+                    <div className="rounded-xl px-4 py-3 text-sm leading-relaxed" style={{ background: 'var(--surface-muted)', border: '1px solid var(--header-border)', color: 'var(--text-base)' }}>
+                      {content.hinglish}
+                    </div>
+                  )}
+                  <div className="lesson-prose">
+                    <p>{content.why}</p>
+                    <p><strong>{lang === 'hi' ? 'Weak spot (kamzori): ' : 'Weak spot: '}</strong>{content.weakSpot}</p>
+                    <p><strong>{i === N - 1 ? (lang === 'hi' ? 'Aage: ' : 'Next: ') : (lang === 'hi' ? 'Solution: ' : 'The fix: ')}</strong>{content.fix}</p>
+                  </div>
+                  {i > 0 && <WhatChanged before={content.before} after={content.after} reason={content.reason} />}
+                  <Callout tone="idea" title={lang === 'hi' ? 'Key baat' : 'Key takeaway'}>{content.takeaway}</Callout>
+                  <div id="ch1-check">
+                    <Quiz key={i} persistKey={`chapter1:quiz:stage${i}`} questions={content.quiz} title={lang === 'hi' ? 'Quick test' : 'Quick check'} onProgress={(s, t) => s === t && mark('check')} />
+                  </div>
+                </section>
+              )}
+              {tab === 'architecture' && (
+                <div className={`grid gap-5 ${selNode ? 'xl:grid-cols-[minmax(0,1fr)_280px]' : 'grid-cols-1'}`}>
+                  <section className="min-w-0 rounded-2xl bg-[var(--surface)] ring-1 ring-[var(--header-border)] p-4 sm:p-5">
+                    <div className="flex flex-wrap items-center gap-2 mb-3">
+                      {meta.experiments.map((ex) => (
+                        <button key={ex.id} onClick={() => runExperiment(ex)} className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium text-rose-700 ring-1 ring-rose-200 hover:bg-rose-50 dark:text-rose-300 dark:ring-rose-400/30 dark:hover:bg-rose-400/10">
+                          <Flame className="h-3.5 w-3.5" /> {ex.label}
+                        </button>
+                      ))}
+                      {hasFix(i) && (
+                        <Segmented label="Version" value={after ? 'after' : 'before'}
+                          options={[{ value: 'before', label: meta.toggle?.[0] ?? 'Before' }, { value: 'after', label: meta.toggle?.[1] ?? 'After' }]}
+                          onChange={(v) => setAfter(v === 'after')} />
+                      )}
+                      <button onClick={clearFailures} className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm ring-1 ring-[var(--header-border)] hover:bg-[var(--surface-muted)]" style={{ color: 'var(--text-muted)' }}>
+                        <RotateCcw className="h-3.5 w-3.5" /> Reset
+                      </button>
+                    </div>
+                    {failing && (
+                      <Callout className="mb-3" tone={health === 'ok' ? 'success' : health === 'outage' ? 'danger' : 'warning'} title={health === 'ok' ? 'Architecture absorbed the failure' : sim.headline}>
+                        <FailureSummary sim={sim} after={after} stage={i} withLabel={meta.toggle?.[1]} withoutLabel={meta.toggle?.[0]} />
+                      </Callout>
+                    )}
+                    <Diagram arch={arch} sim={sim} selected={selected} onSelect={select} running={sim.success > 0} />
+                    <details className="mt-4 rounded-xl overflow-hidden" style={{ border: '1px solid var(--header-border)' }}>
+                      <summary className="cursor-pointer flex items-center gap-2 px-4 py-2.5 text-sm font-medium select-none" style={{ background: 'var(--surface-muted)', color: 'var(--text-base)' }}>
+                        <Settings2 className="h-4 w-4" style={{ color: 'var(--text-subtle)' }} />
+                        Simulation controls
+                      </summary>
+                      <div className="p-4" style={{ background: 'var(--surface)' }}>
+                        <div className="grid gap-4 sm:grid-cols-3">
+                          <Control label="Traffic (req/sec)" value={`${inputs.rps.toLocaleString()} RPS`}>
+                            <input type="range" min={0} max={100} value={rpsToPos(inputs.rps)} onChange={(e) => setInputs({ rps: posToRps(Number(e.target.value)) })} className="w-full accent-[var(--accent)]" />
+                          </Control>
+                          <Control label="Read / write mix" value={`${inputs.readPct}% / ${100 - inputs.readPct}%`}>
+                            <input type="range" min={50} max={99} value={inputs.readPct} onChange={(e) => setInputs({ readPct: Number(e.target.value) })} className="w-full accent-emerald-600" />
+                          </Control>
+                          <Control label={arch.f.multiDc ? 'Servers per DC' : 'Web servers'} value={arch.f.lb ? `${inputs.websPerDc} nodes` : '1 node'}>
+                            {arch.f.lb ? (
+                              <div className="flex items-center gap-2">
+                                <StepBtn label="Remove" onClick={() => setInputs({ websPerDc: Math.max(1, inputs.websPerDc - 1) })} disabled={inputs.websPerDc <= 1}><Minus className="h-4 w-4" /></StepBtn>
+                                <span className="w-8 text-center text-sm tabular-nums">{inputs.websPerDc}</span>
+                                <StepBtn label="Add" onClick={() => setInputs({ websPerDc: Math.min(4, inputs.websPerDc + 1) })} disabled={inputs.websPerDc >= 4}><Plus className="h-4 w-4" /></StepBtn>
+                              </div>
+                            ) : <p className="text-xs" style={{ color: 'var(--text-subtle)' }}>Needs a load balancer first.</p>}
+                          </Control>
+                        </div>
+                      </div>
+                    </details>
+                  </section>
+                  {selNode && (
+                    <div className="min-w-0">
+                      <Inspector node={selNode} state={sim.nodes[selNode.id]} crashed={fail.crashed.includes(selNode.id)} count={arch.all.filter((n) => n.kind === selNode.kind).length} onClose={() => setSelected(null)} onCrash={() => crash(selNode.id)} onRecover={() => recover(selNode.id)} />
+                    </div>
+                  )}
+                  {!selNode && <TechStack arch={arch} selected={selected} onSelect={select} />}
                 </div>
               )}
-              <div className="lesson-prose">
-                <p>{content.why}</p>
-                <p><strong>{lang === 'hi' ? 'Weak spot (kamzori): ' : 'Weak spot: '}</strong>{content.weakSpot}</p>
-                <p><strong>{i === N - 1 ? (lang === 'hi' ? 'Aage: ' : 'Next: ') : (lang === 'hi' ? 'Solution: ' : 'The fix: ')}</strong>{content.fix}</p>
-              </div>
-              {i > 0 && <WhatChanged before={content.before} after={content.after} reason={content.reason} />}
-              <Callout tone="idea" title={lang === 'hi' ? 'Key baat' : 'Key takeaway'}>{content.takeaway}</Callout>
-              {!effFlow.explore && (
-                <p className="text-sm" style={{ color: 'var(--text-subtle)' }}>
-                  → {lang === 'hi' ? 'Ab' : 'Switch to'} <button className="underline underline-offset-2" onClick={() => openTab('architecture')} style={{ color: 'var(--text-muted)' }}>{lang === 'hi' ? 'Architecture dekho' : 'Architecture'}</button> {lang === 'hi' ? 'aur diagram explore karo' : 'to explore the diagram'}.
-                </p>
-              )}
-              <div id="ch1-check">
-                <Quiz key={i} persistKey={`chapter1:quiz:stage${i}`} questions={content.quiz} title={lang === 'hi' ? 'Quick test' : 'Quick check'} onProgress={(s, t) => s === t && mark('check')} />
-              </div>
-            </section>
+            </>
           )}
 
-          {/* ARCHITECTURE TAB */}
-          {tab === 'architecture' && (
-            sidebarCollapsed ? (
-              /* MIRO-STYLE: full-canvas whiteboard, floating overlays */
+          {/* ───────── When sidebar is COLLAPSED: true Miro whiteboard ───────── */}
+          {sidebarCollapsed && (
+            <div
+              className="relative rounded-2xl overflow-hidden"
+              style={{
+                height: 'calc(100vh - 200px)',
+                minHeight: 580,
+                border: '1px solid var(--header-border)',
+                background: 'var(--surface)',
+                backgroundImage: `radial-gradient(var(--header-border) 1px, transparent 1px)`,
+                backgroundSize: '20px 20px',
+              }}
+            >
+              {/* ─ BACKGROUND LAYER: Architecture canvas, fills everything ─ */}
+              <div className="absolute inset-0 flex items-center justify-center p-6 pl-[420px] pr-6">
+                <div className="w-full h-full">
+                  <Diagram arch={arch} sim={sim} selected={selected} onSelect={select} running={sim.success > 0} />
+                </div>
+              </div>
+
+              {/* ─ TOP: Status + Actions toolbar ─ */}
+              <div className="absolute top-3 left-[420px] right-3 flex items-start justify-between gap-2 z-20 pointer-events-none">
+                <div className="flex items-center gap-2 pointer-events-auto rounded-xl px-3 py-1.5 backdrop-blur" style={{ background: 'var(--surface)', border: '1px solid var(--header-border)', boxShadow: '0 2px 10px rgba(0,0,0,0.1)' }}>
+                  <span className={`h-2 w-2 rounded-full ${health === 'ok' ? 'bg-emerald-500' : health === 'degraded' ? 'bg-amber-500' : 'bg-rose-500'}`} />
+                  <span className="text-xs font-semibold" style={{ color: 'var(--text-base)' }}>{content.title}</span>
+                  <span className={`rounded px-1.5 py-0.5 text-[10px] font-medium ${
+                    health === 'ok' ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-400/10 dark:text-emerald-300'
+                    : health === 'degraded' ? 'bg-amber-50 text-amber-700 dark:bg-amber-400/10 dark:text-amber-300'
+                    : 'bg-rose-50 text-rose-700 dark:bg-rose-400/10 dark:text-rose-300'
+                  }`}>{health === 'ok' ? (lang === 'hi' ? 'Chal raha' : 'Running') : health === 'degraded' ? (lang === 'hi' ? 'Dheela' : 'Degraded') : (lang === 'hi' ? 'Band' : 'Outage')}</span>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-1.5 pointer-events-auto rounded-xl px-2 py-1.5 backdrop-blur" style={{ background: 'var(--surface)', border: '1px solid var(--header-border)', boxShadow: '0 2px 10px rgba(0,0,0,0.1)' }}>
+                  {meta.experiments.map((ex) => (
+                    <button key={ex.id} onClick={() => runExperiment(ex)} title={ex.description}
+                      className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-rose-700 ring-1 ring-rose-200 hover:bg-rose-50 dark:text-rose-300 dark:ring-rose-400/30 dark:hover:bg-rose-400/10">
+                      <Flame className="h-3 w-3" /> {ex.label}
+                    </button>
+                  ))}
+                  {hasFix(i) && (
+                    <Segmented label="Version" value={after ? 'after' : 'before'}
+                      options={[{ value: 'before', label: meta.toggle?.[0] ?? 'Before' }, { value: 'after', label: meta.toggle?.[1] ?? 'After' }]}
+                      onChange={(v) => setAfter(v === 'after')} />
+                  )}
+                  <button onClick={clearFailures} className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs ring-1 ring-[var(--header-border)] hover:bg-[var(--surface-muted)]" style={{ color: 'var(--text-muted)' }}>
+                    <RotateCcw className="h-3 w-3" /> Reset
+                  </button>
+                </div>
+              </div>
+
+              {/* ─ LEFT: Concepts overlay — z-30 above the canvas ─ */}
               <div
-                className="relative rounded-2xl overflow-hidden"
+                className="absolute left-3 top-3 bottom-3 w-[400px] z-30 flex flex-col rounded-xl overflow-hidden"
                 style={{
-                  height: 'calc(100vh - 220px)',
-                  minHeight: 540,
-                  border: '1px solid var(--header-border)',
                   background: 'var(--surface)',
-                  // subtle dot grid like Miro
-                  backgroundImage: `radial-gradient(var(--header-border) 1px, transparent 1px)`,
-                  backgroundSize: '18px 18px',
+                  border: '1px solid var(--header-border)',
+                  boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
                 }}
               >
-                {/* ── Diagram fills the whole canvas ── */}
-                <div className="absolute inset-0 p-4 flex items-center justify-center">
-                  <div className="w-full h-full max-w-3xl">
-                    <Diagram arch={arch} sim={sim} selected={selected} onSelect={select} running={sim.success > 0} />
-                  </div>
+                <div className="shrink-0 flex items-center justify-between px-4 py-3" style={{ borderBottom: '1px solid var(--header-border)', background: 'var(--surface-muted)' }}>
+                  <span className="text-xs font-bold tracking-widest uppercase" style={{ color: 'var(--text-subtle)' }}>
+                    {lang === 'hi' ? 'Concepts' : 'Concepts'}
+                  </span>
+                  <span className="text-[10px]" style={{ color: 'var(--text-subtle)' }}>
+                    Stage {i + 1} / {N}
+                  </span>
                 </div>
 
-                {/* ── Floating toolbar — TOP ── */}
-                <div className="absolute top-3 left-3 right-3 flex flex-wrap items-center justify-between gap-2 z-20 pointer-events-none">
-                  <div className="flex items-center gap-2 pointer-events-auto rounded-xl px-3 py-1.5 backdrop-blur" style={{ background: 'var(--surface)', border: '1px solid var(--header-border)', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
-                    <span className={`h-2 w-2 rounded-full ${health === 'ok' ? 'bg-emerald-500' : health === 'degraded' ? 'bg-amber-500' : 'bg-rose-500'}`} />
-                    <span className="text-xs font-semibold" style={{ color: 'var(--text-base)' }}>{content.title}</span>
-                    <span className={`rounded px-1.5 py-0.5 text-[10px] font-medium ${
-                      health === 'ok' ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-400/10 dark:text-emerald-300'
-                      : health === 'degraded' ? 'bg-amber-50 text-amber-700 dark:bg-amber-400/10 dark:text-amber-300'
-                      : 'bg-rose-50 text-rose-700 dark:bg-rose-400/10 dark:text-rose-300'
-                    }`}>{health === 'ok' ? (lang === 'hi' ? 'Chal raha' : 'Running') : health === 'degraded' ? (lang === 'hi' ? 'Dheela' : 'Degraded') : (lang === 'hi' ? 'Band' : 'Outage')}</span>
+                <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-4">
+                  {lang === 'hi' && content.hinglish && (
+                    <div className="rounded-xl px-3 py-2.5 text-xs leading-relaxed" style={{ background: 'var(--surface-muted)', border: '1px solid var(--header-border)', color: 'var(--text-base)' }}>
+                      {content.hinglish}
+                    </div>
+                  )}
+                  <div className="lesson-prose text-sm">
+                    <p>{content.why}</p>
+                    <p><strong>{lang === 'hi' ? 'Weak spot: ' : 'Weak spot: '}</strong>{content.weakSpot}</p>
+                    <p><strong>{i === N - 1 ? (lang === 'hi' ? 'Aage: ' : 'Next: ') : (lang === 'hi' ? 'Solution: ' : 'The fix: ')}</strong>{content.fix}</p>
                   </div>
+                  {i > 0 && <WhatChanged before={content.before} after={content.after} reason={content.reason} />}
+                  <Callout tone="idea" title={lang === 'hi' ? 'Key baat' : 'Key takeaway'}>{content.takeaway}</Callout>
+                  <div id="ch1-check">
+                    <Quiz key={i} persistKey={`chapter1:quiz:stage${i}`} questions={content.quiz} title={lang === 'hi' ? 'Quick test' : 'Quick check'} onProgress={(s, t) => s === t && mark('check')} />
+                  </div>
+                </div>
+              </div>
 
-                  <div className="flex flex-wrap items-center gap-1.5 pointer-events-auto rounded-xl px-2 py-1.5 backdrop-blur" style={{ background: 'var(--surface)', border: '1px solid var(--header-border)', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
-                    {meta.experiments.map((ex) => (
-                      <button key={ex.id} onClick={() => runExperiment(ex)} title={ex.description}
-                        className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-rose-700 ring-1 ring-rose-200 hover:bg-rose-50 dark:text-rose-300 dark:ring-rose-400/30 dark:hover:bg-rose-400/10">
-                        <Flame className="h-3 w-3" /> {ex.label}
-                      </button>
-                    ))}
-                    {hasFix(i) && (
-                      <Segmented label="Version" value={after ? 'after' : 'before'}
-                        options={[{ value: 'before', label: meta.toggle?.[0] ?? 'Before' }, { value: 'after', label: meta.toggle?.[1] ?? 'After' }]}
-                        onChange={(v) => setAfter(v === 'after')} />
-                    )}
-                    <button onClick={clearFailures}
-                      className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs ring-1 ring-[var(--header-border)] hover:bg-[var(--surface-muted)]"
-                      style={{ color: 'var(--text-muted)' }}>
-                      <RotateCcw className="h-3 w-3" /> {lang === 'hi' ? 'Reset' : 'Reset'}
+              {/* ─ RIGHT: Inspector overlay — z-40, visible only when a component is selected ─ */}
+              {selNode && (
+                <div
+                  className="absolute right-3 top-16 bottom-3 w-80 z-40 flex flex-col rounded-xl overflow-hidden"
+                  style={{
+                    background: 'var(--surface)',
+                    border: '1px solid var(--header-border)',
+                    boxShadow: '0 8px 32px rgba(0,0,0,0.18)',
+                  }}
+                >
+                  <div className="shrink-0 flex items-center justify-between px-4 py-3" style={{ borderBottom: '1px solid var(--header-border)', background: 'var(--surface-muted)' }}>
+                    <span className="text-xs font-bold tracking-widest uppercase" style={{ color: 'var(--text-subtle)' }}>
+                      {lang === 'hi' ? 'Component' : 'Inspector'}
+                    </span>
+                    <button
+                      onClick={() => setSelected(null)}
+                      className="rounded p-1 transition-colors hover:bg-[var(--surface)]"
+                      style={{ color: 'var(--text-subtle)' }}
+                      aria-label="Close inspector"
+                    >
+                      <X className="h-3.5 w-3.5" />
                     </button>
                   </div>
-                </div>
-
-                {/* ── Floating failure callout — top center ── */}
-                {failing && (
-                  <div className="absolute top-16 left-1/2 -translate-x-1/2 z-20 pointer-events-auto max-w-md">
-                    <Callout tone={health === 'ok' ? 'success' : health === 'outage' ? 'danger' : 'warning'} title={health === 'ok' ? (lang === 'hi' ? 'Architecture ne failure handle kiya' : 'Architecture absorbed the failure') : sim.headline}>
-                      <FailureSummary sim={sim} after={after} stage={i} withLabel={meta.toggle?.[1]} withoutLabel={meta.toggle?.[0]} />
-                    </Callout>
+                  <div className="flex-1 min-h-0 overflow-y-auto">
+                    <Inspector embedded node={selNode} state={sim.nodes[selNode.id]} crashed={fail.crashed.includes(selNode.id)} count={arch.all.filter((n) => n.kind === selNode.kind).length} onClose={() => setSelected(null)} onCrash={() => crash(selNode.id)} onRecover={() => recover(selNode.id)} />
                   </div>
-                )}
+                </div>
+              )}
 
-                {/* ── Floating simulation controls — BOTTOM LEFT ── */}
-                <div className="absolute bottom-3 left-3 z-20 pointer-events-auto w-80 rounded-xl backdrop-blur" style={{ background: 'var(--surface)', border: '1px solid var(--header-border)', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
-                  <details open className="group">
-                    <summary className="cursor-pointer flex items-center gap-2 px-3 py-2 text-xs font-semibold select-none" style={{ color: 'var(--text-base)' }}>
-                      <Settings2 className="h-3.5 w-3.5" style={{ color: 'var(--text-subtle)' }} />
-                      {lang === 'hi' ? 'Simulation controls' : 'Simulation controls'}
-                      <ChevronDown className="h-3 w-3 ml-auto transition-transform group-open:rotate-180" style={{ color: 'var(--text-subtle)' }} />
-                    </summary>
-                    <div className="px-3 pb-3 space-y-3" style={{ borderTop: '1px solid var(--header-border)' }}>
+              {/* ─ BOTTOM-CENTER: Simulation controls floating ─ */}
+              <div
+                className="absolute bottom-3 left-[420px] z-20 rounded-xl overflow-hidden"
+                style={{
+                  width: 'auto',
+                  maxWidth: 'calc(100% - 440px)',
+                  background: 'var(--surface)',
+                  border: '1px solid var(--header-border)',
+                  boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
+                }}
+              >
+                <details className="group">
+                  <summary className="cursor-pointer flex items-center gap-2 px-3 py-2 text-xs font-semibold select-none" style={{ color: 'var(--text-base)' }}>
+                    <Settings2 className="h-3.5 w-3.5" style={{ color: 'var(--text-subtle)' }} />
+                    {lang === 'hi' ? 'Simulation controls' : 'Simulation controls'}
+                    <span className="ml-auto text-[10px] font-normal" style={{ color: 'var(--text-subtle)' }}>
+                      {inputs.rps.toLocaleString()} RPS · {arch.f.lb ? `${inputs.websPerDc} servers` : '1 server'}
+                    </span>
+                    <ChevronDown className="h-3 w-3 transition-transform group-open:rotate-180" style={{ color: 'var(--text-subtle)' }} />
+                  </summary>
+                  <div className="px-4 py-3 space-y-3" style={{ borderTop: '1px solid var(--header-border)', minWidth: 480 }}>
+                    <div className="grid grid-cols-3 gap-4">
                       <Control label={lang === 'hi' ? 'Traffic (req/sec)' : 'Traffic (req/sec)'} value={`${inputs.rps.toLocaleString()} RPS`}>
                         <input type="range" min={0} max={100} value={rpsToPos(inputs.rps)} onChange={(e) => setInputs({ rps: posToRps(Number(e.target.value)) })} className="w-full accent-[var(--accent)]" />
                       </Control>
-                      <Control label={lang === 'hi' ? 'Read / write ratio' : 'Read / write mix'} value={`${inputs.readPct}% / ${100 - inputs.readPct}%`}>
+                      <Control label={lang === 'hi' ? 'Read / write' : 'Read / write'} value={`${inputs.readPct}% / ${100 - inputs.readPct}%`}>
                         <input type="range" min={50} max={99} value={inputs.readPct} onChange={(e) => setInputs({ readPct: Number(e.target.value) })} className="w-full accent-emerald-600" />
                       </Control>
                       <Control label={arch.f.multiDc ? (lang === 'hi' ? 'Servers per DC' : 'Servers per DC') : (lang === 'hi' ? 'Web servers' : 'Web servers')} value={arch.f.lb ? `${inputs.websPerDc} nodes` : '1 node'}>
@@ -470,102 +593,26 @@ export const Chapter1Workspace: React.FC = () => {
                         ) : <p className="text-[11px]" style={{ color: 'var(--text-subtle)' }}>{lang === 'hi' ? 'Pehle load balancer chahiye' : 'Needs a load balancer first.'}</p>}
                       </Control>
                     </div>
-                  </details>
+                  </div>
+                </details>
+              </div>
+
+              {/* ─ Floating failure callout at top center ─ */}
+              {failing && (
+                <div className="absolute top-16 left-1/2 -translate-x-1/2 z-25 pointer-events-auto max-w-md" style={{ marginLeft: 200 }}>
+                  <Callout tone={health === 'ok' ? 'success' : health === 'outage' ? 'danger' : 'warning'} title={health === 'ok' ? (lang === 'hi' ? 'Architecture ne failure handle kiya' : 'Architecture absorbed the failure') : sim.headline}>
+                    <FailureSummary sim={sim} after={after} stage={i} withLabel={meta.toggle?.[1]} withoutLabel={meta.toggle?.[0]} />
+                  </Callout>
                 </div>
+              )}
 
-                {/* ── Floating inspector — RIGHT SIDE (only when node selected) ── */}
-                {selNode && (
-                  <div className="absolute top-16 right-3 z-20 pointer-events-auto w-72 rounded-xl overflow-hidden backdrop-blur" style={{ background: 'var(--surface)', border: '1px solid var(--header-border)', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', maxHeight: 'calc(100% - 90px)' }}>
-                    <div className="flex flex-col h-full">
-                      <div className="shrink-0 flex items-center justify-between px-3 py-2" style={{ borderBottom: '1px solid var(--header-border)', background: 'var(--surface-muted)' }}>
-                        <span className="text-[10px] font-bold tracking-widest uppercase" style={{ color: 'var(--text-subtle)' }}>
-                          {lang === 'hi' ? 'Component' : 'Inspector'}
-                        </span>
-                        <button onClick={() => setSelected(null)} className="rounded p-0.5 transition-colors hover:bg-[var(--surface)]" style={{ color: 'var(--text-subtle)' }} aria-label="Close">
-                          <X className="h-3.5 w-3.5" />
-                        </button>
-                      </div>
-                      <div className="flex-1 min-h-0 overflow-y-auto">
-                        <Inspector embedded node={selNode} state={sim.nodes[selNode.id]} crashed={fail.crashed.includes(selNode.id)} count={arch.all.filter((n) => n.kind === selNode.kind).length} onClose={() => setSelected(null)} onCrash={() => crash(selNode.id)} onRecover={() => recover(selNode.id)} />
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* ── Hint when nothing is selected ── */}
-                {!selNode && (
-                  <div className="absolute bottom-3 right-3 z-10 text-[11px] italic pointer-events-none" style={{ color: 'var(--text-subtle)' }}>
-                    {lang === 'hi' ? '💡 Kisi bhi component pe click karo' : '💡 Click any component to inspect'}
-                  </div>
-                )}
-              </div>
-            ) : (
-              /* COMPACT ARCHITECTURE: sidebar is visible, use cards */
-              <div className={`grid gap-5 transition-all ${selNode ? 'xl:grid-cols-[minmax(0,1fr)_280px]' : 'grid-cols-1'}`}>
-                <section className="min-w-0 rounded-2xl bg-[var(--surface)] ring-1 ring-[var(--header-border)] p-4 sm:p-5">
-                  <div className="flex flex-wrap items-center gap-2 mb-3">
-                    {meta.experiments.map((ex) => (
-                      <button key={ex.id} onClick={() => runExperiment(ex)} className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium text-rose-700 ring-1 ring-rose-200 hover:bg-rose-50 dark:text-rose-300 dark:ring-rose-400/30 dark:hover:bg-rose-400/10">
-                        <Flame className="h-3.5 w-3.5" /> {ex.label}
-                      </button>
-                    ))}
-                    {hasFix(i) && (
-                      <Segmented label="Version" value={after ? 'after' : 'before'}
-                        options={[{ value: 'before', label: meta.toggle?.[0] ?? 'Before' }, { value: 'after', label: meta.toggle?.[1] ?? 'After' }]}
-                        onChange={(v) => setAfter(v === 'after')} />
-                    )}
-                    <button onClick={clearFailures} className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm ring-1 ring-[var(--header-border)] hover:bg-[var(--surface-muted)]" style={{ color: 'var(--text-muted)' }}>
-                      <RotateCcw className="h-3.5 w-3.5" /> Reset
-                    </button>
-                  </div>
-                  {failing && (
-                    <Callout className="mb-3" tone={health === 'ok' ? 'success' : health === 'outage' ? 'danger' : 'warning'} title={health === 'ok' ? 'Architecture absorbed the failure' : sim.headline}>
-                      <FailureSummary sim={sim} after={after} stage={i} withLabel={meta.toggle?.[1]} withoutLabel={meta.toggle?.[0]} />
-                    </Callout>
-                  )}
-                  <Diagram arch={arch} sim={sim} selected={selected} onSelect={select} running={sim.success > 0} />
-                  <details className="mt-4 rounded-xl overflow-hidden" style={{ border: '1px solid var(--header-border)' }}>
-                    <summary className="cursor-pointer flex items-center gap-2 px-4 py-2.5 text-sm font-medium select-none" style={{ background: 'var(--surface-muted)', color: 'var(--text-base)' }}>
-                      <Settings2 className="h-4 w-4" style={{ color: 'var(--text-subtle)' }} />
-                      Simulation controls
-                    </summary>
-                    <div className="p-4" style={{ background: 'var(--surface)' }}>
-                      <div className="grid gap-4 sm:grid-cols-3">
-                        <Control label="Traffic (req/sec)" value={`${inputs.rps.toLocaleString()} RPS`}>
-                          <input type="range" min={0} max={100} value={rpsToPos(inputs.rps)} onChange={(e) => setInputs({ rps: posToRps(Number(e.target.value)) })} className="w-full accent-[var(--accent)]" />
-                        </Control>
-                        <Control label="Read / write mix" value={`${inputs.readPct}% / ${100 - inputs.readPct}%`}>
-                          <input type="range" min={50} max={99} value={inputs.readPct} onChange={(e) => setInputs({ readPct: Number(e.target.value) })} className="w-full accent-emerald-600" />
-                        </Control>
-                        <Control label={arch.f.multiDc ? 'Servers per DC' : 'Web servers'} value={arch.f.lb ? `${inputs.websPerDc} nodes` : '1 node'}>
-                          {arch.f.lb ? (
-                            <div className="flex items-center gap-2">
-                              <StepBtn label="Remove" onClick={() => setInputs({ websPerDc: Math.max(1, inputs.websPerDc - 1) })} disabled={inputs.websPerDc <= 1}><Minus className="h-4 w-4" /></StepBtn>
-                              <span className="w-8 text-center text-sm tabular-nums">{inputs.websPerDc}</span>
-                              <StepBtn label="Add" onClick={() => setInputs({ websPerDc: Math.min(4, inputs.websPerDc + 1) })} disabled={inputs.websPerDc >= 4}><Plus className="h-4 w-4" /></StepBtn>
-                            </div>
-                          ) : <p className="text-xs" style={{ color: 'var(--text-subtle)' }}>Needs a load balancer first.</p>}
-                        </Control>
-                      </div>
-                    </div>
-                  </details>
-                </section>
-                {selNode && (
-                  <div className="min-w-0">
-                    <Inspector
-                      node={selNode}
-                      state={sim.nodes[selNode.id]}
-                      crashed={fail.crashed.includes(selNode.id)}
-                      count={arch.all.filter((n) => n.kind === selNode.kind).length}
-                      onClose={() => setSelected(null)}
-                      onCrash={() => crash(selNode.id)}
-                      onRecover={() => recover(selNode.id)}
-                    />
-                  </div>
-                )}
-                {!selNode && <TechStack arch={arch} selected={selected} onSelect={select} />}
-              </div>
-            )
+              {/* ─ Hint when nothing is selected ─ */}
+              {!selNode && (
+                <div className="absolute bottom-3 right-3 z-10 text-[11px] italic pointer-events-none" style={{ color: 'var(--text-subtle)' }}>
+                  {lang === 'hi' ? '💡 Diagram pe kisi component pe click karo' : '💡 Click any component in the diagram'}
+                </div>
+              )}
+            </div>
           )}
         </div>
 
