@@ -262,12 +262,15 @@ export const Chapter1Workspace: React.FC = () => {
           style={
             sidebarCollapsed
               ? {
-                  // Thin single-line strip, edge-to-edge
-                  width: '100vw',
-                  marginLeft: 'calc(-50vw + 50%)',
-                  padding: '10px 32px',
+                  // Thin single-line strip, ~92% of the viewport, centered
+                  width: '92vw',
+                  marginLeft: 'calc(-46vw + 50%)',
+                  padding: '10px 20px',
                   borderBottom: '1px solid var(--header-border)',
                   background: 'var(--surface)',
+                  borderRadius: '12px 12px 0 0',
+                  border: '1px solid var(--header-border)',
+                  borderBottomWidth: 0,
                 }
               : { paddingTop: 4 }
           }
@@ -490,17 +493,18 @@ export const Chapter1Workspace: React.FC = () => {
             </>
           )}
 
-          {/* ───────── When sidebar is COLLAPSED: true Miro whiteboard, EDGE-TO-EDGE ───────── */}
+          {/* ───────── When sidebar is COLLAPSED: true Miro whiteboard, 92% of viewport ───────── */}
           {sidebarCollapsed && (
             <div
               className="relative overflow-hidden"
               style={{
-                /* Break out of the max-w-[1280px] parent container to true viewport width */
-                width: '100vw',
-                marginLeft: 'calc(-50vw + 50%)',
+                /* Break out of the max-w-[1280px] parent container to ~92% of the viewport, centered */
+                width: '92vw',
+                marginLeft: 'calc(-46vw + 50%)',
                 height: 'calc(100vh - 230px)',
-                minHeight: 540,
-                borderBottom: '1px solid var(--header-border)',
+                minHeight: 520,
+                border: '1px solid var(--header-border)',
+                borderRadius: '0 0 12px 12px',
                 background: 'var(--surface)',
                 backgroundImage: `radial-gradient(var(--header-border) 1px, transparent 1px)`,
                 backgroundSize: '20px 20px',
@@ -515,7 +519,7 @@ export const Chapter1Workspace: React.FC = () => {
 
               {/* ─ TOP: Status + Actions toolbar ─ */}
               <div className="absolute top-4 flex items-start justify-between gap-2 z-20 pointer-events-none" style={{ left: 440, right: 24 }}>
-                <div className="flex items-center gap-2 pointer-events-auto rounded-xl px-3 py-1.5 backdrop-blur" style={{ background: 'var(--surface)', border: '1px solid var(--header-border)', boxShadow: '0 2px 10px rgba(0,0,0,0.1)' }}>
+                <div className="flex items-center gap-2 pointer-events-auto rounded-xl px-3 py-1.5 backdrop-blur" style={{ background: 'var(--surface)', border: '1px solid var(--header-border)', boxShadow: 'var(--shadow-float-sm)' }}>
                   <span className={`h-2 w-2 rounded-full ${health === 'ok' ? 'bg-emerald-500' : health === 'degraded' ? 'bg-amber-500' : 'bg-rose-500'}`} />
                   <span className="text-xs font-semibold" style={{ color: 'var(--text-base)' }}>{content.title}</span>
                   <span className={`rounded px-1.5 py-0.5 text-[10px] font-medium ${
@@ -525,7 +529,7 @@ export const Chapter1Workspace: React.FC = () => {
                   }`}>{health === 'ok' ? (lang === 'hi' ? 'Chal raha' : 'Running') : health === 'degraded' ? (lang === 'hi' ? 'Dheela' : 'Degraded') : (lang === 'hi' ? 'Band' : 'Outage')}</span>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-1.5 pointer-events-auto rounded-xl px-2 py-1.5 backdrop-blur" style={{ background: 'var(--surface)', border: '1px solid var(--header-border)', boxShadow: '0 2px 10px rgba(0,0,0,0.1)' }}>
+                <div className="flex flex-wrap items-center gap-1.5 pointer-events-auto rounded-xl px-2 py-1.5 backdrop-blur" style={{ background: 'var(--surface)', border: '1px solid var(--header-border)', boxShadow: 'var(--shadow-float-sm)' }}>
                   {meta.experiments.map((ex) => (
                     <button key={ex.id} onClick={() => runExperiment(ex)} title={ex.description}
                       className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-rose-700 ring-1 ring-rose-200 hover:bg-rose-50 dark:text-rose-300 dark:ring-rose-400/30 dark:hover:bg-rose-400/10">
@@ -553,7 +557,7 @@ export const Chapter1Workspace: React.FC = () => {
                   width: 400,
                   background: 'var(--surface)',
                   border: '1px solid var(--header-border)',
-                  boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
+                  boxShadow: 'var(--shadow-float)',
                 }}
               >
                 <div className="shrink-0 flex items-center justify-between px-4 py-3" style={{ borderBottom: '1px solid var(--header-border)', background: 'var(--surface-muted)' }}>
@@ -595,7 +599,7 @@ export const Chapter1Workspace: React.FC = () => {
                     width: 320,
                     background: 'var(--surface)',
                     border: '1px solid var(--header-border)',
-                    boxShadow: '0 8px 32px rgba(0,0,0,0.18)',
+                    boxShadow: 'var(--shadow-float)',
                   }}
                 >
                   <div className="shrink-0 flex items-center justify-between px-4 py-3" style={{ borderBottom: '1px solid var(--header-border)', background: 'var(--surface-muted)' }}>
@@ -623,10 +627,10 @@ export const Chapter1Workspace: React.FC = () => {
                 style={{
                   bottom: 24,
                   left: 440,
-                  maxWidth: 'calc(100vw - 480px)',
+                  maxWidth: 'calc(92vw - 480px)',
                   background: 'var(--surface)',
                   border: '1px solid var(--header-border)',
-                  boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
+                  boxShadow: 'var(--shadow-float-sm)',
                 }}
               >
                 <details className="group">
@@ -679,14 +683,14 @@ export const Chapter1Workspace: React.FC = () => {
           )}
         </div>
 
-        {/* ---------- Learning flow — full width in Miro mode ---------- */}
+        {/* ---------- Learning flow — matches the 92vw whiteboard width in Miro mode ---------- */}
         <div
           style={
             sidebarCollapsed
               ? {
-                  width: '100vw',
-                  marginLeft: 'calc(-50vw + 50%)',
-                  padding: '14px 32px 4px',
+                  width: '92vw',
+                  marginLeft: 'calc(-46vw + 50%)',
+                  padding: '14px 20px 4px',
                 }
               : { marginTop: 20 }
           }
