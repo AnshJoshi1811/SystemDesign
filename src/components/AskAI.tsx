@@ -14,9 +14,7 @@ import { Bot, Send, X, Loader2, AlertCircle } from 'lucide-react';
 // e.g. https://sd-ai-proxy.YOUR-NAME.workers.dev
 const WORKER_URL = 'https://sd-ai-proxy.anshsjoshi07.workers.dev';
 
-const SYSTEM_PROMPT = `You are a concise system design tutor. Answer questions about system design concepts covered in: 
-scaling, rate limiting, consistent hashing, key-value stores, unique ID generation, and URL shorteners.
-Keep answers under 150 words. Use bullet points where helpful. Be direct and precise.`;
+
 
 interface Message {
   role: 'user' | 'assistant';
@@ -48,35 +46,22 @@ export const AskAI: React.FC = () => {
     setLoading(true);
     setError(null);
 
-    // Build prompt in chat-ml format that Phi-3.5 expects
-    const prompt = `<|system|>\n${SYSTEM_PROMPT}<|end|>\n` +
-      newMessages.map(m => `<|${m.role}|>\n${m.content}<|end|>`).join('\n') +
-      '\n<|assistant|>\n';
-
     try {
       const res = await fetch(WORKER_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          inputs: prompt,
-          parameters: { max_new_tokens: 300, temperature: 0.4, return_full_text: false },
-        }),
+        body: JSON.stringify({ inputs: userMsg.content }),
       });
 
       if (!res.ok) {
-        if (res.status === 503) throw new Error('Model is warming up — wait 20 seconds and try again.');
         if (res.status === 429) throw new Error('Rate limit hit — try again in a minute.');
-        if (res.status === 530) throw new Error('HuggingFace is overloaded right now — try again in 30 seconds.');
         throw new Error(`AI service error (${res.status}) — please try again.`);
       }
 
       const data = await res.json();
-      const text: string = Array.isArray(data)
-        ? (data[0]?.generated_text ?? '')
-        : (data?.generated_text ?? JSON.stringify(data));
-
-      // Strip any trailing prompt artifacts
-      const clean = text.split('<|')[0].trim() || 'Sorry, I could not generate a response.';
+      // NVIDIA NIM returns OpenAI-compatible format: choices[0].message.content
+      const clean: string = data?.choices?.[0]?.message?.content?.trim()
+        || 'Sorry, I could not generate a response.';
       setMessages(prev => [...prev, { role: 'assistant', content: clean }]);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Unknown error');
