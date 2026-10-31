@@ -5,6 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>System Design Labs — Interactive System Design Interview Practice</title>
     <meta name="description" content="Interactive, hands-on labs for practicing system design interview concepts: scaling, estimation, rate limiting, consistent hashing, key-value stores, ID generation, and URL shorteners." />
+    <!-- Apply theme before React mounts to prevent flash of wrong theme -->
+    <script>
+      try {
+        var stored = localStorage.getItem('sd:app:dark');
+        // Default is dark (true) — only go light if explicitly stored as false
+        var dark = stored === null ? true : JSON.parse(stored);
+        if (dark) document.documentElement.classList.add('dark');
+      } catch (e) {
+        document.documentElement.classList.add('dark');
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>
