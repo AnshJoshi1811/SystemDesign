@@ -1,5 +1,6 @@
 import React from 'react';
 import { ArrowRight, Check, BookOpen, ExternalLink, Lock } from 'lucide-react';
+import { HowToLearn } from './HowToLearn';
 import { CHAPTERS, readProgress } from '../chapters';
 import { useNav } from './lesson/ChapterPlayer';
 import { ModuleType } from '../types';
@@ -54,13 +55,15 @@ export const Home: React.FC<{ lastChapter: ModuleType | null }> = ({ lastChapter
             <ArrowRight className="w-4 h-4 shrink-0" />
           </button>
 
+          <HowToLearn />
+
           {/* Progress pill */}
           {completedChapters > 0 && (
             <span
               className="text-sm px-3 py-1.5 rounded-full"
               style={{ background: 'var(--surface-muted)', color: 'var(--text-muted)' }}
             >
-              {completedChapters}/{totalLessons} chapters done
+              {completedChapters}/{totalLessons} done
             </span>
           )}
         </div>
