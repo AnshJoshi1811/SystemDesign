@@ -64,9 +64,10 @@ export const AskAI: React.FC = () => {
       });
 
       if (!res.ok) {
-        if (res.status === 503) throw new Error('Model is loading on HuggingFace servers — wait 20s and try again.');
-        if (res.status === 429) throw new Error('Rate limit hit. Add a free HF token below for more requests.');
-        throw new Error(`HuggingFace returned ${res.status}`);
+        if (res.status === 503) throw new Error('Model is warming up — wait 20 seconds and try again.');
+        if (res.status === 429) throw new Error('Rate limit hit — try again in a minute.');
+        if (res.status === 530) throw new Error('HuggingFace is overloaded right now — try again in 30 seconds.');
+        throw new Error(`AI service error (${res.status}) — please try again.`);
       }
 
       const data = await res.json();
