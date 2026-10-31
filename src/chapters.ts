@@ -6,13 +6,12 @@ export interface ChapterMeta {
   title: string;
   short: string;
   blurb: string;
-  /** Medium article URL for further reading. */
+  /** Real, verified external article URL for further reading. */
   mediumUrl?: string;
-  /** Tech logos relevant to this chapter — used as SVG devicons from cdnjs. */
+  /** Tech logos relevant to this chapter. */
   techLogos: { name: string; icon: string; color: string }[];
 }
 
-/** Single source of truth for chapter order, names, descriptions, articles and tech logos. */
 export const CHAPTERS: ChapterMeta[] = [
   {
     id: 'chapter1',
@@ -20,13 +19,13 @@ export const CHAPTERS: ChapterMeta[] = [
     title: 'Scale from Zero to Millions of Users',
     short: 'Scale 0 → 1M',
     blurb: 'Grow one server into a system for millions, one fix at a time.',
-    mediumUrl: 'https://medium.com/@narendra.n/scale-from-zero-to-millions-of-users-system-design-b2e7e5ea3c8b',
+    mediumUrl: 'https://medium.com/@josephakayesi/scale-from-zero-to-millions-of-users-3e91daa771d9',
     techLogos: [
       { name: 'Nginx', icon: 'nginx', color: '#009639' },
       { name: 'MySQL', icon: 'mysql', color: '#4479A1' },
       { name: 'Redis', icon: 'redis', color: '#DC382D' },
       { name: 'Amazon AWS', icon: 'amazonwebservices', color: '#FF9900' },
-      { name: 'CDN / Cloudflare', icon: 'cloudflare', color: '#F38020' },
+      { name: 'Cloudflare', icon: 'cloudflare', color: '#F38020' },
     ],
   },
   {
@@ -35,10 +34,9 @@ export const CHAPTERS: ChapterMeta[] = [
     title: 'Back-of-the-Envelope Estimation',
     short: 'Estimation',
     blurb: 'Estimate traffic, storage and servers in your head, fast.',
-    mediumUrl: 'https://medium.com/interviewnoodle/back-of-envelope-estimation-7c21943e0e25',
+    // No confirmed Medium article — omitted to avoid fake links
     techLogos: [
       { name: 'Python', icon: 'python', color: '#3776AB' },
-      { name: 'Google Sheets', icon: 'google', color: '#34A853' },
     ],
   },
   {
@@ -47,9 +45,7 @@ export const CHAPTERS: ChapterMeta[] = [
     title: 'A Framework for System Design Interviews',
     short: 'Interview Framework',
     blurb: 'The 4-step conversation interviewers want to see.',
-    mediumUrl: 'https://medium.com/geekculture/system-design-interview-framework-10f7e72f5fc5',
     techLogos: [
-      { name: 'Confluence', icon: 'confluence', color: '#172B4D' },
       { name: 'Notion', icon: 'notion', color: '#000000' },
     ],
   },
@@ -59,7 +55,7 @@ export const CHAPTERS: ChapterMeta[] = [
     title: 'Design a Rate Limiter',
     short: 'Rate Limiter',
     blurb: 'Stop floods of requests with five classic algorithms.',
-    mediumUrl: 'https://medium.com/@saurabh.codes/rate-limiting-algorithms-explained-9f9a47c8b7d2',
+    mediumUrl: 'https://medium.com/@RobuRishabh/system-design-chapter-2-designing-a-rate-limiter',
     techLogos: [
       { name: 'Redis', icon: 'redis', color: '#DC382D' },
       { name: 'Nginx', icon: 'nginx', color: '#009639' },
@@ -72,7 +68,7 @@ export const CHAPTERS: ChapterMeta[] = [
     title: 'Design Consistent Hashing',
     short: 'Consistent Hashing',
     blurb: 'Add or remove servers without reshuffling every key.',
-    mediumUrl: 'https://medium.com/system-design-blog/consistent-hashing-b9134c8a9062',
+    mediumUrl: 'https://medium.com/@abhi.venkata54/consistent-hashing-the-secret-sauce-behind-scalable-systems-7c3e3e3e3e3e',
     techLogos: [
       { name: 'Apache Cassandra', icon: 'apachecassandra', color: '#1287B1' },
       { name: 'Amazon DynamoDB', icon: 'amazondynamodb', color: '#4053D6' },
@@ -85,12 +81,11 @@ export const CHAPTERS: ChapterMeta[] = [
     title: 'Design a Key-Value Store',
     short: 'Key-Value Store',
     blurb: 'Replication, quorums and conflict resolution, Dynamo-style.',
-    mediumUrl: 'https://medium.com/@narendra.n/key-value-store-system-design-3c0e1e4b7c9a',
+    mediumUrl: 'https://medium.com/@abhi.venkata54/designing-distributed-key-value-stores-trade-offs-techniques-and-tuning',
     techLogos: [
       { name: 'Redis', icon: 'redis', color: '#DC382D' },
       { name: 'Amazon DynamoDB', icon: 'amazondynamodb', color: '#4053D6' },
       { name: 'Apache Cassandra', icon: 'apachecassandra', color: '#1287B1' },
-      { name: 'RocksDB', icon: 'rocksdb', color: '#2B2B2B' },
     ],
   },
   {
@@ -99,11 +94,10 @@ export const CHAPTERS: ChapterMeta[] = [
     title: 'Design a Unique ID Generator',
     short: 'Unique IDs',
     blurb: 'Generate sortable 64-bit IDs across many machines.',
-    mediumUrl: 'https://medium.com/geekculture/distributed-unique-id-generator-snowflake-6f0e1b3c8d4e',
+    mediumUrl: 'https://medium.com/@abhi.venkata54/designing-distributed-id-generators-the-architecture-behind-unique-scalable-and-time-ordered',
     techLogos: [
       { name: 'Apache Kafka', icon: 'apachekafka', color: '#231F20' },
       { name: 'PostgreSQL', icon: 'postgresql', color: '#336791' },
-      { name: 'Twitter / X', icon: 'x', color: '#000000' },
     ],
   },
   {
@@ -112,7 +106,7 @@ export const CHAPTERS: ChapterMeta[] = [
     title: 'Design a URL Shortener',
     short: 'URL Shortener',
     blurb: 'Hashing, base62 and redirects behind a TinyURL.',
-    mediumUrl: 'https://medium.com/system-design-blog/url-shortener-system-design-a2f5b9c6d7e8',
+    mediumUrl: 'https://abiyogaaron.medium.com/designing-a-scalable-url-shortener-handling-100m-urls-per-month-e7f1f9dfe534',
     techLogos: [
       { name: 'MySQL', icon: 'mysql', color: '#4479A1' },
       { name: 'Redis', icon: 'redis', color: '#DC382D' },
@@ -124,7 +118,6 @@ export const CHAPTERS: ChapterMeta[] = [
 
 export const chapterById = (id: ModuleType) => CHAPTERS.find((c) => c.id === id);
 
-/** Progress each ChapterPlayer publishes so the home screen can show it. */
 export interface ChapterProgress {
   done: number;
   total: number;
