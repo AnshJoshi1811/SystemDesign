@@ -19,10 +19,10 @@ const FourSteps: React.FC = () => (
       ['Deep dive', 'Drill into the parts that matter most.'],
       ['Wrap up', 'Recap, bottlenecks, failures, next scale.'],
     ].map(([t, d], i) => (
-      <li key={t} className="rounded-xl bg-slate-50 dark:bg-white/[0.04] p-3">
-        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-indigo-600 text-xs font-semibold text-white">{i + 1}</span>
-        <p className="mt-2 text-sm font-medium text-slate-900 dark:text-white">{t}</p>
-        <p className="mt-0.5 text-sm text-slate-600 dark:text-slate-300">{d}</p>
+      <li key={t} className="rounded-xl bg-[var(--surface-muted)] dark:bg-[var(--surface-muted)] p-3">
+        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--accent)] text-xs font-semibold text-white">{i + 1}</span>
+        <p className="mt-2 text-sm font-medium text-[var(--text-base)] dark:text-[var(--text-base)]">{t}</p>
+        <p className="mt-0.5 text-sm text-[var(--text-muted)] dark:text-[var(--text-muted)]">{d}</p>
       </li>
     ))}
   </ol>
@@ -362,9 +362,9 @@ const LESSONS: Lesson[] = [
         <Explain>
           <p>The book closes the chapter with a short checklist. Read it once now, and again the night before an interview.</p>
         </Explain>
-        <div className="grid gap-6 sm:grid-cols-2 text-[15px] leading-7 text-slate-700 dark:text-slate-300">
+        <div className="grid gap-6 sm:grid-cols-2 text-[15px] leading-7 text-[var(--text-muted)] dark:text-[var(--text-muted)]">
             <div>
-              <p className="font-medium text-slate-900 dark:text-white mb-2">Do</p>
+              <p className="font-medium text-[var(--text-base)] dark:text-[var(--text-base)] mb-2">Do</p>
               <ul className="space-y-2">
                 {DOS.map(([b, rest]) => (
                   <li key={b} className="flex items-start gap-2">
@@ -377,7 +377,7 @@ const LESSONS: Lesson[] = [
               </ul>
             </div>
             <div>
-              <p className="font-medium text-slate-900 dark:text-white mb-2">Don’t</p>
+              <p className="font-medium text-[var(--text-base)] dark:text-[var(--text-base)] mb-2">Don’t</p>
               <ul className="space-y-2">
                 {DONTS.map(([b, rest]) => (
                   <li key={b} className="flex items-start gap-2">
