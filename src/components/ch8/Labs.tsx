@@ -631,7 +631,7 @@ export const HashLab: React.FC = () => {
               key={r.code}
               title={r.longUrl}
               className={`inline-flex h-7 items-center rounded-md px-2 font-mono text-xs font-medium ${
-                r.code === last?.code ? 'bg-[var(--accent)] text-white' : chipNeutral
+                r.code === last?.code ? 'bg-[var(--accent)] text-[var(--accent-fg)]' : chipNeutral
               }`}
             >
               {r.code}
@@ -739,7 +739,7 @@ export const Base62Lab: React.FC = () => {
         <p className={`${labelCls} mb-3`}>Short code, filled in from the right</p>
         <div className="flex flex-wrap gap-1.5">
           {rows.length === 0 ? (
-            <span className="flex h-11 w-10 items-center justify-center rounded-lg bg-[var(--accent)] font-mono text-lg font-semibold text-white">0</span>
+            <span className="flex h-11 w-10 items-center justify-center rounded-lg bg-[var(--accent)] font-mono text-lg font-semibold text-[var(--accent-fg)]">0</span>
           ) : (
             rows
               .slice()
@@ -751,7 +751,7 @@ export const Base62Lab: React.FC = () => {
                   <span
                     key={j}
                     className={`flex h-11 w-10 items-center justify-center rounded-lg font-mono text-lg font-semibold transition-colors ${
-                      filled ? 'bg-[var(--accent)] text-white' : 'border-2 border-dashed border-slate-300 text-transparent dark:border-white/20'
+                      filled ? 'bg-[var(--accent)] text-[var(--accent-fg)]' : 'border-2 border-dashed border-slate-300 text-transparent dark:border-white/20'
                     }`}
                   >
                     {filled ? r.char : '·'}
@@ -910,7 +910,7 @@ export const BloomLab: React.FC = () => {
                 setProbe(k);
                 setSearchMsg(null);
               }}
-              className={`inline-flex h-7 items-center rounded-md px-2 font-mono text-xs font-medium ${k === key ? 'bg-[var(--accent)] text-white' : chipNeutral}`}
+              className={`inline-flex h-7 items-center rounded-md px-2 font-mono text-xs font-medium ${k === key ? 'bg-[var(--accent)] text-[var(--accent-fg)]' : chipNeutral}`}
             >
               {k}
             </button>
