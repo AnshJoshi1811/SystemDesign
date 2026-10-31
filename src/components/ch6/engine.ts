@@ -226,10 +226,12 @@ export function storeVersion(s: SimState, nodeId: string, key: string, v: Versio
 }
 
 export function allKeys(s: SimState): string[] {
+  // Collect into a Set first to de-duplicate, then sort once.
   const keys = new Set<string>();
-  Object.values(s.replicas).forEach((store) => Object.keys(store).forEach((k) => keys.add(k)));
-  s.hints.forEach((h) => keys.add(h.key));
-  s.pending.forEach((p) => keys.add(p.key));
+  for (const store of Object.values(s.replicas))
+    for (const k of Object.keys(store)) keys.add(k);
+  for (const h of s.hints) keys.add(h.key);
+  for (const p of s.pending) keys.add(p.key);
   return [...keys].sort();
 }
 
