@@ -1,14 +1,15 @@
 const ALLOWED_ORIGIN = 'https://anshjoshi1811.github.io';
 
-// Models tried in order — if one is down/overloaded, next is tried
-const MODELS = [
-  'HuggingFaceH4/zephyr-7b-beta',
-  'mistralai/Mistral-7B-Instruct-v0.2',
-  'google/flan-t5-large',
-];
+// NVIDIA NIM — OpenAI-compatible, free tier, much more reliable than HuggingFace
+const NVIDIA_API_URL = 'https://integrate.api.nvidia.com/v1/chat/completions';
+const MODEL = 'meta/llama-3.3-70b-instruct';
+
+const SYSTEM_PROMPT = `You are a concise system design tutor. Answer questions about system design: 
+scaling, rate limiting, consistent hashing, key-value stores, unique ID generation, URL shorteners.
+Keep answers under 120 words. Use bullet points where helpful. Be direct and precise.`;
 
 export default {
-  async fetch(request) {
+  async fetch(request, env) {
     if (request.method === 'OPTIONS') {
       return new Response(null, {
         headers: {
@@ -24,37 +25,38 @@ export default {
     }
 
     let body;
-    try {
-      body = await request.json();
-    } catch {
-      return new Response(JSON.stringify({ error: 'Invalid JSON body' }), {
+    try { body = await request.json(); }
+    catch {
+      return new Response(JSON.stringify({ error: 'Invalid JSON' }), {
         status: 400,
         headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': ALLOWED_ORIGIN },
       });
     }
 
-    // Try each model until one works
-    let lastStatus = 500;
-    let lastData = '';
-    for (const model of MODELS) {
-      const hfRes = await fetch(
-        `https://api-inference.huggingface.co/models/${model}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(body),
-        }
-      );
-      lastData = await hfRes.text();
-      lastStatus = hfRes.status;
+    // Build OpenAI-compatible messages from the prompt
+    const messages = [
+      { role: 'system', content: SYSTEM_PROMPT },
+      { role: 'user', content: body.inputs ?? body.messages ?? 'Hello' },
+    ];
 
-      // 200 or 503 (model loading) — stop here
-      if (hfRes.status === 200 || hfRes.status === 503) break;
-      // 5xx other than 503 — try next model
-    }
+    const nvRes = await fetch(NVIDIA_API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${env.NVIDIA_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: MODEL,
+        messages,
+        max_tokens: 300,
+        temperature: 0.4,
+      }),
+    });
 
-    return new Response(lastData, {
-      status: lastStatus,
+    const data = await nvRes.text();
+
+    return new Response(data, {
+      status: nvRes.status,
       headers: {
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
