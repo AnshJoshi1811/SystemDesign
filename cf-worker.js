@@ -1,12 +1,7 @@
 const ALLOWED_ORIGIN = 'https://anshjoshi1811.github.io';
-
-// NVIDIA NIM — OpenAI-compatible, free tier, much more reliable than HuggingFace
 const NVIDIA_API_URL = 'https://integrate.api.nvidia.com/v1/chat/completions';
-const MODEL = 'meta/llama-3.3-70b-instruct';
-
-const SYSTEM_PROMPT = `You are a concise system design tutor. Answer questions about system design: 
-scaling, rate limiting, consistent hashing, key-value stores, unique ID generation, URL shorteners.
-Keep answers under 120 words. Use bullet points where helpful. Be direct and precise.`;
+const MODEL = 'deepseek-ai/deepseek-v4.1-flash';
+const SYSTEM_PROMPT = `You are a concise system design tutor. Answer questions about system design: scaling, rate limiting, consistent hashing, key-value stores, unique ID generation, URL shorteners. Keep answers under 120 words. Use bullet points. Be direct.`;
 
 export default {
   async fetch(request, env) {
@@ -19,25 +14,11 @@ export default {
         },
       });
     }
-
-    if (request.method !== 'POST') {
-      return new Response('Send a POST request', { status: 405 });
-    }
+    if (request.method !== 'POST') return new Response('POST only', { status: 405 });
 
     let body;
     try { body = await request.json(); }
-    catch {
-      return new Response(JSON.stringify({ error: 'Invalid JSON' }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': ALLOWED_ORIGIN },
-      });
-    }
-
-    // Build OpenAI-compatible messages from the prompt
-    const messages = [
-      { role: 'system', content: SYSTEM_PROMPT },
-      { role: 'user', content: body.inputs ?? body.messages ?? 'Hello' },
-    ];
+    catch { return new Response('Bad JSON', { status: 400 }); }
 
     const nvRes = await fetch(NVIDIA_API_URL, {
       method: 'POST',
@@ -47,20 +28,19 @@ export default {
       },
       body: JSON.stringify({
         model: MODEL,
-        messages,
+        messages: [
+          { role: 'system', content: SYSTEM_PROMPT },
+          { role: 'user', content: body.inputs },
+        ],
         max_tokens: 300,
         temperature: 0.4,
       }),
     });
 
     const data = await nvRes.text();
-
     return new Response(data, {
       status: nvRes.status,
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
-      },
+      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': ALLOWED_ORIGIN },
     });
   },
 };
