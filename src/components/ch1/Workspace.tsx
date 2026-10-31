@@ -164,6 +164,7 @@ export const Chapter1Workspace: React.FC = () => {
 
   // ---------------------------------------------------------------- render
 
+  // Matches ChapterPlayer lessonList style exactly
   const stageList = (
     <ol className="space-y-0.5">
       {ALL_STAGES.map((s, k) => {
@@ -174,20 +175,23 @@ export const Chapter1Workspace: React.FC = () => {
             <button
               onClick={() => goStage(k)}
               aria-current={active ? 'step' : undefined}
-              className={`w-full flex items-center gap-3 rounded-lg px-2.5 py-2 text-left text-sm transition-colors ${
-                active
-                  ? 'bg-[var(--surface-muted)] font-medium text-[var(--text-base)] ring-1 ring-[var(--header-border)] dark:bg-[var(--surface-muted)] dark:text-[var(--text-base)] dark:ring-[var(--header-border)]'
-                  : 'text-[var(--text-muted)] hover:bg-[var(--surface-muted)] dark:text-[var(--text-muted)] dark:hover:bg-[var(--surface-muted)]'
-              }`}
+              className="w-full flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm transition-colors"
+              style={{
+                background: active ? 'var(--surface-muted)' : 'transparent',
+                color: active ? 'var(--text-base)' : 'var(--text-muted)',
+              }}
+              onMouseEnter={e => { if (!active) e.currentTarget.style.background = 'var(--surface-muted)'; }}
+              onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent'; }}
             >
               <span
-                className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full ${
-                  done ? 'bg-emerald-500 text-white' : active ? 'bg-[var(--accent)] ring-2 ring-[var(--surface-muted)] dark:ring-[var(--header-border)]' : 'ring-2 ring-[var(--header-border)] dark:ring-white/20'
-                }`}
+                className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold transition-all"
+                style={{
+                  background: done ? 'var(--accent)' : active ? 'var(--accent)' : 'var(--surface-muted)',
+                  color: done || active ? 'var(--accent-fg)' : 'var(--text-subtle)',
+                }}
               >
-                {done && <Check className="h-3 w-3" strokeWidth={3} />}
+                {done ? <Check className="h-3 w-3" strokeWidth={3} /> : k + 1}
               </span>
-              <span className="text-xs tabular-nums text-[var(--text-subtle)] dark:text-[var(--text-subtle)] w-5">{String(k + 1).padStart(2, '0')}</span>
               <span className="truncate">{s.title}</span>
             </button>
           </li>
@@ -196,16 +200,15 @@ export const Chapter1Workspace: React.FC = () => {
     </ol>
   );
 
-  const progressCard = (
-    <div className="rounded-xl bg-[var(--surface)] ring-1 ring-[var(--header-border)] p-3.5 dark:bg-[var(--surface)] dark:ring-[var(--header-border)]">
-      <div className="flex items-baseline justify-between">
-        <p className="text-sm font-semibold text-[var(--text-base)] dark:text-[var(--text-base)]">Chapter progress</p>
-        <p className="text-xs tabular-nums text-[var(--text-subtle)] dark:text-[var(--text-subtle)]">
-          {doneCount} / {N} stages
-        </p>
+  // Matches ChapterPlayer progressBar style exactly — inline, not a card
+  const progressBar = (
+    <div className="space-y-1.5">
+      <div className="flex justify-between text-xs" style={{ color: 'var(--text-subtle)' }}>
+        <span>{doneCount} of {N} stages done</span>
+        <span>{Math.round((doneCount / N) * 100)}%</span>
       </div>
-      <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-slate-200 dark:bg-[var(--surface-muted)]">
-        <div className="h-full rounded-full bg-[var(--accent)] transition-all" style={{ width: `${(doneCount / N) * 100}%` }} />
+      <div className="h-1 rounded-full overflow-hidden" style={{ background: 'var(--surface-muted)' }}>
+        <div className="h-full rounded-full transition-all" style={{ width: `${(doneCount / N) * 100}%`, background: 'var(--progress-bar)' }} />
       </div>
     </div>
   );
@@ -221,7 +224,7 @@ export const Chapter1Workspace: React.FC = () => {
             <p className="text-base font-bold leading-snug" style={{ color: 'var(--text-base)' }}>Scale from 0 → 1M users</p>
           </div>
           {stageList}
-          {progressCard}
+          {progressBar}
           <button onClick={resetChapter} className="flex items-center gap-1.5 px-1 text-xs transition-opacity hover:opacity-60" style={{ color: 'var(--text-subtle)' }}>
             <RotateCcw className="h-3 w-3" /> Restart this chapter
           </button>
@@ -238,7 +241,7 @@ export const Chapter1Workspace: React.FC = () => {
             </span>
             <ChevronDown className={`h-4 w-4 shrink-0 transition-transform ${pickerOpen ? 'rotate-180' : ''}`} style={{ color: 'var(--text-subtle)' }} />
           </button>
-          {pickerOpen && <div className="space-y-3 p-3" style={{ borderTop: '1px solid var(--header-border)' }}>{stageList}{progressCard}</div>}
+          {pickerOpen && <div className="space-y-3 p-3" style={{ borderTop: '1px solid var(--header-border)' }}>{stageList}{progressBar}</div>}
         </div>
 
         {/* ---------- Compact stage header ---------- */}
@@ -312,7 +315,7 @@ export const Chapter1Workspace: React.FC = () => {
 
         {/* ---------- Architecture ---------- */}
         {tab === 'architecture' && (
-          <div className={`grid gap-5 ${selNode ? 'xl:grid-cols-[minmax(0,1fr)_300px]' : 'xl:grid-cols-1'}`}>
+          <div className={`grid gap-5 transition-all duration-200 ${selNode ? 'xl:grid-cols-[minmax(0,1fr)_280px]' : 'grid-cols-1'}`}>
             <section className="min-w-0 rounded-2xl bg-[var(--surface)] ring-1 ring-[var(--header-border)] p-4 sm:p-5 dark:bg-[var(--surface)] dark:ring-[var(--header-border)]">
               <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
                 <div className="flex items-center gap-2.5">
@@ -428,10 +431,26 @@ export const Chapter1Workspace: React.FC = () => {
           </div>
         )}
 
-        {/* ---------- Concepts — single readable column, same as ChapterPlayer lessons ---------- */}
+        {/* ---------- Concepts — single readable column ---------- */}
         {tab === 'concepts' && (
           <section className="max-w-3xl space-y-6">
-            {/* Why / weak spot / fix */}
+            {/* Hinglish quick-summary pill */}
+            <div
+              className="rounded-xl px-4 py-3 text-sm leading-relaxed"
+              style={{ background: 'var(--surface-muted)', border: '1px solid var(--header-border)', color: 'var(--text-muted)' }}
+            >
+              <span className="text-[10px] font-bold tracking-widest uppercase block mb-1" style={{ color: 'var(--text-subtle)' }}>
+                🇮🇳 Simple mein samjho
+              </span>
+              {content.hinglish ?? (
+                <span>
+                  Is stage mein hum <strong style={{ color: 'var(--text-base)' }}>{content.title.toLowerCase()}</strong> ke baare mein seekhenge —
+                  kyun zaroori hai, kya problem hai, aur uska solution kya hai.
+                </span>
+              )}
+            </div>
+
+            {/* Why / weak spot / fix — English detail */}
             <div className="lesson-prose">
               <p>{content.why}</p>
               <p><strong>Weak spot: </strong>{content.weakSpot}</p>
