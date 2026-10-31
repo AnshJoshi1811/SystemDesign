@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Target, Lightbulb, ArrowRight, CheckCircle2, XCircle, RotateCcw } from 'lucide-react';
 import { usePersistentState } from '../../lib/usePersistentState';
 
@@ -114,7 +114,19 @@ export const Quiz: React.FC<{
     const firstOpen = questions.findIndex((q, i) => !(picks[i] ?? []).some((p) => q.options[p]?.correct));
     return firstOpen === -1 ? 0 : firstOpen;
   });
-  const solvedCount = questions.filter((qq, i) => (picks[i] ?? []).some((p) => qq.options[p]?.correct)).length;
+
+  // Memoize derived counts so they aren't recomputed on every keystroke/slider move.
+  const { solvedCount, firstTryCorrect, answered } = useMemo(() => {
+    let solved = 0, firstTry = 0, ans = 0;
+    questions.forEach((qq, i) => {
+      const t = picks[i] ?? [];
+      const isSolved = t.some((p) => qq.options[p]?.correct);
+      if (isSolved) { solved++; ans++; }
+      if (t.length > 0 && qq.options[t[0]]?.correct) firstTry++;
+    });
+    return { solvedCount: solved, firstTryCorrect: firstTry, answered: ans };
+  }, [picks, questions]);
+
   useEffect(() => {
     onProgress?.(solvedCount, questions.length);
   }, [solvedCount, questions.length]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -124,11 +136,6 @@ export const Quiz: React.FC<{
   const tried = picks[index] ?? [];
   const last = tried.length ? tried[tried.length - 1] : undefined;
   const solved = tried.some((p) => q.options[p]?.correct);
-  const firstTryCorrect = questions.filter((qq, i) => {
-    const t = picks[i] ?? [];
-    return t.length > 0 && qq.options[t[0]]?.correct;
-  }).length;
-  const answered = questions.filter((qq, i) => (picks[i] ?? []).some((p) => qq.options[p]?.correct)).length;
 
   const choose = (optIdx: number) => {
     if (solved) return;
