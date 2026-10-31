@@ -4,6 +4,7 @@ import { ModuleType } from '../../types';
 import { CHAPTERS, chapterById } from '../../chapters';
 import { BookOpen, ExternalLink } from 'lucide-react';
 import { usePersistentState } from '../../lib/usePersistentState';
+import { useLang } from '../../lib/i18n';
 
 export type View = 'home' | ModuleType;
 
@@ -28,7 +29,8 @@ export interface Lesson {
  */
 export const ChapterPlayer: React.FC<{ chapterId: ModuleType; lessons: Lesson[] }> = ({ chapterId, lessons }) => {
   const meta = chapterById(chapterId)!;
-  const [sidebarCollapsed, setSidebarCollapsed] = usePersistentState<boolean>(`${chapterId}:sidebar:collapsed`, false);;
+  const [sidebarCollapsed, setSidebarCollapsed] = usePersistentState<boolean>(`${chapterId}:sidebar:collapsed`, false);
+  const { lang } = useLang();;
   const { go, resetChapter } = useNav();
   const [current, setCurrent] = usePersistentState<number>(`${chapterId}:lesson`, 0);
   const [done, setDone] = usePersistentState<string[]>(`${chapterId}:done`, []);
@@ -128,7 +130,7 @@ export const ChapterPlayer: React.FC<{ chapterId: ModuleType; lessons: Lesson[] 
                 style={{ color: 'var(--text-subtle)' }}
               >
                 <BookOpen className="w-3 h-3" />
-                Read on Medium
+                {lang === 'hi' ? 'Medium pe padho' : 'Read on Medium'}
                 <ExternalLink className="w-3 h-3" />
               </a>
             )}
@@ -143,7 +145,7 @@ export const ChapterPlayer: React.FC<{ chapterId: ModuleType; lessons: Lesson[] 
             style={{ color: 'var(--text-subtle)' }}
           >
             <RotateCcw className="w-3 h-3" />
-            Restart chapter
+            {lang === 'hi' ? 'Chapter restart karo' : 'Restart chapter'}
           </button>
         </div>
       </aside>
@@ -245,12 +247,12 @@ export const ChapterPlayer: React.FC<{ chapterId: ModuleType; lessons: Lesson[] 
             onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
           >
             <ChevronLeft className="w-4 h-4" />
-            Back
+            {lang === 'hi' ? 'Peeche' : 'Back'}
           </button>
 
           {!isLast ? (
             <button onClick={complete} className="btn-primary">
-              Continue
+              {lang === 'hi' ? 'Aage badho' : 'Continue'}
               <span className="hidden sm:inline opacity-60 text-xs">· {lessons[idx + 1].title}</span>
               <ChevronRight className="w-4 h-4" />
             </button>
@@ -259,7 +261,7 @@ export const ChapterPlayer: React.FC<{ chapterId: ModuleType; lessons: Lesson[] 
               onClick={() => { complete(); go(next ? next.id : 'home'); window.scrollTo({ top: 0 }); }}
               className="btn-primary"
             >
-              {next ? `Finish · Chapter ${next.num}` : 'Finish course'}
+              {next ? (lang === 'hi' ? `Khatam · Chapter ${next.num}` : `Finish · Chapter ${next.num}`) : (lang === 'hi' ? 'Course khatam' : 'Finish course')}
               <ArrowRight className="w-4 h-4" />
             </button>
           )}
