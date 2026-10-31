@@ -146,7 +146,7 @@ export const Slider: React.FC<{
 
 type BtnVariant = 'primary' | 'secondary' | 'danger' | 'ghost';
 const BTN: Record<BtnVariant, string> = {
-  primary: 'bg-[var(--accent)] text-white hover:bg-[var(--accent-hover)] shadow-sm',
+  primary: 'bg-[var(--accent)] text-[var(--accent-fg)] hover:bg-[var(--accent-hover)] shadow-sm',
   secondary: 'bg-[var(--surface)] text-[var(--text-base)] ring-1 ring-[var(--header-border)] hover:bg-[var(--surface-muted)] dark:bg-[var(--surface-muted)] dark:text-[var(--text-base)] dark:ring-[var(--header-border)] dark:hover:bg-[var(--surface)]/[0.1]',
   danger: 'bg-rose-600 text-white hover:bg-rose-500 shadow-sm',
   ghost: 'text-[var(--text-muted)] hover:bg-[var(--surface-muted)] dark:text-[var(--text-muted)] dark:hover:bg-[var(--surface-muted)]',
@@ -186,7 +186,7 @@ export function Segmented<T extends string>({
           className={`px-3 py-1.5 text-sm rounded-md transition-colors ${
             value === o.value
               ? 'bg-[var(--surface)] text-[var(--text-base)] shadow-sm dark:bg-[var(--surface)]/[0.12] dark:text-[var(--text-base)]'
-              : 'text-[var(--text-muted)] hover:text-[var(--text-base)] dark:text-[var(--text-muted)] dark:hover:text-white'
+              : 'text-[var(--text-muted)] hover:text-[var(--text-base)] dark:text-[var(--text-muted)] dark:hover:text-[var(--text-base)]'
           }`}
         >
           {o.label}
