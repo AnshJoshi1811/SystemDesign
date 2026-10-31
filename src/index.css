@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
 @import "tailwindcss";
 
 /* Bind `dark:` utilities to the in-app theme toggle (App adds `.dark`), not the OS setting. */
@@ -9,13 +9,54 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   color-scheme: light;
-}
-html.dark { color-scheme: dark; }
 
-body { margin: 0; background: #fafaf9; }
+  /* ── Design token system: OpenClaw-inspired, black accent instead of orange ── */
+  --accent: #111111;
+  --accent-hover: #2a2a2a;
+  --accent-fg: #ffffff;
+  --ring-active: #111111;
+  --progress-bar: #111111;
+  --chip-bg: #111111;
+  --chip-fg: #ffffff;
+  --card-hover-ring: #111111;
+  --btn-primary-bg: #111111;
+  --btn-primary-hover: #2a2a2a;
+  --btn-primary-fg: #ffffff;
+  --header-bg: rgba(255,255,255,0.92);
+  --header-border: rgba(0,0,0,0.08);
+  --surface: #ffffff;
+  --surface-muted: #f5f5f5;
+  --text-base: #111111;
+  --text-muted: #6b7280;
+  --text-subtle: #9ca3af;
+}
+
+html.dark {
+  color-scheme: dark;
+  --accent: #e5e5e5;
+  --accent-hover: #ffffff;
+  --accent-fg: #111111;
+  --ring-active: #e5e5e5;
+  --progress-bar: #e5e5e5;
+  --chip-bg: #e5e5e5;
+  --chip-fg: #111111;
+  --card-hover-ring: #e5e5e5;
+  --btn-primary-bg: #e5e5e5;
+  --btn-primary-hover: #ffffff;
+  --btn-primary-fg: #111111;
+  --header-bg: rgba(10,10,11,0.92);
+  --header-border: rgba(255,255,255,0.06);
+  --surface: rgba(255,255,255,0.03);
+  --surface-muted: rgba(255,255,255,0.06);
+  --text-base: #f5f5f5;
+  --text-muted: #a1a1aa;
+  --text-subtle: #71717a;
+}
+
+body { margin: 0; background: #fafafa; }
 html.dark body { background: #0a0a0b; }
 * { box-sizing: border-box; }
-*:focus-visible { outline: 2px solid #6366f1; outline-offset: 2px; border-radius: 4px; }
+*:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
 
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -24,7 +65,6 @@ html.dark body { background: #0a0a0b; }
   from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: none; }
 }
-/* Moving dashes along diagram connectors while traffic is flowing. */
 @keyframes flowdash { to { stroke-dashoffset: -24; } }
 .flow-dash { animation: flowdash 1.2s linear infinite; }
 
@@ -32,14 +72,46 @@ html.dark body { background: #0a0a0b; }
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }
 
-/* Readable lesson text: comfortable measure, size and rhythm. */
-.lesson-prose { max-width: 68ch; font-size: 15px; line-height: 1.75; color: #334155; }
+/* Lesson prose */
+.lesson-prose { max-width: 68ch; font-size: 15px; line-height: 1.75; color: #374151; }
 .lesson-prose > * + * { margin-top: 0.9em; }
-.lesson-prose strong { color: #0f172a; font-weight: 600; }
+.lesson-prose strong { color: #111111; font-weight: 600; }
 .lesson-prose ul { list-style: disc; padding-left: 1.25em; }
 .lesson-prose ol { list-style: decimal; padding-left: 1.25em; }
 .lesson-prose li + li { margin-top: 0.35em; }
-.lesson-prose code { font-size: 0.9em; padding: 0.1em 0.35em; border-radius: 4px; background: #f1f5f9; color: #0f172a; }
-html.dark .lesson-prose { color: #cbd5e1; }
-html.dark .lesson-prose strong { color: #f8fafc; }
-html.dark .lesson-prose code { background: rgba(255,255,255,0.08); color: #f8fafc; }
+.lesson-prose code { font-size: 0.9em; padding: 0.1em 0.35em; border-radius: 4px; background: #f3f4f6; color: #111111; }
+html.dark .lesson-prose { color: #d1d5db; }
+html.dark .lesson-prose strong { color: #f9fafb; }
+html.dark .lesson-prose code { background: rgba(255,255,255,0.08); color: #f9fafb; }
+
+/* Primary button */
+.btn-primary {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  background: var(--btn-primary-bg); color: var(--btn-primary-fg);
+  border-radius: 8px; padding: 0.625rem 1.25rem;
+  font-size: 0.875rem; font-weight: 500; line-height: 1;
+  transition: background 0.15s;
+  border: none; cursor: pointer;
+}
+.btn-primary:hover { background: var(--btn-primary-hover); }
+
+/* Chapter card */
+.chapter-card {
+  background: var(--surface);
+  border-radius: 16px;
+  border: 1px solid rgba(0,0,0,0.08);
+  padding: 1.25rem;
+  text-align: left;
+  width: 100%;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.chapter-card:hover {
+  border-color: var(--card-hover-ring);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+}
+html.dark .chapter-card { border-color: rgba(255,255,255,0.08); }
+html.dark .chapter-card:hover {
+  border-color: var(--card-hover-ring);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
