@@ -66,7 +66,7 @@ const ChoiceRow: React.FC<{ picked: boolean; onClick: () => void; text: string; 
     <button onClick={onClick} aria-pressed={picked} className={optionClass(picked)}>
       <span
         className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded ring-1 ${
-          picked ? 'bg-[var(--accent)] ring-indigo-600 text-white' : 'ring-slate-400 dark:ring-white/30'
+          picked ? 'bg-[var(--accent)] ring-indigo-600 text-[var(--accent-fg)]' : 'ring-slate-400 dark:ring-white/30'
         }`}
       >
         {picked && <CheckIcon className="w-3 h-3" strokeWidth={3} />}
@@ -301,8 +301,8 @@ export const TimeBudgetLab: React.FC = () => {
   const deepColor = status === 'good' ? 'bg-emerald-600' : status === 'ok' ? 'bg-amber-600' : 'bg-rose-600';
 
   const segs = [
-    { label: 'Understand', min: step1, cls: 'bg-[var(--accent)] text-white' },
-    { label: 'High-level design', min: STEP2_MIN, cls: 'bg-slate-600 text-white dark:bg-[var(--surface-muted)]0' },
+    { label: 'Understand', min: step1, cls: 'bg-[var(--accent)] text-[var(--accent-fg)]' },
+    { label: 'High-level design', min: STEP2_MIN, cls: 'bg-slate-600 text-white dark:bg-slate-500' },
     { label: 'Deep dive', min: deep, cls: `${deepColor} text-white` },
     { label: 'Wrap up', min: WRAP_MIN, cls: 'bg-slate-300 text-[var(--text-base)] dark:bg-slate-600 dark:text-[var(--text-base)]' },
     ...(slack > 0 ? [{ label: 'Spare', min: slack, cls: 'bg-[var(--surface-muted)] text-[var(--text-subtle)] dark:bg-[var(--surface-muted)] dark:text-[var(--text-subtle)]' }] : []),
