@@ -2,7 +2,7 @@ import React, { useLayoutEffect, useRef, useState } from 'react';
 import { Globe, Network, Server, Database, HardDrive, Zap, KeyRound, Inbox, Cog, Cloud, Plus, Minus, Maximize2 } from 'lucide-react';
 import { Arch, ArchEdge, ArchNode, Kind, NodeState, SimResult } from './model';
 
-const ICON: Record<Kind, React.ComponentType<{ className?: string }>> = {
+export const ICON: Record<Kind, React.ComponentType<{ className?: string }>> = {
   dns: Globe,
   cdn: Cloud,
   lb: Network,
@@ -89,15 +89,44 @@ export const Diagram: React.FC<{
   selected: string | null;
   onSelect: (id: string) => void;
   running: boolean;
-}> = ({ arch, sim, selected, onSelect, running }) => {
+  /** True when rendered inside the full Miro-style whiteboard: transparent bg (parent draws the grid), extra pan room, drag-to-move. */
+  canvasMode?: boolean;
+}> = ({ arch, sim, selected, onSelect, running, canvasMode = false }) => {
   const outerRef = useRef<HTMLDivElement>(null);
   const innerRef = useRef<HTMLDivElement>(null);
   const [lines, setLines] = useState<Line[]>([]);
   const [size, setSize] = useState({ w: 0, h: 0 });
   const [fit, setFit] = useState(1);
   const [zoom, setZoom] = useState(1);
+  const [isPanning, setIsPanning] = useState(false);
+  const panRef = useRef<{ startX: number; startY: number; scrollLeft: number; scrollTop: number } | null>(null);
   // Shrink to fit, but never below a readable size: past that the diagram scrolls sideways.
   const scale = Math.max(fit, 0.6) * zoom;
+
+  // Drag-to-pan: mousedown on empty canvas space (not on a node button) drags the whole diagram.
+  const onPanStart = (e: React.MouseEvent) => {
+    if (e.button !== 0) return;
+    const target = e.target as HTMLElement;
+    if (target.closest('[data-node]') || target.closest('button')) return; // let node/zoom clicks work normally
+    const outer = outerRef.current;
+    if (!outer) return;
+    panRef.current = { startX: e.clientX, startY: e.clientY, scrollLeft: outer.scrollLeft, scrollTop: outer.scrollTop };
+    setIsPanning(true);
+    const onMove = (ev: MouseEvent) => {
+      const p = panRef.current;
+      if (!p || !outer) return;
+      outer.scrollLeft = p.scrollLeft - (ev.clientX - p.startX);
+      outer.scrollTop = p.scrollTop - (ev.clientY - p.startY);
+    };
+    const onUp = () => {
+      panRef.current = null;
+      setIsPanning(false);
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('mouseup', onUp);
+    };
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp, { once: true });
+  };
 
   // Fit the diagram to the available width.
   useLayoutEffect(() => {
@@ -152,10 +181,17 @@ export const Diagram: React.FC<{
   }, [arch, sim, scale]);
 
   // When the diagram is wider than its box, start scrolled to the middle (the request path is centred).
+  // In canvas mode there's extra pan padding on every side, so centre both axes.
   useLayoutEffect(() => {
     const outer = outerRef.current;
-    if (outer && outer.scrollWidth > outer.clientWidth) outer.scrollLeft = (outer.scrollWidth - outer.clientWidth) / 2;
-  }, [arch, size.w, scale]);
+    if (!outer) return;
+    if (canvasMode) {
+      outer.scrollLeft = (outer.scrollWidth - outer.clientWidth) / 2;
+      outer.scrollTop = (outer.scrollHeight - outer.clientHeight) / 2;
+    } else if (outer.scrollWidth > outer.clientWidth) {
+      outer.scrollLeft = (outer.scrollWidth - outer.clientWidth) / 2;
+    }
+  }, [arch, size.w, size.h, scale, canvasMode]);
 
   const stroke = (l: Line) =>
     l.dead
@@ -180,14 +216,19 @@ export const Diagram: React.FC<{
   const webGroups = arch.f.multiDc ? [arch.webs.filter((w) => w.dc === 1), arch.webs.filter((w) => w.dc === 2)] : [arch.webs];
 
   return (
-    <div className="relative">
-      <div ref={outerRef} className="overflow-x-auto overflow-y-hidden rounded-xl bg-[radial-gradient(circle,rgb(148_163_184/0.25)_1px,transparent_1px)] [background-size:18px_18px] py-6">
-        <div className="relative mx-auto" style={{ width: size.w * scale || undefined, height: size.h * scale || undefined }}>
-          <div
-            ref={innerRef}
-            className="absolute left-0 top-0 flex w-max flex-col gap-10 px-4"
-            style={{ transform: `scale(${scale})`, transformOrigin: 'top left' }}
-          >
+    <div className={`relative ${canvasMode ? 'h-full' : ''}`}>
+      <div
+        ref={outerRef}
+        onMouseDown={onPanStart}
+        className={`overflow-auto no-scrollbar ${canvasMode ? 'h-full' : 'rounded-xl bg-[radial-gradient(circle,rgb(148_163_184/0.25)_1px,transparent_1px)] [background-size:18px_18px] py-6'} ${isPanning ? 'cursor-grabbing' : 'cursor-grab'}`}
+      >
+        <div className={canvasMode ? 'p-[260px]' : ''}>
+          <div className="relative mx-auto" style={{ width: size.w * scale || undefined, height: size.h * scale || undefined }}>
+            <div
+              ref={innerRef}
+              className="absolute left-0 top-0 flex w-max flex-col gap-10 px-4 select-none"
+              style={{ transform: `scale(${scale})`, transformOrigin: 'top left' }}
+            >
             <svg className="pointer-events-none absolute left-0 top-0 z-0 overflow-visible" width={size.w} height={size.h} aria-hidden>
               <defs>
                 <marker id="ch1-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
@@ -230,6 +271,7 @@ export const Diagram: React.FC<{
             )}
             {row(arch.replicas)}
           </div>
+        </div>
         </div>
       </div>
 
