@@ -77,7 +77,7 @@ export const Term: React.FC<{ term: string; children: React.ReactNode }> = ({ te
     </span>
     <span
       role="tooltip"
-      className="pointer-events-none absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-64 rounded-lg bg-slate-900 text-white dark:bg-[var(--surface)] dark:text-[var(--text-base)] text-xs leading-relaxed p-2.5 shadow-lg opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity z-50"
+      className="pointer-events-none absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-64 rounded-lg bg-slate-900 text-[var(--accent-fg)] dark:bg-[var(--surface)] dark:text-[var(--text-base)] text-xs leading-relaxed p-2.5 shadow-lg opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity z-50"
     >
       {children}
     </span>
@@ -244,7 +244,7 @@ export const Quiz: React.FC<{
           <button
             onClick={() => setIndex((i) => Math.min(questions.length - 1, i + 1))}
             disabled={index === questions.length - 1}
-            className="text-sm px-3 py-1.5 rounded-lg bg-[var(--accent)] text-white hover:bg-[var(--accent-hover)] disabled:opacity-40"
+            className="text-sm px-3 py-1.5 rounded-lg bg-[var(--accent)] text-[var(--accent-fg)] hover:bg-[var(--accent-hover)] disabled:opacity-40"
           >
             Next question →
           </button>
