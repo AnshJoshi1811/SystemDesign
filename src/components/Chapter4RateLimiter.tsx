@@ -593,7 +593,7 @@ const PlacementPicker: React.FC = () => {
             aria-pressed={picked === x.id}
             className={`rounded-xl px-4 py-3 text-left text-sm font-medium transition-colors ring-1 ${
               picked === x.id
-                ? 'bg-[var(--surface-muted)] ring-indigo-400 text-[var(--text-base)] dark:bg-indigo-400/[0.1] dark:ring-indigo-400/50 dark:text-[var(--text-base)]'
+                ? 'bg-[var(--surface-muted)] ring-[var(--accent)] text-[var(--text-base)] dark:bg-[var(--surface-muted)] dark:ring-[var(--accent)] dark:text-[var(--text-base)]'
                 : 'bg-[var(--surface)] ring-[var(--header-border)] text-[var(--text-base)] hover:ring-[var(--header-border)] dark:bg-[var(--surface)] dark:ring-[var(--header-border)] dark:text-[var(--text-base)]'
             }`}
           >
