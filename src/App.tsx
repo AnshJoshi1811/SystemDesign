@@ -1,7 +1,8 @@
-import React, { Suspense, lazy, useEffect, useState } from 'react';
+import React, { Suspense, lazy, useCallback, useEffect, useMemo, useState } from 'react';
 import { ModuleType } from './types';
 import { CHAPTERS, chapterById } from './chapters';
 import { Header } from './components/Header';
+import { AskAI } from './components/AskAI';
 import { Home } from './components/Home';
 import { NavContext, View } from './components/lesson/ChapterPlayer';
 import { usePersistentState, clearChapterState } from './lib/usePersistentState';
@@ -42,22 +43,25 @@ export default function App() {
     document.documentElement.classList.toggle('dark', isDarkMode);
   }, [isDarkMode]);
 
-  const go = (v: View) => {
+  const go = useCallback((v: View) => {
     setView(v);
     if (v !== 'home') setLastChapter(v);
     window.scrollTo({ top: 0 });
-  };
+  }, [setView, setLastChapter]);
 
-  const resetChapter = () => {
+  const resetChapter = useCallback(() => {
     if (view === 'home') return;
     const title = chapterById(view)?.title ?? 'this chapter';
     if (!window.confirm(`Restart "${title}"? Your lesson progress and answers in this chapter will be cleared.`)) return;
     clearChapterState(view);
     setResetCounter((n) => n + 1);
-  };
+  }, [view]);
+
+  // Stable context value: only re-creates when go or resetChapter change.
+  const navCtx = useMemo(() => ({ go, resetChapter }), [go, resetChapter]);
 
   return (
-    <NavContext.Provider value={{ go, resetChapter }}>
+    <NavContext.Provider value={navCtx}>
       <div className="sd-app min-h-screen flex flex-col bg-[#fafaf9] text-slate-900 dark:bg-[#0a0a0b] dark:text-slate-100">
         <Header view={view} onNavigate={go} isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />
 
@@ -70,6 +74,8 @@ export default function App() {
             </Suspense>
           )}
         </main>
+
+        <AskAI />
 
         <footer className="mt-auto border-t border-slate-200 dark:border-white/[0.06] py-5">
           <div className="max-w-[1280px] mx-auto px-6 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
