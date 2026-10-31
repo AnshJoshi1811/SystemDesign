@@ -105,7 +105,7 @@ export const HashLab: React.FC = () => {
               <span
                 key={k.id}
                 title={`${k.keyString}: ${k.hashHex}`}
-                className="absolute top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-slate-400 dark:bg-[var(--surface-muted)]0"
+                className="absolute top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-slate-400 dark:bg-[var(--surface-muted)]"
                 style={{ left: `${at(k)}%` }}
               />
             ))}
