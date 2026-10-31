@@ -74,9 +74,9 @@ const NodeCard: React.FC<{ node: ArchNode; state: NodeState; selected: boolean; 
         </span>
       )}
 
-      {/* Modern hover preview — fades & scales in, no click needed to see what this does */}
+      {/* Modern hover preview — appears BELOW the card so it never collides with the top toolbar or failure callout */}
       <span
-        className="pointer-events-none absolute left-1/2 bottom-full z-30 mb-2.5 w-60 -translate-x-1/2 translate-y-1 scale-95 rounded-xl px-3.5 py-3 text-left opacity-0 shadow-lg transition-all duration-150 group-hover/node:translate-y-0 group-hover/node:scale-100 group-hover/node:opacity-100"
+        className="pointer-events-none absolute left-1/2 top-full z-20 mt-2.5 w-60 -translate-x-1/2 -translate-y-1 scale-95 rounded-xl px-3.5 py-3 text-left opacity-0 shadow-lg transition-all duration-150 group-hover/node:translate-y-0 group-hover/node:scale-100 group-hover/node:opacity-100"
         style={{ background: 'var(--surface)', border: '1px solid var(--header-border)', boxShadow: 'var(--shadow-float-sm)' }}
       >
         <span className="block text-[13px] font-semibold" style={{ color: 'var(--text-base)' }}>{node.label}</span>
