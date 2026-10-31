@@ -174,18 +174,18 @@ export const Chapter1Workspace: React.FC = () => {
               aria-current={active ? 'step' : undefined}
               className={`w-full flex items-center gap-3 rounded-lg px-2.5 py-2 text-left text-sm transition-colors ${
                 active
-                  ? 'bg-indigo-50 font-medium text-indigo-900 ring-1 ring-indigo-200 dark:bg-indigo-400/[0.12] dark:text-white dark:ring-indigo-400/30'
-                  : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-white/[0.05]'
+                  ? 'bg-[var(--surface-muted)] font-medium text-[var(--text-base)] ring-1 ring-[var(--header-border)] dark:bg-[var(--surface-muted)] dark:text-[var(--text-base)] dark:ring-[var(--header-border)]'
+                  : 'text-[var(--text-muted)] hover:bg-[var(--surface-muted)] dark:text-[var(--text-muted)] dark:hover:bg-[var(--surface-muted)]'
               }`}
             >
               <span
                 className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full ${
-                  done ? 'bg-emerald-500 text-white' : active ? 'bg-indigo-600 ring-4 ring-indigo-100 dark:ring-indigo-400/20' : 'ring-2 ring-slate-300 dark:ring-white/20'
+                  done ? 'bg-emerald-500 text-white' : active ? 'bg-[var(--accent)] ring-2 ring-[var(--surface-muted)] dark:ring-[var(--header-border)]' : 'ring-2 ring-[var(--header-border)] dark:ring-white/20'
                 }`}
               >
                 {done && <Check className="h-3 w-3" strokeWidth={3} />}
               </span>
-              <span className="text-xs tabular-nums text-slate-500 dark:text-slate-400 w-5">{String(k + 1).padStart(2, '0')}</span>
+              <span className="text-xs tabular-nums text-[var(--text-subtle)] dark:text-[var(--text-subtle)] w-5">{String(k + 1).padStart(2, '0')}</span>
               <span className="truncate">{s.title}</span>
             </button>
           </li>
@@ -195,15 +195,15 @@ export const Chapter1Workspace: React.FC = () => {
   );
 
   const progressCard = (
-    <div className="rounded-xl bg-white ring-1 ring-slate-200 p-3.5 dark:bg-white/[0.03] dark:ring-white/10">
+    <div className="rounded-xl bg-[var(--surface)] ring-1 ring-[var(--header-border)] p-3.5 dark:bg-[var(--surface)] dark:ring-[var(--header-border)]">
       <div className="flex items-baseline justify-between">
-        <p className="text-sm font-semibold text-slate-900 dark:text-white">Chapter progress</p>
-        <p className="text-xs tabular-nums text-slate-500 dark:text-slate-400">
+        <p className="text-sm font-semibold text-[var(--text-base)] dark:text-[var(--text-base)]">Chapter progress</p>
+        <p className="text-xs tabular-nums text-[var(--text-subtle)] dark:text-[var(--text-subtle)]">
           {doneCount} / {N} stages
         </p>
       </div>
-      <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-slate-200 dark:bg-white/10">
-        <div className="h-full rounded-full bg-indigo-600 transition-all" style={{ width: `${(doneCount / N) * 100}%` }} />
+      <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-slate-200 dark:bg-[var(--surface-muted)]">
+        <div className="h-full rounded-full bg-[var(--accent)] transition-all" style={{ width: `${(doneCount / N) * 100}%` }} />
       </div>
     </div>
   );
@@ -214,13 +214,13 @@ export const Chapter1Workspace: React.FC = () => {
       <aside className="hidden lg:block">
         <div className="sticky top-20 space-y-5">
           <div>
-            <p className="text-xs font-semibold text-indigo-600 dark:text-indigo-300">Chapter 1</p>
-            <p className="text-xs text-slate-500 dark:text-slate-400">System design foundations</p>
-            <p className="mt-1 text-lg font-bold leading-snug text-slate-900 dark:text-white">Scale from 0 → 1M users</p>
+            <p className="text-xs font-semibold text-[var(--accent)] dark:text-[var(--text-muted)]">Chapter 1</p>
+            <p className="text-xs text-[var(--text-subtle)] dark:text-[var(--text-subtle)]">System design foundations</p>
+            <p className="mt-1 text-lg font-bold leading-snug text-[var(--text-base)] dark:text-[var(--text-base)]">Scale from 0 → 1M users</p>
           </div>
           {stageList}
           {progressCard}
-          <button onClick={resetChapter} className="flex items-center gap-1.5 px-2.5 text-xs text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200">
+          <button onClick={resetChapter} className="flex items-center gap-1.5 px-2.5 text-xs text-[var(--text-subtle)] hover:text-[var(--text-muted)] dark:text-[var(--text-subtle)] dark:hover:text-slate-200">
             <RotateCcw className="h-3 w-3" /> Restart this chapter
           </button>
         </div>
@@ -228,51 +228,51 @@ export const Chapter1Workspace: React.FC = () => {
 
       <div className="min-w-0 space-y-5">
         {/* ---------- Mobile stage picker ---------- */}
-        <div className="lg:hidden rounded-xl bg-white ring-1 ring-slate-200 dark:bg-white/[0.03] dark:ring-white/10">
+        <div className="lg:hidden rounded-xl bg-[var(--surface)] ring-1 ring-[var(--header-border)] dark:bg-[var(--surface)] dark:ring-[var(--header-border)]">
           <button onClick={() => setPickerOpen((o) => !o)} aria-expanded={pickerOpen} className="w-full flex items-center justify-between gap-3 px-4 py-3 text-left">
             <span className="min-w-0">
-              <span className="block text-xs text-slate-500 dark:text-slate-400">
+              <span className="block text-xs text-[var(--text-subtle)] dark:text-[var(--text-subtle)]">
                 Chapter 1 · Stage {i + 1} of {N}
               </span>
-              <span className="block truncate text-sm font-medium text-slate-900 dark:text-white">{content.title}</span>
+              <span className="block truncate text-sm font-medium text-[var(--text-base)] dark:text-[var(--text-base)]">{content.title}</span>
             </span>
             <ChevronDown className={`h-4 w-4 shrink-0 text-slate-400 transition-transform ${pickerOpen ? 'rotate-180' : ''}`} />
           </button>
-          {pickerOpen && <div className="space-y-3 border-t border-slate-100 p-3 dark:border-white/10">{stageList}{progressCard}</div>}
+          {pickerOpen && <div className="space-y-3 border-t border-[var(--header-border)] p-3 dark:border-[var(--header-border)]">{stageList}{progressCard}</div>}
         </div>
 
         {/* ---------- Stage header ---------- */}
-        <header className="rounded-2xl bg-white ring-1 ring-slate-200 p-5 dark:bg-white/[0.03] dark:ring-white/10">
+        <header className="rounded-2xl bg-[var(--surface)] ring-1 ring-[var(--header-border)] p-5 dark:bg-[var(--surface)] dark:ring-[var(--header-border)]">
           <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
             <div className="flex gap-4 min-w-0">
-              <span className="hidden sm:flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600 ring-1 ring-indigo-100 dark:bg-indigo-400/10 dark:text-indigo-300 dark:ring-indigo-400/20">
+              <span className="hidden sm:flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[var(--surface-muted)] text-[var(--accent)] ring-1 ring-indigo-100 dark:bg-[var(--surface-muted)] dark:text-[var(--text-muted)] dark:ring-[var(--header-border)]">
                 <Layers className="h-7 w-7" />
               </span>
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="rounded-md bg-slate-100 px-2 py-0.5 text-xs text-slate-600 dark:bg-white/[0.06] dark:text-slate-300">
+                  <span className="rounded-md bg-[var(--surface-muted)] px-2 py-0.5 text-xs text-[var(--text-muted)] dark:bg-[var(--surface-muted)] dark:text-[var(--text-muted)]">
                     Stage {i + 1} of {N}
                   </span>
-                  <span className="flex items-center gap-1 rounded-md bg-slate-100 px-2 py-0.5 text-xs text-slate-600 dark:bg-white/[0.06] dark:text-slate-300">
+                  <span className="flex items-center gap-1 rounded-md bg-[var(--surface-muted)] px-2 py-0.5 text-xs text-[var(--text-muted)] dark:bg-[var(--surface-muted)] dark:text-[var(--text-muted)]">
                     <Clock className="h-3 w-3" /> ~{meta.minutes} min
                   </span>
                 </div>
-                <h1 className="mt-1.5 text-2xl font-bold tracking-tight text-slate-900 dark:text-white">{content.title}</h1>
-                <p className="mt-1 max-w-2xl text-sm leading-relaxed text-slate-600 dark:text-slate-300">{content.goal}</p>
+                <h1 className="mt-1.5 text-2xl font-bold tracking-tight text-[var(--text-base)] dark:text-[var(--text-base)]">{content.title}</h1>
+                <p className="mt-1 max-w-2xl text-sm leading-relaxed text-[var(--text-muted)] dark:text-[var(--text-muted)]">{content.goal}</p>
               </div>
             </div>
             <div className="flex shrink-0 gap-2">
               <button
                 onClick={() => goStage(i - 1)}
                 disabled={i === 0}
-                className="inline-flex items-center gap-2 rounded-lg bg-white px-4 py-2 text-sm font-medium text-slate-700 ring-1 ring-slate-300 hover:bg-slate-50 disabled:opacity-40 dark:bg-white/[0.04] dark:text-slate-200 dark:ring-white/15"
+                className="inline-flex items-center gap-2 rounded-lg bg-[var(--surface)] px-4 py-2 text-sm font-medium text-[var(--text-muted)] ring-1 ring-[var(--header-border)] hover:bg-[var(--surface-muted)] disabled:opacity-40 dark:bg-[var(--surface-muted)] dark:text-[var(--text-muted)] dark:ring-[var(--header-border)]"
               >
                 <ArrowLeft className="h-4 w-4" /> Previous
               </button>
               <button
                 onClick={() => goStage(Math.min(N - 1, i + 1))}
                 disabled={i === N - 1}
-                className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-500 disabled:opacity-40"
+                className="inline-flex items-center gap-2 rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[var(--accent-hover)] disabled:opacity-40"
               >
                 Next <ArrowRight className="h-4 w-4" />
               </button>
@@ -293,7 +293,7 @@ export const Chapter1Workspace: React.FC = () => {
               onClick={() => openTab(id)}
               aria-current={tab === id ? 'page' : undefined}
               className={`flex shrink-0 items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-colors ${
-                tab === id ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-600 hover:bg-white hover:ring-1 hover:ring-slate-200 dark:text-slate-300 dark:hover:bg-white/[0.05] dark:hover:ring-white/10'
+                tab === id ? 'bg-[var(--accent)] text-white shadow-sm' : 'text-[var(--text-muted)] hover:bg-[var(--surface)] hover:ring-1 hover:ring-[var(--header-border)] dark:text-[var(--text-muted)] dark:hover:bg-[var(--surface-muted)] dark:hover:ring-white/10'
               }`}
             >
               <Icon className="h-4 w-4" />
@@ -305,11 +305,11 @@ export const Chapter1Workspace: React.FC = () => {
         {/* ---------- Architecture ---------- */}
         {tab === 'architecture' && (
           <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
-            <section className="min-w-0 rounded-2xl bg-white ring-1 ring-slate-200 p-4 sm:p-5 dark:bg-white/[0.03] dark:ring-white/10">
+            <section className="min-w-0 rounded-2xl bg-[var(--surface)] ring-1 ring-[var(--header-border)] p-4 sm:p-5 dark:bg-[var(--surface)] dark:ring-[var(--header-border)]">
               <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
                 <div className="flex items-center gap-2.5">
                   <span className={`h-2.5 w-2.5 rounded-full ${health === 'ok' ? 'bg-emerald-500' : health === 'degraded' ? 'bg-amber-500' : 'bg-rose-500'}`} />
-                  <h2 className="font-semibold text-slate-900 dark:text-white">Stage {i + 1}: {content.title}</h2>
+                  <h2 className="font-semibold text-[var(--text-base)] dark:text-[var(--text-base)]">Stage {i + 1}: {content.title}</h2>
                   <span
                     className={`rounded-md px-2 py-0.5 text-xs font-medium ${
                       health === 'ok'
@@ -346,7 +346,7 @@ export const Chapter1Workspace: React.FC = () => {
                   )}
                   <button
                     onClick={clearFailures}
-                    className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50 dark:text-slate-300 dark:ring-white/10 dark:hover:bg-white/[0.05]"
+                    className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm text-[var(--text-muted)] ring-1 ring-[var(--header-border)] hover:bg-[var(--surface-muted)] dark:text-[var(--text-muted)] dark:ring-[var(--header-border)] dark:hover:bg-[var(--surface-muted)]"
                   >
                     <RotateCcw className="h-3.5 w-3.5" /> Reset
                   </button>
@@ -366,13 +366,13 @@ export const Chapter1Workspace: React.FC = () => {
               <Diagram arch={arch} sim={sim} selected={selected} onSelect={select} running={sim.success > 0} />
 
               {/* Simulation controls */}
-              <div className="mt-5 rounded-xl bg-slate-50 p-4 dark:bg-white/[0.03]">
-                <p className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-800 dark:text-slate-100">
+              <div className="mt-5 rounded-xl bg-[var(--surface-muted)] p-4 dark:bg-[var(--surface)]">
+                <p className="mb-3 flex items-center gap-2 text-sm font-semibold text-[var(--text-base)] dark:text-[var(--text-base)]">
                   <Settings2 className="h-4 w-4" /> Simulation controls
                 </p>
                 <div className="grid gap-4 sm:grid-cols-3">
                   <Control label="Traffic (requests/sec)" value={`${inputs.rps.toLocaleString()} RPS`}>
-                    <input type="range" min={0} max={100} value={rpsToPos(inputs.rps)} onChange={(e) => setInputs({ rps: posToRps(Number(e.target.value)) })} className="w-full accent-indigo-600" aria-label="Traffic" />
+                    <input type="range" min={0} max={100} value={rpsToPos(inputs.rps)} onChange={(e) => setInputs({ rps: posToRps(Number(e.target.value)) })} className="w-full accent-[var(--accent)]" aria-label="Traffic" />
                   </Control>
                   <Control label="Read / write mix" value={`${inputs.readPct}% / ${100 - inputs.readPct}%`}>
                     <input type="range" min={50} max={99} value={inputs.readPct} onChange={(e) => setInputs({ readPct: Number(e.target.value) })} className="w-full accent-emerald-600" aria-label="Read share" />
@@ -389,13 +389,13 @@ export const Chapter1Workspace: React.FC = () => {
                         </StepBtn>
                       </div>
                     ) : (
-                      <p className="text-xs text-slate-500 dark:text-slate-400">Needs a load balancer in front of the web servers.</p>
+                      <p className="text-xs text-[var(--text-subtle)] dark:text-[var(--text-subtle)]">Needs a load balancer in front of the web servers.</p>
                     )}
                   </Control>
                 </div>
                 {arch.f.cache && (
                   <details className="mt-4 [&_summary::-webkit-details-marker]:hidden">
-                    <summary className="cursor-pointer text-sm text-slate-600 dark:text-slate-300">Advanced settings</summary>
+                    <summary className="cursor-pointer text-sm text-[var(--text-muted)] dark:text-[var(--text-muted)]">Advanced settings</summary>
                     <div className="mt-3 max-w-sm">
                       <Control label="Cache hit ratio" value={`${inputs.cacheHit}%`}>
                         <input type="range" min={0} max={99} value={inputs.cacheHit} onChange={(e) => setInputs({ cacheHit: Number(e.target.value) })} className="w-full accent-amber-500" aria-label="Cache hit ratio" />
@@ -424,7 +424,7 @@ export const Chapter1Workspace: React.FC = () => {
         {tab === 'concepts' && (
           <section className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
             <div className="space-y-5">
-              <div className="rounded-2xl bg-white p-5 ring-1 ring-slate-200 dark:bg-white/[0.03] dark:ring-white/10 lesson-prose max-w-none">
+              <div className="rounded-2xl bg-[var(--surface)] p-5 ring-1 ring-[var(--header-border)] dark:bg-[var(--surface)] dark:ring-[var(--header-border)] lesson-prose max-w-none">
                 <p>{content.why}</p>
                 <p>
                   <strong>Weak spot: </strong>
@@ -502,9 +502,9 @@ const FailureSummary: React.FC<{ sim: ReturnType<typeof simulate>; after: boolea
 };
 
 const Control: React.FC<{ label: string; value: string; children: React.ReactNode }> = ({ label, value, children }) => (
-  <div className="rounded-lg bg-white p-3 ring-1 ring-slate-200 dark:bg-white/[0.03] dark:ring-white/10">
-    <p className="text-xs text-slate-500 dark:text-slate-400">{label}</p>
-    <p className="mb-2 text-base font-semibold tabular-nums text-slate-900 dark:text-white">{value}</p>
+  <div className="rounded-lg bg-[var(--surface)] p-3 ring-1 ring-[var(--header-border)] dark:bg-[var(--surface)] dark:ring-[var(--header-border)]">
+    <p className="text-xs text-[var(--text-subtle)] dark:text-[var(--text-subtle)]">{label}</p>
+    <p className="mb-2 text-base font-semibold tabular-nums text-[var(--text-base)] dark:text-[var(--text-base)]">{value}</p>
     {children}
   </div>
 );
@@ -514,7 +514,7 @@ const StepBtn: React.FC<{ label: string; onClick: () => void; disabled?: boolean
     onClick={onClick}
     disabled={disabled}
     aria-label={label}
-    className="flex h-8 w-8 items-center justify-center rounded-lg ring-1 ring-slate-300 text-slate-700 hover:bg-slate-100 disabled:opacity-40 dark:ring-white/15 dark:text-slate-200 dark:hover:bg-white/[0.06]"
+    className="flex h-8 w-8 items-center justify-center rounded-lg ring-1 ring-[var(--header-border)] text-[var(--text-muted)] hover:bg-[var(--surface-muted)] disabled:opacity-40 dark:ring-[var(--header-border)] dark:text-[var(--text-muted)] dark:hover:bg-[var(--surface-muted)]"
   >
     {children}
   </button>
@@ -544,31 +544,31 @@ const Inspector: React.FC<{
   const [view, setView] = useState<'overview' | 'tech' | 'metrics' | 'config'>('overview');
   if (!node) {
     return (
-      <aside className="rounded-2xl bg-white p-5 ring-1 ring-slate-200 dark:bg-white/[0.03] dark:ring-white/10">
-        <p className="flex items-center gap-2 font-semibold text-slate-900 dark:text-white">
+      <aside className="rounded-2xl bg-[var(--surface)] p-5 ring-1 ring-[var(--header-border)] dark:bg-[var(--surface)] dark:ring-[var(--header-border)]">
+        <p className="flex items-center gap-2 font-semibold text-[var(--text-base)] dark:text-[var(--text-base)]">
           <Search className="h-4 w-4" /> Component inspector
         </p>
-        <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">Click any component in the diagram to see what it does and to crash it.</p>
+        <p className="mt-2 text-sm text-[var(--text-subtle)] dark:text-[var(--text-subtle)]">Click any component in the diagram to see what it does and to crash it.</p>
       </aside>
     );
   }
   const info = COMPONENT_INFO[node.kind];
   const status = state?.status ?? 'healthy';
   return (
-    <aside className="self-start rounded-2xl bg-white p-5 ring-1 ring-slate-200 dark:bg-white/[0.03] dark:ring-white/10 xl:sticky xl:top-20">
+    <aside className="self-start rounded-2xl bg-[var(--surface)] p-5 ring-1 ring-[var(--header-border)] dark:bg-[var(--surface)] dark:ring-[var(--header-border)] xl:sticky xl:top-20">
       <div className="flex items-center justify-between">
-        <p className="flex items-center gap-2 font-semibold text-slate-900 dark:text-white">
+        <p className="flex items-center gap-2 font-semibold text-[var(--text-base)] dark:text-[var(--text-base)]">
           <Search className="h-4 w-4" /> Component inspector
         </p>
-        <button onClick={onClose} aria-label="Close inspector" className="rounded p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-white/[0.06]">
+        <button onClick={onClose} aria-label="Close inspector" className="rounded p-1 text-slate-400 hover:bg-[var(--surface-muted)] hover:text-[var(--text-muted)] dark:hover:bg-[var(--surface-muted)]">
           <X className="h-4 w-4" />
         </button>
       </div>
 
-      <div className="mt-4 flex items-center justify-between gap-3 rounded-xl ring-1 ring-slate-200 p-3 dark:ring-white/10">
+      <div className="mt-4 flex items-center justify-between gap-3 rounded-xl ring-1 ring-[var(--header-border)] p-3 dark:ring-[var(--header-border)]">
         <div className="min-w-0">
-          <p className="truncate font-semibold text-slate-900 dark:text-white">{node.label}</p>
-          <p className="truncate text-xs text-slate-500 dark:text-slate-400">{state?.role ?? node.sub}</p>
+          <p className="truncate font-semibold text-[var(--text-base)] dark:text-[var(--text-base)]">{node.label}</p>
+          <p className="truncate text-xs text-[var(--text-subtle)] dark:text-[var(--text-subtle)]">{state?.role ?? node.sub}</p>
         </div>
         <span
           className={`shrink-0 flex items-center gap-1.5 rounded-md px-2 py-0.5 text-xs font-medium ${
@@ -584,7 +584,7 @@ const Inspector: React.FC<{
         </span>
       </div>
 
-      <div className="mt-4 flex border-b border-slate-200 dark:border-white/10 text-sm" role="tablist">
+      <div className="mt-4 flex border-b border-[var(--header-border)] dark:border-[var(--header-border)] text-sm" role="tablist">
         {(
           [
             ['overview', 'Overview'],
@@ -598,7 +598,7 @@ const Inspector: React.FC<{
             role="tab"
             aria-selected={view === id}
             onClick={() => setView(id)}
-            className={`flex-1 border-b-2 px-2 py-2 -mb-px ${view === id ? 'border-indigo-600 font-medium text-indigo-700 dark:text-indigo-300' : 'border-transparent text-slate-500 hover:text-slate-800 dark:text-slate-400'}`}
+            className={`flex-1 border-b-2 px-2 py-2 -mb-px ${view === id ? 'border-[var(--accent)] font-medium text-[var(--text-base)] dark:text-[var(--text-muted)]' : 'border-transparent text-[var(--text-subtle)] hover:text-[var(--text-base)] dark:text-[var(--text-subtle)]'}`}
           >
             {label}
           </button>
@@ -621,22 +621,22 @@ const Inspector: React.FC<{
         )}
         {view === 'tech' && (
           <>
-            <p className="text-xs text-slate-500 dark:text-slate-400">What teams actually run for this component:</p>
+            <p className="text-xs text-[var(--text-subtle)] dark:text-[var(--text-subtle)]">What teams actually run for this component:</p>
             <ul className="space-y-2">
               {TECH[node.kind].map((t, k) => (
-                <li key={t.name} className="rounded-xl bg-slate-50 p-3 dark:bg-white/[0.04]">
-                  <p className="flex items-center gap-2 font-semibold text-slate-900 dark:text-white">
+                <li key={t.name} className="rounded-xl bg-[var(--surface-muted)] p-3 dark:bg-[var(--surface-muted)]">
+                  <p className="flex items-center gap-2 font-semibold text-[var(--text-base)] dark:text-[var(--text-base)]">
                     {t.name}
-                    {k === 0 && <span className="rounded-md bg-indigo-50 px-1.5 py-0.5 text-[11px] font-medium text-indigo-700 dark:bg-indigo-400/15 dark:text-indigo-300">common pick</span>}
+                    {k === 0 && <span className="rounded-md bg-[var(--surface-muted)] px-1.5 py-0.5 text-[11px] font-medium text-[var(--text-base)] dark:bg-[var(--surface-muted)] dark:text-[var(--text-muted)]">common pick</span>}
                   </p>
-                  <p className="mt-0.5 text-slate-600 dark:text-slate-300">{t.note}</p>
+                  <p className="mt-0.5 text-[var(--text-muted)] dark:text-[var(--text-muted)]">{t.note}</p>
                 </li>
               ))}
             </ul>
           </>
         )}
         {view === 'metrics' && (
-          <dl className="divide-y divide-slate-100 dark:divide-white/10">
+          <dl className="divide-y divide-[var(--header-border)] dark:divide-[var(--header-border)]">
             <Row k="Status" v={STATUS_LABEL[status]} />
             <Row k="Load" v={status === 'down' ? '—' : `${Math.round(Math.min(1, state?.load ?? 0) * 100)}%`} />
             <Row k="Throughput" v={state?.throughput ?? '—'} />
@@ -644,7 +644,7 @@ const Inspector: React.FC<{
           </dl>
         )}
         {view === 'config' && (
-          <dl className="divide-y divide-slate-100 dark:divide-white/10">
+          <dl className="divide-y divide-[var(--header-border)] dark:divide-[var(--header-border)]">
             <Row k="Type" v={node.kind === 'master' ? 'Primary database' : node.label.replace(/-\d.*$/, '')} />
             <Row k="In this design" v={`${count} node${count > 1 ? 's' : ''}`} />
             {CAPACITY[node.kind] && <Row k="Capacity" v={CAPACITY[node.kind]!} />}
@@ -660,7 +660,7 @@ const Inspector: React.FC<{
             <Wrench className="h-4 w-4" /> Recover this component
           </button>
         ) : (
-          <button onClick={onCrash} className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-indigo-600 px-3 py-2.5 text-sm font-medium text-white hover:bg-indigo-500">
+          <button onClick={onCrash} className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-[var(--accent)] px-3 py-2.5 text-sm font-medium text-white hover:bg-[var(--accent-hover)]">
             <Zap className="h-4 w-4" /> Crash this component
           </button>
         )}
@@ -677,29 +677,29 @@ const TechStack: React.FC<{ arch: ReturnType<typeof buildArch>; selected: string
   });
   const selKind = arch.all.find((n) => n.id === selected)?.kind;
   return (
-    <section className="xl:col-span-2 rounded-2xl bg-white p-4 sm:p-5 ring-1 ring-slate-200 dark:bg-white/[0.03] dark:ring-white/10">
+    <section className="xl:col-span-2 rounded-2xl bg-[var(--surface)] p-4 sm:p-5 ring-1 ring-[var(--header-border)] dark:bg-[var(--surface)] dark:ring-[var(--header-border)]">
       <div className="mb-3">
-        <h2 className="flex items-center gap-2 font-semibold text-slate-900 dark:text-white">
+        <h2 className="flex items-center gap-2 font-semibold text-[var(--text-base)] dark:text-[var(--text-base)]">
           <Boxes className="h-4 w-4" /> Tech stack in the real world
         </h2>
-        <p className="text-sm text-slate-500 dark:text-slate-400">What teams actually use for each piece of this architecture. Click a row to inspect that component.</p>
+        <p className="text-sm text-[var(--text-subtle)] dark:text-[var(--text-subtle)]">What teams actually use for each piece of this architecture. Click a row to inspect that component.</p>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="text-left text-xs text-slate-500 dark:text-slate-400">
+            <tr className="text-left text-xs text-[var(--text-subtle)] dark:text-[var(--text-subtle)]">
               <th className="py-2 pr-4 font-medium">Component</th>
               <th className="py-2 font-medium">Common technologies</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100 dark:divide-white/10">
+          <tbody className="divide-y divide-[var(--header-border)] dark:divide-[var(--header-border)]">
             {kinds.map(({ kind, first }) => (
               <tr
                 key={kind}
                 onClick={() => onSelect(first)}
-                className={`cursor-pointer align-top transition-colors hover:bg-slate-50 dark:hover:bg-white/[0.03] ${selKind === kind ? 'bg-indigo-50/60 dark:bg-indigo-400/[0.06]' : ''}`}
+                className={`cursor-pointer align-top transition-colors hover:bg-[var(--surface-muted)] dark:hover:bg-[var(--surface)]/[0.03] ${selKind === kind ? 'bg-[var(--surface-muted)]/60 dark:bg-[var(--surface-muted)]' : ''}`}
               >
-                <td className="whitespace-nowrap py-2.5 pr-4 font-medium text-slate-900 dark:text-white">{kind === 'master' && !arch.f.replicas ? 'Database' : KIND_NAME[kind]}</td>
+                <td className="whitespace-nowrap py-2.5 pr-4 font-medium text-[var(--text-base)] dark:text-[var(--text-base)]">{kind === 'master' && !arch.f.replicas ? 'Database' : KIND_NAME[kind]}</td>
                 <td className="py-2">
                   <div className="flex flex-wrap gap-1.5">
                     {TECH[kind].map((t, k) => (
@@ -708,8 +708,8 @@ const TechStack: React.FC<{ arch: ReturnType<typeof buildArch>; selected: string
                         title={t.note}
                         className={`rounded-md px-2 py-1 text-xs ${
                           k === 0
-                            ? 'bg-indigo-600 font-medium text-white'
-                            : 'bg-slate-100 text-slate-700 dark:bg-white/[0.06] dark:text-slate-200'
+                            ? 'bg-[var(--accent)] font-medium text-white'
+                            : 'bg-[var(--surface-muted)] text-[var(--text-muted)] dark:bg-[var(--surface-muted)] dark:text-[var(--text-muted)]'
                         }`}
                       >
                         {t.name}
@@ -729,24 +729,24 @@ const TechStack: React.FC<{ arch: ReturnType<typeof buildArch>; selected: string
 const InfoBox: React.FC<{ tone: 'indigo' | 'amber' | 'rose'; title: string; children: React.ReactNode }> = ({ tone, title, children }) => (
   <div
     className={`rounded-xl p-3 ${
-      tone === 'indigo' ? 'bg-indigo-50 dark:bg-indigo-400/[0.08]' : tone === 'amber' ? 'bg-amber-50 dark:bg-amber-400/[0.08]' : 'bg-rose-50 dark:bg-rose-400/[0.08]'
+      tone === 'indigo' ? 'bg-[var(--surface-muted)] dark:bg-[var(--surface-muted)]' : tone === 'amber' ? 'bg-amber-50 dark:bg-amber-400/[0.08]' : 'bg-rose-50 dark:bg-rose-400/[0.08]'
     }`}
   >
     <p
       className={`text-xs font-semibold ${
-        tone === 'indigo' ? 'text-indigo-700 dark:text-indigo-300' : tone === 'amber' ? 'text-amber-700 dark:text-amber-300' : 'text-rose-700 dark:text-rose-300'
+        tone === 'indigo' ? 'text-[var(--text-base)] dark:text-[var(--text-muted)]' : tone === 'amber' ? 'text-amber-700 dark:text-amber-300' : 'text-rose-700 dark:text-rose-300'
       }`}
     >
       {title}
     </p>
-    <p className="mt-0.5 text-slate-700 dark:text-slate-200">{children}</p>
+    <p className="mt-0.5 text-[var(--text-muted)] dark:text-[var(--text-muted)]">{children}</p>
   </div>
 );
 
 const Row: React.FC<{ k: string; v: string }> = ({ k, v }) => (
   <div className="flex justify-between gap-4 py-2">
-    <dt className="text-slate-500 dark:text-slate-400">{k}</dt>
-    <dd className="text-right text-slate-800 dark:text-slate-100">{v}</dd>
+    <dt className="text-[var(--text-subtle)] dark:text-[var(--text-subtle)]">{k}</dt>
+    <dd className="text-right text-[var(--text-base)] dark:text-[var(--text-base)]">{v}</dd>
   </div>
 );
 
@@ -762,10 +762,10 @@ const FLOW_STEPS: { id: FlowStep; title: string; desc: string; icon: React.Compo
 
 const FLOW_TONE: Record<string, { box: string; icon: string; bar: string }> = {
   emerald: { box: 'ring-emerald-200 dark:ring-emerald-400/30', icon: 'bg-emerald-500 text-white', bar: 'bg-emerald-500' },
-  indigo: { box: 'ring-indigo-200 dark:ring-indigo-400/30', icon: 'bg-indigo-500 text-white', bar: 'bg-indigo-500' },
+  indigo: { box: 'ring-[var(--header-border)] dark:ring-[var(--header-border)]', icon: 'bg-[var(--accent)] text-white', bar: 'bg-[var(--accent)]' },
   amber: { box: 'ring-amber-200 dark:ring-amber-400/30', icon: 'bg-amber-500 text-white', bar: 'bg-amber-500' },
   violet: { box: 'ring-violet-200 dark:ring-violet-400/30', icon: 'bg-violet-500 text-white', bar: 'bg-violet-500' },
-  slate: { box: 'ring-slate-200 dark:ring-white/15', icon: 'bg-slate-500 text-white', bar: 'bg-slate-500' },
+  slate: { box: 'ring-[var(--header-border)] dark:ring-[var(--header-border)]', icon: 'bg-[var(--surface-muted)]0 text-white', bar: 'bg-[var(--surface-muted)]0' },
 };
 
 const FlowBar: React.FC<{ flow: Flow; hasFix: boolean; isFinal: boolean; onStep: (s: FlowStep) => void }> = ({ flow, hasFix: fixable, isFinal, onStep }) => {
@@ -781,15 +781,15 @@ const FlowBar: React.FC<{ flow: Flow; hasFix: boolean; isFinal: boolean; onStep:
           <button
             key={s.id}
             onClick={() => onStep(s.id)}
-            className={`relative rounded-2xl bg-white p-4 text-left ring-1 transition-shadow hover:shadow-md dark:bg-white/[0.03] ${next === s.id ? `${t.box} ring-2` : 'ring-slate-200 dark:ring-white/10'}`}
+            className={`relative rounded-2xl bg-[var(--surface)] p-4 text-left ring-1 transition-shadow hover:shadow-md dark:bg-[var(--surface)] ${next === s.id ? `${t.box} ring-2` : 'ring-[var(--header-border)] dark:ring-[var(--header-border)]'}`}
           >
             <div className="flex items-center justify-between">
               <span className="flex items-center gap-2">
-                <span className={`flex h-6 w-6 items-center justify-center rounded-md ${done ? t.icon : 'bg-slate-100 text-slate-500 dark:bg-white/10 dark:text-slate-300'}`}>
+                <span className={`flex h-6 w-6 items-center justify-center rounded-md ${done ? t.icon : 'bg-[var(--surface-muted)] text-[var(--text-subtle)] dark:bg-[var(--surface-muted)] dark:text-[var(--text-muted)]'}`}>
                   <Icon className="h-3.5 w-3.5" />
                 </span>
-                <span className="text-sm font-semibold text-slate-900 dark:text-white">
-                  <span className="text-slate-500 dark:text-slate-400 mr-1">{k + 1}</span>
+                <span className="text-sm font-semibold text-[var(--text-base)] dark:text-[var(--text-base)]">
+                  <span className="text-[var(--text-subtle)] dark:text-[var(--text-subtle)] mr-1">{k + 1}</span>
                   {s.title}
                 </span>
               </span>
@@ -799,8 +799,8 @@ const FlowBar: React.FC<{ flow: Flow; hasFix: boolean; isFinal: boolean; onStep:
                 </span>
               )}
             </div>
-            <p className="mt-1.5 text-xs leading-relaxed text-slate-600 dark:text-slate-400">{desc}</p>
-            <div className="mt-3 h-1 overflow-hidden rounded-full bg-slate-100 dark:bg-white/10">
+            <p className="mt-1.5 text-xs leading-relaxed text-[var(--text-muted)] dark:text-[var(--text-subtle)]">{desc}</p>
+            <div className="mt-3 h-1 overflow-hidden rounded-full bg-[var(--surface-muted)] dark:bg-[var(--surface-muted)]">
               <div className={`h-full rounded-full ${t.bar} transition-all`} style={{ width: done ? '100%' : next === s.id ? '15%' : '0%' }} />
             </div>
           </button>
