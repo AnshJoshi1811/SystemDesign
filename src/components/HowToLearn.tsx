@@ -68,7 +68,7 @@ export const HowToLearn: React.FC = () => {
           aria-label="How to learn"
           className="absolute left-0 mt-2 w-80 rounded-2xl p-5 z-50"
           style={{
-            background: 'var(--surface)',
+            background: 'var(--surface-solid)',
             border: '1px solid var(--header-border)',
             boxShadow: '0 12px 40px rgba(0,0,0,0.2)',
           }}
