@@ -1,8 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Sun, Moon, ChevronDown, LayoutGrid, Check } from 'lucide-react';
+import { Sun, Moon, ChevronDown, LayoutGrid, Check, Languages } from 'lucide-react';
 import { CHAPTERS, chapterById, readProgress } from '../chapters';
 import { View } from './lesson/ChapterPlayer';
 import { SearchBar } from './SearchBar';
+import { useLang } from '../lib/i18n';
 
 interface HeaderProps {
   view: View;
@@ -40,6 +41,7 @@ export const Header: React.FC<HeaderProps> = ({ view, onNavigate, isDarkMode, se
   const current = view === 'home' ? undefined : chapterById(view);
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const { lang, setLang } = useLang();
 
   useEffect(() => {
     if (!open) return;
@@ -178,18 +180,35 @@ export const Header: React.FC<HeaderProps> = ({ view, onNavigate, isDarkMode, se
           <SearchBar />
         </div>
 
-        {/* ── Right: Dark mode toggle ── */}
-        <button
-          onClick={() => setIsDarkMode(!isDarkMode)}
-          className="shrink-0 rounded-lg p-2 transition-colors ml-auto sm:ml-0"
-          style={{ color: 'var(--text-muted)' }}
-          onMouseEnter={e => (e.currentTarget.style.background = 'var(--surface-muted)')}
-          onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
-          title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
-          aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
-        >
-          {isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-        </button>
+        {/* ── Right: Language toggle + Dark mode ── */}
+        <div className="flex items-center gap-1 ml-auto sm:ml-0 shrink-0">
+          {/* Language toggle */}
+          <button
+            onClick={() => setLang(lang === 'en' ? 'hi' : 'en')}
+            className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-xs font-semibold transition-colors"
+            style={{ color: 'var(--text-muted)' }}
+            onMouseEnter={e => (e.currentTarget.style.background = 'var(--surface-muted)')}
+            onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+            title={lang === 'en' ? 'हिन्दी mein padho' : 'Read in English'}
+            aria-label="Toggle language"
+          >
+            <Languages className="w-3.5 h-3.5" />
+            <span>{lang === 'en' ? 'EN' : 'हि'}</span>
+          </button>
+
+          {/* Dark mode toggle */}
+          <button
+            onClick={() => setIsDarkMode(!isDarkMode)}
+            className="shrink-0 rounded-lg p-2 transition-colors"
+            style={{ color: 'var(--text-muted)' }}
+            onMouseEnter={e => (e.currentTarget.style.background = 'var(--surface-muted)')}
+            onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+            title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+            aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+          >
+            {isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+          </button>
+        </div>
       </div>
     </header>
   );
