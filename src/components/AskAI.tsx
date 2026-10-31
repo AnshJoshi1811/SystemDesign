@@ -1,5 +1,5 @@
 import React, { useCallback, useRef, useState } from 'react';
-import { Bot, Send, X, ChevronDown, ChevronUp, Loader2, AlertCircle } from 'lucide-react';
+import { Bot, Send, X, Loader2, AlertCircle } from 'lucide-react';
 
 /*
  * AskAI — free AI Q&A using Hugging Face Inference API (no API key needed for public models).
@@ -9,7 +9,11 @@ import { Bot, Send, X, ChevronDown, ChevronUp, Loader2, AlertCircle } from 'luci
  * Zero token burn on Anthropic — 100% on HF infrastructure.
  */
 
-const HF_MODEL = 'microsoft/Phi-3.5-mini-instruct';
+// After deploying the Cloudflare Worker (cf-worker.js in repo root),
+// replace this URL with your worker's URL from the Cloudflare dashboard.
+// e.g. https://sd-ai-proxy.YOUR-NAME.workers.dev
+const WORKER_URL = 'https://sd-ai-proxy.anshjoshi1811.workers.dev';
+
 const SYSTEM_PROMPT = `You are a concise system design tutor. Answer questions about system design concepts covered in: 
 scaling, rate limiting, consistent hashing, key-value stores, unique ID generation, and URL shorteners.
 Keep answers under 150 words. Use bullet points where helpful. Be direct and precise.`;
@@ -32,8 +36,7 @@ export const AskAI: React.FC = () => {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [hfToken, setHfToken] = useState('');
-  const [showTokenInput, setShowTokenInput] = useState(false);
+
   const bottomRef = useRef<HTMLDivElement>(null);
 
   const ask = useCallback(async (question: string) => {
@@ -51,14 +54,9 @@ export const AskAI: React.FC = () => {
       '\n<|assistant|>\n';
 
     try {
-      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-      const env = (import.meta as unknown as { env: Record<string, string> }).env;
-      const token = hfToken.trim() || env?.VITE_HF_TOKEN;
-      if (token) headers['Authorization'] = `Bearer ${token}`;
-
-      const res = await fetch(`https://api-inference.huggingface.co/models/${HF_MODEL}`, {
+      const res = await fetch(WORKER_URL, {
         method: 'POST',
-        headers,
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           inputs: prompt,
           parameters: { max_new_tokens: 300, temperature: 0.4, return_full_text: false },
@@ -85,7 +83,7 @@ export const AskAI: React.FC = () => {
       setLoading(false);
       setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 50);
     }
-  }, [messages, loading, hfToken]);
+  }, [messages, loading]);
 
   const handleKey = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); ask(input); }
@@ -189,33 +187,7 @@ export const AskAI: React.FC = () => {
             <div ref={bottomRef} />
           </div>
 
-          {/* HF Token (optional, collapsed) */}
-          <div style={{ borderTop: '1px solid var(--header-border)' }}>
-            <button
-              onClick={() => setShowTokenInput(t => !t)}
-              className="w-full flex items-center justify-between px-4 py-2 text-xs transition-opacity hover:opacity-70"
-              style={{ color: 'var(--text-subtle)' }}
-            >
-              <span>Optional: add free HF token for more requests</span>
-              {showTokenInput ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-            </button>
-            {showTokenInput && (
-              <div className="px-4 pb-3">
-                <input
-                  type="password"
-                  value={hfToken}
-                  onChange={e => setHfToken(e.target.value)}
-                  placeholder="hf_xxxxxxxxxx (free at huggingface.co/settings/tokens)"
-                  className="w-full text-xs rounded-lg px-3 py-2 outline-none"
-                  style={{
-                    background: 'var(--surface-muted)',
-                    border: '1px solid var(--header-border)',
-                    color: 'var(--text-base)',
-                  }}
-                />
-              </div>
-            )}
-          </div>
+
 
           {/* Input */}
           <div
