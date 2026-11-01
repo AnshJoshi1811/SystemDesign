@@ -88,7 +88,7 @@ export default function App() {
         </main>
 
         <AskAI view={view} />
-        <SelectionAssistant />
+        <SelectionAssistant chapter={view} />
 
         <footer
           className="mt-auto py-5"
