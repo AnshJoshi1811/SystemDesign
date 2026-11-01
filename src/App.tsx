@@ -3,6 +3,7 @@ import { ModuleType } from './types';
 import { CHAPTERS, chapterById } from './chapters';
 import { Header } from './components/Header';
 import { AskAI } from './components/AskAI';
+import { AdminDashboard } from './components/AdminDashboard';
 import { Home } from './components/Home';
 import { ChapterSkeleton } from './components/Skeleton';
 import { NavContext, View } from './components/lesson/ChapterPlayer';
@@ -28,6 +29,14 @@ const isView = (v: unknown): v is View =>
   v === 'home' || CHAPTERS.some(c => c.id === v);
 
 export default function App() {
+  // Hidden admin route — not linked anywhere in the UI. Visit /#admin to reach it.
+  const [isAdminRoute, setIsAdminRoute] = useState(() => window.location.hash === '#admin');
+  useEffect(() => {
+    const onHashChange = () => setIsAdminRoute(window.location.hash === '#admin');
+    window.addEventListener('hashchange', onHashChange);
+    return () => window.removeEventListener('hashchange', onHashChange);
+  }, []);
+
   const [storedView, setView] = usePersistentState<View>('app:view', 'home');
   const view: View = isView(storedView) ? storedView : 'home';
   const [lastChapter, setLastChapter] = usePersistentState<ModuleType | null>('app:chapter', null);
@@ -54,6 +63,10 @@ export default function App() {
   }, [view]);
 
   const navCtx = useMemo(() => ({ go, resetChapter }), [go, resetChapter]);
+
+  if (isAdminRoute) {
+    return <AdminDashboard />;
+  }
 
   return (
     <NavContext.Provider value={navCtx}>
