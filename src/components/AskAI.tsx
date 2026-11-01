@@ -2,11 +2,11 @@ import React, { useCallback, useRef, useState } from 'react';
 import { Bot, Send, X, Loader2, AlertCircle } from 'lucide-react';
 
 /*
- * AskAI — free AI Q&A using Hugging Face Inference API (no API key needed for public models).
- * Model: microsoft/Phi-3.5-mini-instruct — small, fast, runs free on HF serverless tier.
- * Users can optionally supply their own HF token for higher rate limits.
+ * AskAI — free AI Q&A via a Cloudflare Worker gateway (cf-worker.js) that
+ * tries 5 free providers in priority order (Groq, OpenRouter, Gemini,
+ * OpenCode, IteraCompute) and falls back automatically if one is down.
  *
- * Zero token burn on Anthropic — 100% on HF infrastructure.
+ * Zero token burn on Anthropic — 100% on free-tier provider infrastructure.
  */
 
 // After deploying the Cloudflare Worker (cf-worker.js in repo root),
@@ -19,6 +19,47 @@ const WORKER_URL = 'https://sd-ai-proxy.anshsjoshi07.workers.dev';
 interface Message {
   role: 'user' | 'assistant';
   content: string;
+}
+
+/** Renders **bold** and "- "/"* " bullet lists from plain-text model output, without a markdown library. */
+function renderInline(text: string): React.ReactNode {
+  const parts = text.split(/(\*\*[^*]+\*\*)/g);
+  return parts.map((part, i) =>
+    part.startsWith('**') && part.endsWith('**')
+      ? <strong key={i}>{part.slice(2, -2)}</strong>
+      : <React.Fragment key={i}>{part}</React.Fragment>
+  );
+}
+
+function renderContent(content: string): React.ReactNode {
+  const lines = content.split('\n');
+  const elements: React.ReactNode[] = [];
+  let listBuffer: string[] = [];
+
+  const flushList = () => {
+    if (listBuffer.length) {
+      elements.push(
+        <ul key={`ul-${elements.length}`} className="list-disc pl-4 space-y-0.5 my-1">
+          {listBuffer.map((item, idx) => <li key={idx}>{renderInline(item)}</li>)}
+        </ul>
+      );
+      listBuffer = [];
+    }
+  };
+
+  lines.forEach((line, idx) => {
+    const trimmed = line.trim();
+    if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
+      listBuffer.push(trimmed.slice(2));
+    } else {
+      flushList();
+      if (trimmed !== '') {
+        elements.push(<p key={`p-${idx}`} className="mb-1.5 last:mb-0">{renderInline(trimmed)}</p>);
+      }
+    }
+  });
+  flushList();
+  return elements;
 }
 
 const SUGGESTED = [
@@ -100,7 +141,7 @@ export const AskAI: React.FC = () => {
                 className="text-[10px] px-1.5 py-0.5 rounded font-medium"
                 style={{ background: 'var(--accent)', color: 'var(--accent-fg)' }}
               >
-                Free · Phi-3.5
+                Free · 5 providers
               </span>
             </div>
             <button onClick={() => setOpen(false)} className="opacity-50 hover:opacity-100 transition-opacity">
@@ -113,9 +154,7 @@ export const AskAI: React.FC = () => {
             {messages.length === 0 && (
               <div className="space-y-2">
                 <p className="text-xs" style={{ color: 'var(--text-subtle)' }}>
-                  Ask any system design question. Powered by{' '}
-                  <a href="https://huggingface.co" target="_blank" rel="noopener noreferrer" className="underline">HuggingFace</a>{' '}
-                  — free, no Anthropic tokens used.
+                  Ask any system design question — routed across 5 free AI providers automatically, no Anthropic tokens used.
                 </p>
                 <div className="space-y-1.5 mt-3">
                   {SUGGESTED.map(q => (
@@ -144,7 +183,7 @@ export const AskAI: React.FC = () => {
                       : { background: 'var(--surface-muted)', color: 'var(--text-base)', border: '1px solid var(--header-border)' }
                   }
                 >
-                  {m.content}
+                  {m.role === 'assistant' ? renderContent(m.content) : m.content}
                 </div>
               </div>
             ))}
