@@ -26,7 +26,7 @@ import { useLang } from '../../lib/i18n';
 import { WhatChanged, Quiz } from '../learn/LearningKit';
 import { Callout, Segmented } from '../lesson/blocks';
 import { useNav } from '../lesson/ChapterPlayer';
-import { chapterById } from '../../chapters';
+import { CHAPTERS, chapterById } from '../../chapters';
 import { STAGES, StageContent } from './content';
 import { FINAL_STAGE, STAGE_META, COMPONENT_INFO, TECH, KIND_NAME, Experiment } from './meta';
 import { buildArch, simulate, Inputs, Failures, CAP, FAILOVER_MS, ArchNode, NodeState, Kind } from './model';
@@ -112,6 +112,10 @@ const PanelCloseButton: React.FC<{ onClose: () => void; label: string }> = ({ on
 );
 
 const ALL_STAGES: StageContent[] = [...STAGES, FINAL_STAGE];
+const NEXT_CHAPTER = (() => {
+  const idx = CHAPTERS.findIndex((c) => c.id === 'chapter1');
+  return idx >= 0 && idx < CHAPTERS.length - 1 ? CHAPTERS[idx + 1] : null;
+})();
 const N = ALL_STAGES.length;
 
 type Tab = 'architecture' | 'concepts';
@@ -132,7 +136,7 @@ const posToRps = (p: number) => {
 const rpsToPos = (r: number) => Math.round((Math.log(r / 50) / Math.log(400)) * 100);
 
 export const Chapter1Workspace: React.FC = () => {
-  const { resetChapter } = useNav();
+  const { go, resetChapter } = useNav();
   const [stage, setStage] = usePersistentState<number>('chapter1:stage', 0);
   const [storedTab, setTab] = usePersistentState<Tab>('chapter1:tab', 'concepts');
   const tab: Tab = storedTab === 'concepts' ? 'concepts' : 'architecture';
@@ -178,6 +182,7 @@ export const Chapter1Workspace: React.FC = () => {
   const sim = simulate(arch, inputs, fail, now);
   const flow = flows[i] ?? EMPTY_FLOW;
   const effFlow: Flow = { ...flow, fix: hasFix(i) ? flow.fix : flow.break || i === N - 1, break: i === N - 1 ? true : flow.break };
+  const allStepsDone = !!(effFlow.learn && effFlow.explore && effFlow.break && effFlow.fix && effFlow.check);
   const stageDone = (k: number) => {
     const f = flows[k] ?? EMPTY_FLOW;
     const brk = k === N - 1 ? true : f.break;
@@ -869,6 +874,35 @@ export const Chapter1Workspace: React.FC = () => {
               }
             }}
           />
+
+          {allStepsDone && (
+            <div
+              className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-2xl px-5 py-4"
+              style={{ background: 'var(--surface)', border: '1px solid var(--header-border)' }}
+            >
+              <div className="flex items-center gap-2.5">
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-emerald-500 text-white">
+                  <Check className="h-4 w-4" strokeWidth={3} />
+                </span>
+                <p className="text-sm font-medium" style={{ color: 'var(--text-base)' }}>
+                  {lang === 'hi'
+                    ? (i < N - 1 ? 'Stage poori ho gayi! Agli stage ke liye ready ho.' : 'Chapter poora ho gaya! Agle chapter ke liye ready ho.')
+                    : (i < N - 1 ? "You've completed every step for this stage." : "You've completed every step in Chapter 1.")}
+                </p>
+              </div>
+              {i < N - 1 ? (
+                <button onClick={() => goStage(i + 1)} className="btn-primary shrink-0">
+                  {lang === 'hi' ? 'Agli stage' : 'Next stage'}
+                  <ArrowRight className="h-4 w-4" />
+                </button>
+              ) : NEXT_CHAPTER ? (
+                <button onClick={() => go(NEXT_CHAPTER.id)} className="btn-primary shrink-0">
+                  {lang === 'hi' ? `Chapter ${NEXT_CHAPTER.num} shuru karo` : `Start Chapter ${NEXT_CHAPTER.num}`}
+                  <ArrowRight className="h-4 w-4" />
+                </button>
+              ) : null}
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -1207,7 +1241,7 @@ const FlowBar: React.FC<{ flow: Flow; hasFix: boolean; isFinal: boolean; onStep:
                 </span>
               </span>
               {done && (
-                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500 text-white">
+                <span className={`flex h-5 w-5 items-center justify-center rounded-full ${t.icon}`}>
                   <Check className="h-3 w-3" strokeWidth={3} />
                 </span>
               )}
