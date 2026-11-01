@@ -4,6 +4,7 @@ import { CHAPTERS, chapterById } from './chapters';
 import { Header } from './components/Header';
 import { AskAI } from './components/AskAI';
 import { AdminDashboard } from './components/AdminDashboard';
+import { SelectionAssistant } from './components/SelectionAssistant';
 import { Home } from './components/Home';
 import { ChapterSkeleton } from './components/Skeleton';
 import { NavContext, View } from './components/lesson/ChapterPlayer';
@@ -87,6 +88,7 @@ export default function App() {
         </main>
 
         <AskAI view={view} />
+        <SelectionAssistant />
 
         <footer
           className="mt-auto py-5"
