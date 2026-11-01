@@ -13,6 +13,7 @@ import { Bot, Send, X, Loader2, AlertCircle } from 'lucide-react';
 // replace this URL with your worker's URL from the Cloudflare dashboard.
 // e.g. https://sd-ai-proxy.YOUR-NAME.workers.dev
 const WORKER_URL = 'https://sd-ai-proxy.anshsjoshi07.workers.dev';
+const MAX_MESSAGE_LENGTH = 500; // mirrors the Worker's own limit — server is the real boundary, this is just UX
 
 
 
@@ -150,11 +151,14 @@ export const AskAI: React.FC<{ view?: string }> = ({ view }) => {
 
       if (!res.ok) {
         if (res.status === 429) throw new Error('Rate limit hit — try again in a minute.');
+        if (res.status === 400) {
+          const errBody = await res.json().catch(() => null);
+          throw new Error(errBody?.error ?? 'That message could not be sent — please rephrase it.');
+        }
         throw new Error(`AI service error (${res.status}) — please try again.`);
       }
 
       const data = await res.json();
-      // NVIDIA NIM returns OpenAI-compatible format: choices[0].message.content
       const clean: string = data?.choices?.[0]?.message?.content?.trim()
         || 'Sorry, I could not generate a response.';
       setMessages(prev => [...prev, { role: 'assistant', content: clean }]);
@@ -279,10 +283,11 @@ export const AskAI: React.FC<{ view?: string }> = ({ view }) => {
             >
               <textarea
                 value={input}
-                onChange={e => setInput(e.target.value)}
+                onChange={e => setInput(e.target.value.slice(0, MAX_MESSAGE_LENGTH))}
                 onKeyDown={handleKey}
                 placeholder="Ask a system design question…"
                 rows={1}
+                maxLength={MAX_MESSAGE_LENGTH}
                 className="flex-1 bg-transparent outline-none resize-none text-sm leading-relaxed"
                 style={{ color: 'var(--text-base)', maxHeight: '80px' }}
               />
@@ -297,6 +302,7 @@ export const AskAI: React.FC<{ view?: string }> = ({ view }) => {
             </div>
             <p className="mt-1.5 text-[10px] text-center" style={{ color: 'var(--text-subtle)' }}>
               Enter to send · Shift+Enter for newline
+              {input.length > MAX_MESSAGE_LENGTH - 80 && ` · ${MAX_MESSAGE_LENGTH - input.length} characters left`}
             </p>
           </div>
         </div>
