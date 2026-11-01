@@ -258,7 +258,9 @@ export const AdminDashboard: React.FC = () => {
 
                 {!h?.configured ? (
                   <p className="text-xs" style={{ color: 'var(--text-subtle)' }}>
-                    No API key set for this provider yet.
+                    {providerId === 'opencode'
+                      ? 'Skipped — requires billing details for a free-tier gateway, not worth the friction.'
+                      : 'No API key set for this provider yet.'}
                   </p>
                 ) : (
                   <div className="grid grid-cols-2 gap-3 text-sm">
