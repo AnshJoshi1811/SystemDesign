@@ -49,6 +49,24 @@ const TOPIC_KEYWORDS = [
   'explain', 'example', 'difference',
 ];
 
+// ------------------------------------------------------------
+// Paragraph explanation cache — the 3 "select text" modes.
+// Prompts live here (not the client) so they stay consistent and private.
+// ------------------------------------------------------------
+const EXPLAIN_MODES = ['hinglish', 'elaborate', 'brief'];
+const EXPLAIN_PROMPT = {
+  hinglish: (text) => `Explain this system design snippet in Hinglish (mix of Hindi and English, like how Indian engineers actually talk) — 2-3 short sentences, friendly tone: "${text}"`,
+  elaborate: (text) => `Explain this system design snippet in more depth than the original — add a concrete real-world example and why it matters, 3-4 sentences: "${text}"`,
+  brief: (text) => `Explain this system design snippet in exactly one short, simple sentence — no jargon: "${text}"`,
+};
+const MAX_EXPLAIN_TEXT_LEN = 600;
+
+async function sha256Hex(input) {
+  const data = new TextEncoder().encode(input);
+  const digest = await crypto.subtle.digest('SHA-256', data);
+  return Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
 function isOffTopic(message) {
   const lower = message.toLowerCase();
   const hasKeyword = TOPIC_KEYWORDS.some(k => lower.includes(k));
@@ -239,6 +257,81 @@ async function handleChat(request, env) {
   });
 }
 
+async function handleExplain(request, env) {
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return new Response(JSON.stringify({ error: 'Invalid JSON' }), { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } });
+  }
+
+  const text = String(body.text ?? '').trim();
+  const mode = String(body.mode ?? '');
+  const chapter = body.chapter ? String(body.chapter).slice(0, 40) : null;
+
+  if (!EXPLAIN_MODES.includes(mode)) {
+    return new Response(JSON.stringify({ error: `mode must be one of: ${EXPLAIN_MODES.join(', ')}` }), { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } });
+  }
+  if (text.length < MIN_MESSAGE_LENGTH || text.length > MAX_EXPLAIN_TEXT_LEN) {
+    return new Response(JSON.stringify({ error: `text must be between ${MIN_MESSAGE_LENGTH} and ${MAX_EXPLAIN_TEXT_LEN} characters` }), { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } });
+  }
+
+  const hash = await sha256Hex(`${mode}:${text.toLowerCase()}`);
+
+  // 1. Check the cache first — this is the whole point: instant, zero-cost on a hit.
+  if (env.DB) {
+    try {
+      const cached = await env.DB.prepare(
+        `SELECT explanation FROM paragraph_explanations WHERE hash = ? AND mode = ?`
+      ).bind(hash, mode).first();
+      if (cached?.explanation) {
+        return new Response(JSON.stringify({ explanation: cached.explanation, cached: true }), {
+          status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        });
+      }
+    } catch (e) {
+      // cache lookup failure shouldn't block generation — fall through
+    }
+  }
+
+  // 2. Cache miss — generate once via the normal provider fallback chain.
+  const messages = [{ role: 'user', content: EXPLAIN_PROMPT[mode](text) }];
+  for (const provider of PROVIDERS) {
+    const result = await callProvider(provider, messages, env);
+    if (result.skipped) continue;
+
+    await logRequest(env, {
+      provider: provider.name,
+      model: provider.model,
+      success: result.ok,
+      latencyMs: result.latencyMs,
+      tokensIn: result.tokensIn,
+      tokensOut: result.tokensOut,
+      errorMessage: result.ok ? null : result.error,
+    });
+
+    if (result.ok) {
+      // 3. Store it — every future selection of this exact paragraph+mode is now instant.
+      if (env.DB) {
+        try {
+          await env.DB.prepare(
+            `INSERT OR REPLACE INTO paragraph_explanations (hash, mode, chapter, source_text, explanation, created_at) VALUES (?, ?, ?, ?, ?, ?)`
+          ).bind(hash, mode, chapter, text.slice(0, 500), result.content, Date.now()).run();
+        } catch (e) {
+          // storing is best-effort — the person still gets their answer either way
+        }
+      }
+      return new Response(JSON.stringify({ explanation: result.content, cached: false }), {
+        status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+      });
+    }
+  }
+
+  return new Response(JSON.stringify({ error: 'All providers are currently unavailable. Please try again shortly.' }), {
+    status: 503, headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+  });
+}
+
 function requireAdmin(request, env) {
   const token = request.headers.get('X-Admin-Token') || new URL(request.url).searchParams.get('token');
   return env.ADMIN_TOKEN && token === env.ADMIN_TOKEN;
@@ -329,6 +422,7 @@ export default {
 
     if (url.pathname === '/admin/stats') return handleAdminStats(request, env);
     if (url.pathname === '/admin/health') return handleAdminHealth(request, env);
+    if (url.pathname === '/explain') return handleExplain(request, env);
 
     if (request.method !== 'POST') {
       return new Response('POST only (or /admin/stats, /admin/health)', { status: 405, headers: corsHeaders() });
