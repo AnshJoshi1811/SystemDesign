@@ -73,32 +73,48 @@ export const AdminDashboard: React.FC = () => {
   const fetchData = useCallback(async (authToken: string) => {
     setLoading(true);
     setError(null);
+    let sawUnauthorized = false;
+    const problems: string[] = [];
+
+    // Health first — independent of stats, so a broken D1 (stats) never hides working health data.
     try {
-      const [statsRes, healthRes] = await Promise.all([
-        fetch(`${WORKER_URL}/admin/stats`, { headers: { 'X-Admin-Token': authToken } }),
-        fetch(`${WORKER_URL}/admin/health`, { headers: { 'X-Admin-Token': authToken } }),
-      ]);
-
-      if (statsRes.status === 401 || healthRes.status === 401) {
-        setError('Invalid admin token.');
-        localStorage.removeItem(TOKEN_KEY);
-        setToken(null);
-        setLoading(false);
-        return;
+      const healthRes = await fetch(`${WORKER_URL}/admin/health`, { headers: { 'X-Admin-Token': authToken } });
+      if (healthRes.status === 401) sawUnauthorized = true;
+      else if (healthRes.ok) {
+        const healthData = await healthRes.json();
+        setHealth(healthData.checks ?? []);
+      } else {
+        problems.push(`Health check failed (HTTP ${healthRes.status}).`);
       }
-
-      const statsData = await statsRes.json();
-      const healthData = await healthRes.json();
-
-      setStats(statsData.providers ?? []);
-      setErrors(statsData.recent_errors ?? []);
-      setHealth(healthData.checks ?? []);
-      setLastRefresh(Date.now());
-    } catch (e) {
-      setError('Could not reach the gateway. Check your connection or the Worker URL.');
-    } finally {
-      setLoading(false);
+    } catch {
+      problems.push('Could not reach /admin/health.');
     }
+
+    // Stats — kept separate; a D1 issue here no longer blocks the health cards above.
+    try {
+      const statsRes = await fetch(`${WORKER_URL}/admin/stats`, { headers: { 'X-Admin-Token': authToken } });
+      if (statsRes.status === 401) sawUnauthorized = true;
+      else if (statsRes.ok) {
+        const statsData = await statsRes.json();
+        setStats(statsData.providers ?? []);
+        setErrors(statsData.recent_errors ?? []);
+      } else {
+        problems.push(`Usage stats unavailable (HTTP ${statsRes.status}) — likely the D1 database isn't bound or the schema hasn't been run yet.`);
+      }
+    } catch {
+      problems.push('Could not reach /admin/stats.');
+    }
+
+    if (sawUnauthorized) {
+      setError('Invalid admin token.');
+      localStorage.removeItem(TOKEN_KEY);
+      setToken(null);
+    } else if (problems.length > 0) {
+      setError(problems.join(' '));
+    }
+
+    setLastRefresh(Date.now());
+    setLoading(false);
   }, []);
 
   useEffect(() => {
