@@ -13,24 +13,15 @@ const MODES: { id: Mode; label: string; icon: React.ComponentType<{ className?: 
   { id: 'brief', label: 'Brief', icon: Zap },
 ];
 
-const MODE_PROMPT: Record<Mode, (text: string) => string> = {
-  hinglish: (text) =>
-    `Explain this system design snippet in Hinglish (mix of Hindi and English, like how Indian engineers actually talk) — 2-3 short sentences, friendly tone: "${text}"`,
-  elaborate: (text) =>
-    `Explain this system design snippet in more depth than the original — add a concrete real-world example and why it matters, 3-4 sentences: "${text}"`,
-  brief: (text) =>
-    `Explain this system design snippet in exactly one short, simple sentence — no jargon: "${text}"`,
-};
-
 interface Selection {
   text: string;
   x: number;
   y: number;
 }
 
-export const SelectionAssistant: React.FC = () => {
+export const SelectionAssistant: React.FC<{ chapter?: string }> = ({ chapter }) => {
   const [selection, setSelection] = useState<Selection | null>(null);
-  const [result, setResult] = useState<{ mode: Mode; text: string } | null>(null);
+  const [result, setResult] = useState<{ mode: Mode; text: string; cached: boolean } | null>(null);
   const [loading, setLoading] = useState<Mode | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -92,20 +83,20 @@ export const SelectionAssistant: React.FC = () => {
     if (!selection) return;
     setLoading(mode);
     try {
-      const res = await fetch(WORKER_URL, {
+      const res = await fetch(`${WORKER_URL}/explain`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ inputs: MODE_PROMPT[mode](selection.text) }),
+        body: JSON.stringify({ text: selection.text, mode, chapter }),
       });
       const data = await res.json();
-      const content: string = data?.choices?.[0]?.message?.content?.trim() || 'Could not generate an explanation — try again.';
-      setResult({ mode, text: content });
+      const content: string = data?.explanation?.trim() || data?.error || 'Could not generate an explanation — try again.';
+      setResult({ mode, text: content, cached: !!data?.cached });
     } catch {
-      setResult({ mode, text: 'Something went wrong — check your connection and try again.' });
+      setResult({ mode, text: 'Something went wrong — check your connection and try again.', cached: false });
     } finally {
       setLoading(null);
     }
-  }, [selection]);
+  }, [selection, chapter]);
 
   if (!selection) return null;
 
@@ -155,6 +146,7 @@ export const SelectionAssistant: React.FC = () => {
             <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--text-subtle)' }}>
               {React.createElement(MODES.find(m => m.id === result.mode)!.icon, { className: 'w-3 h-3' })}
               {MODES.find(m => m.id === result.mode)!.label}
+              <span className="font-normal normal-case opacity-60">{result.cached ? '· instant' : '· generated'}</span>
             </span>
             <button onClick={() => { setSelection(null); setResult(null); }} className="opacity-50 hover:opacity-100 transition-opacity">
               <X className="w-3.5 h-3.5" />
