@@ -62,14 +62,68 @@ function renderContent(content: string): React.ReactNode {
   return elements;
 }
 
-const SUGGESTED = [
-  'When should I use a token bucket vs sliding window?',
-  'What is the CAP theorem?',
-  'Why does consistent hashing need virtual nodes?',
-  'How does Snowflake ID avoid clock skew?',
-];
+type ChapterView = 'home' | 'chapter1' | 'chapter2' | 'chapter3' | 'rateLimiter' | 'chapter5' | 'chapter6' | 'chapter7' | 'chapter8';
 
-export const AskAI: React.FC = () => {
+/** Suggested starter questions, tailored to whichever chapter the person is currently reading. */
+const SUGGESTED_BY_VIEW: Record<ChapterView, string[]> = {
+  home: [
+    'What should I learn first in system design?',
+    'What is the CAP theorem?',
+    'SQL vs NoSQL — how do I choose?',
+    'What does "scaling horizontally" actually mean?',
+  ],
+  chapter1: [
+    'Why is a single server a single point of failure?',
+    'What does a load balancer actually distribute?',
+    'When do I need multiple data centers?',
+    'Why separate the web tier from the database tier?',
+  ],
+  chapter2: [
+    'How do I estimate QPS from daily active users?',
+    'Why do interviewers care about back-of-the-envelope math?',
+    'What latency numbers should I just memorize?',
+    'How much storage does 1M images a day need?',
+  ],
+  chapter3: [
+    'What are the 4 steps of a system design interview?',
+    'How much time should I spend on requirements gathering?',
+    'What should I ask before designing anything?',
+    'How detailed should my high-level design be?',
+  ],
+  rateLimiter: [
+    'Token bucket vs sliding window — which is better?',
+    'Where should a rate limiter live — client, server, or gateway?',
+    'How do I rate limit per-user vs per-IP?',
+    'What HTTP status code should a rate limiter return?',
+  ],
+  chapter5: [
+    'Why does consistent hashing need virtual nodes?',
+    'What breaks without consistent hashing when a server dies?',
+    'How is consistent hashing different from normal hashing?',
+    'What systems actually use consistent hashing in production?',
+  ],
+  chapter6: [
+    'What is a quorum and why does it matter?',
+    'How does a key-value store handle conflicting writes?',
+    'What is the difference between Dynamo and a normal database?',
+    'Why would I choose eventual consistency on purpose?',
+  ],
+  chapter7: [
+    'How does Snowflake ID avoid clock skew?',
+    'Why not just use auto-increment IDs at scale?',
+    'What makes a good unique ID generator?',
+    'How do multiple machines generate IDs without collisions?',
+  ],
+  chapter8: [
+    'How does a URL shortener generate short codes?',
+    'Base62 vs hashing — which is better for short URLs?',
+    'How would you handle a custom alias feature?',
+    'What happens if two users want the same short code?',
+  ],
+};
+
+export const AskAI: React.FC<{ view?: string }> = ({ view }) => {
+  const suggestions = SUGGESTED_BY_VIEW[(view as ChapterView) ?? 'home'] ?? SUGGESTED_BY_VIEW.home;
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
@@ -157,7 +211,7 @@ export const AskAI: React.FC = () => {
                   Ask any system design question — routed across 5 free AI providers automatically, no Anthropic tokens used.
                 </p>
                 <div className="space-y-1.5 mt-3">
-                  {SUGGESTED.map(q => (
+                  {suggestions.map(q => (
                     <button
                       key={q}
                       onClick={() => ask(q)}
