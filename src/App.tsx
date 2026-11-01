@@ -86,7 +86,7 @@ export default function App() {
           )}
         </main>
 
-        <AskAI />
+        <AskAI view={view} />
 
         <footer
           className="mt-auto py-5"
