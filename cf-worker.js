@@ -265,7 +265,8 @@ async function handleExplain(request, env) {
     return new Response(JSON.stringify({ error: 'Invalid JSON' }), { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } });
   }
 
-  const text = String(body.text ?? '').trim();
+  // Collapse all whitespace runs so a browser selection matches the cached paragraph.
+  const text = String(body.text ?? '').replace(/\s+/g, ' ').trim();
   const mode = String(body.mode ?? '');
   const chapter = body.chapter ? String(body.chapter).slice(0, 40) : null;
 
