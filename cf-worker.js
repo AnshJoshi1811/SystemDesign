@@ -351,16 +351,20 @@ async function allowMiss(request, env) {
 
   const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
   const minute = Math.floor(Date.now() / 60000);
+  const key = `${ip}:${minute}`;
   try {
-    const row = await env.DB.prepare(
+    // Two plain statements, no RETURNING: count the miss, then read the count back.
+    await env.DB.prepare(
       `INSERT INTO rate_limits (key, count, window_start) VALUES (?, 1, ?)
-       ON CONFLICT(key) DO UPDATE SET count = count + 1
-       RETURNING count`
-    ).bind(`${ip}:${minute}`, minute).first();
+       ON CONFLICT(key) DO UPDATE SET count = count + 1`
+    ).bind(key, minute).run();
+    const row = await env.DB.prepare(`SELECT count FROM rate_limits WHERE key = ?`).bind(key).first();
     env.DB.prepare(`DELETE FROM rate_limits WHERE window_start < ?`).bind(minute - 5).run().catch(() => {});
-    return (row?.count ?? 1) <= MISS_LIMIT_PER_MIN;
+    if (!row) return true;
+    return Number(row.count) <= MISS_LIMIT_PER_MIN;
   } catch (e) {
-    return true; // if the limiter table is missing, fail open rather than break the feature
+    console.log('rate limit error', String(e));
+    return true; // fail open: never break explanations because the limiter errored
   }
 }
 
