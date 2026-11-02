@@ -295,7 +295,12 @@ async function handleExplain(request, env) {
     }
   }
 
-  // 2. Cache miss — generate once via the normal provider fallback chain.
+  // 2. Cache miss — new generation costs quota, so rate-limit it per IP.
+  if (!(await allowMiss(request, env))) {
+    return jsonResponse({ error: 'Too many new explanations right now. Please wait a minute and try again.' }, 429);
+  }
+
+  // Generate once via the normal provider fallback chain.
   const messages = [{ role: 'user', content: EXPLAIN_PROMPT[mode](text) }];
   for (const provider of PROVIDERS) {
     const result = await callProvider(provider, messages, env);
@@ -330,6 +335,48 @@ async function handleExplain(request, env) {
 
   return new Response(JSON.stringify({ error: 'All providers are currently unavailable. Please try again shortly.' }), {
     status: 503, headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+  });
+}
+
+// ------------------------------------------------------------
+// Rate limit for NEW explanations only (cache misses). Pre-generated paragraphs
+// stay free. Admin token bypasses it so bulk pre-warming can run.
+// ------------------------------------------------------------
+const MISS_LIMIT_PER_MIN = 10;
+
+async function allowMiss(request, env) {
+  const token = request.headers.get('X-Admin-Token');
+  if (token && token === env.ADMIN_TOKEN) return true;
+  if (!env.DB) return true;
+
+  const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
+  const minute = Math.floor(Date.now() / 60000);
+  try {
+    const row = await env.DB.prepare(
+      `INSERT INTO rate_limits (key, count, window_start) VALUES (?, 1, ?)
+       ON CONFLICT(key) DO UPDATE SET count = count + 1
+       RETURNING count`
+    ).bind(`${ip}:${minute}`, minute).first();
+    env.DB.prepare(`DELETE FROM rate_limits WHERE window_start < ?`).bind(minute - 5).run().catch(() => {});
+    return (row?.count ?? 1) <= MISS_LIMIT_PER_MIN;
+  } catch (e) {
+    return true; // if the limiter table is missing, fail open rather than break the feature
+  }
+}
+
+// Returns every cached explanation for one chapter, so the browser can prefetch it.
+async function handleExplanations(request, env) {
+  const chapter = new URL(request.url).searchParams.get('chapter') || '';
+  if (!/^[a-zA-Z0-9_-]{1,40}$/.test(chapter)) return jsonResponse({ error: 'invalid chapter' }, 400);
+  if (!env.DB) return jsonResponse({ items: [] });
+
+  const rows = await env.DB.prepare(
+    `SELECT hash, mode, explanation FROM paragraph_explanations WHERE chapter = ?`
+  ).bind(chapter).all();
+
+  return new Response(JSON.stringify({ items: rows.results }), {
+    status: 200,
+    headers: { 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=300', ...corsHeaders() },
   });
 }
 
@@ -423,6 +470,7 @@ export default {
 
     if (url.pathname === '/admin/stats') return handleAdminStats(request, env);
     if (url.pathname === '/admin/health') return handleAdminHealth(request, env);
+    if (url.pathname === '/explanations' && request.method === 'GET') return handleExplanations(request, env);
     if (url.pathname === '/explain') return handleExplain(request, env);
 
     if (request.method !== 'POST') {
