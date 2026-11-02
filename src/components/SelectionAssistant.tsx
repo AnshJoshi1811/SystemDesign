@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Languages, Maximize2, Zap, Loader2, X } from 'lucide-react';
+import { hashFor, getByHash, putByHash } from '../lib/explainCache';
 
 const WORKER_URL = 'https://sd-ai-proxy.anshsjoshi07.workers.dev';
 const MIN_SELECTION_LEN = 3;
@@ -149,20 +150,31 @@ export const SelectionAssistant: React.FC<{ chapter?: string }> = ({ chapter }) 
     setLoading(mode);
     setError(null);
     try {
-      const res = await fetch(`${WORKER_URL}/explain`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: selection.text, mode, chapter }),
-      });
-      const data = await res.json();
-      if (!res.ok || !data?.explanation) {
-        setError(data?.error ?? 'Could not generate an explanation — try again.');
-        return;
+      // 1. Local cache (prefetched or already seen) — zero network calls.
+      const hash = await hashFor(mode, selection.text);
+      let explanation = getByHash(hash);
+      let cached = explanation !== null;
+
+      // 2. Miss — ask the Worker, which checks D1 and generates only if needed.
+      if (explanation === null) {
+        const res = await fetch(`${WORKER_URL}/explain`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: selection.text, mode, chapter }),
+        });
+        const data = await res.json();
+        if (!res.ok || !data?.explanation) {
+          setError(data?.error ?? 'Could not generate an explanation — try again.');
+          return;
+        }
+        explanation = String(data.explanation).trim();
+        cached = !!data.cached;
+        putByHash(hash, explanation, chapter ?? 'unknown');
       }
 
-      // Brief shows as a card above the selection, as before. Hinglish/Elaborate swap the paragraph in place.
+      // Brief shows as a card above the selection. Hinglish/Elaborate swap the paragraph in place.
       if (mode === 'brief') {
-        setBriefResult({ text: data.explanation.trim(), cached: !!data.cached });
+        setBriefResult({ text: explanation, cached });
         return;
       }
 
@@ -170,7 +182,7 @@ export const SelectionAssistant: React.FC<{ chapter?: string }> = ({ chapter }) 
         setError('This text changed — select it again.');
         return;
       }
-      replaceInPlace(selection.range, data.explanation.trim(), mode);
+      replaceInPlace(selection.range, explanation, mode);
       window.getSelection()?.removeAllRanges();
       setSelection(null);
     } catch {
