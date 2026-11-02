@@ -5,6 +5,7 @@ import { Header } from './components/Header';
 import { AskAI } from './components/AskAI';
 import { AdminDashboard } from './components/AdminDashboard';
 import { SelectionAssistant } from './components/SelectionAssistant';
+import { prefetch } from './lib/explainCache';
 import { Home } from './components/Home';
 import { ChapterSkeleton } from './components/Skeleton';
 import { NavContext, View } from './components/lesson/ChapterPlayer';
@@ -64,6 +65,17 @@ export default function App() {
   }, [view]);
 
   const navCtx = useMemo(() => ({ go, resetChapter }), [go, resetChapter]);
+
+  // Prefetch the current chapter's explanations and the next chapter's, so the
+  // next chapter is already warm by the time the learner gets there.
+  useEffect(() => {
+    if (view === 'home') return;
+    const idx = CHAPTERS.findIndex((c) => c.id === view);
+    if (idx < 0) return;
+    prefetch(view);
+    const next = CHAPTERS[idx + 1];
+    if (next) prefetch(next.id);
+  }, [view]);
 
   if (isAdminRoute) {
     return <AdminDashboard />;
