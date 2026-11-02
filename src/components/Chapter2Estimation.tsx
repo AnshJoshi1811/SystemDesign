@@ -24,7 +24,7 @@ interface Chapter2EstimationProps {
   isDarkMode?: boolean;
 }
 
-const LESSONS: Lesson[] = [
+export const LESSONS: Lesson[] = [
   {
     id: 'why',
     title: 'Why estimate',
