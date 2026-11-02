@@ -2,7 +2,7 @@
 // in a chapter and stores them in D1 via the Worker's /explain endpoint.
 // Idempotent: already-cached items come back with cached:true and cost nothing.
 //
-//   node scripts/prewarm.mjs /tmp/ch1-paragraphs.json            # run
+//   ADMIN_TOKEN=... node scripts/prewarm.mjs /tmp/ch1-paragraphs.json   # run
 //   node scripts/prewarm.mjs /tmp/ch1-paragraphs.json --dry      # just count
 
 import { readFileSync } from 'node:fs';
@@ -25,7 +25,11 @@ async function explain(job) {
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
     const res = await fetch(WORKER, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        // Bypasses the per-IP miss limit so bulk generation can run.
+        ...(process.env.ADMIN_TOKEN ? { 'X-Admin-Token': process.env.ADMIN_TOKEN } : {}),
+      },
       body: JSON.stringify({ text: job.text, mode: job.mode, chapter: job.chapter }),
     });
     const data = await res.json().catch(() => ({}));
