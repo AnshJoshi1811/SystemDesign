@@ -21,6 +21,37 @@ interface Selection {
 }
 
 /**
+ * Turns model output into inline DOM: **bold** becomes <strong>, "- " / "* "
+ * lines become "• " items on their own line. Stays inline so it sits inside a paragraph.
+ */
+function renderExplanation(text: string): DocumentFragment {
+  const frag = document.createDocumentFragment();
+  const lines = text.split('\n').map((l) => l.trim()).filter(Boolean);
+
+  lines.forEach((raw, i) => {
+    if (i > 0) frag.appendChild(document.createElement('br'));
+
+    const isBullet = /^[-*]\s+/.test(raw);
+    const line = isBullet ? '• ' + raw.replace(/^[-*]\s+/, '') : raw;
+
+    // Odd indices of the split are the captured **bold** segments.
+    line.split(/\*\*(.+?)\*\*/g).forEach((part, idx) => {
+      const clean = part.replace(/\*\*/g, '');
+      if (!clean) return;
+      if (idx % 2 === 1) {
+        const strong = document.createElement('strong');
+        strong.textContent = clean;
+        frag.appendChild(strong);
+      } else {
+        frag.appendChild(document.createTextNode(clean));
+      }
+    });
+  });
+
+  return frag;
+}
+
+/**
  * Swaps the selected text for its explanation in place. The original DOM
  * fragment is kept so the ↺ button can put it back exactly as it was.
  */
@@ -31,7 +62,8 @@ function replaceInPlace(range: Range, explanation: string, mode: Mode) {
   wrap.dataset.explained = mode;
   wrap.style.cssText =
     'background: var(--surface-muted); border-left: 2px solid var(--accent); border-radius: 4px; padding: 1px 6px; margin: 0 2px;';
-  wrap.appendChild(document.createTextNode(explanation + ' '));
+  wrap.appendChild(renderExplanation(explanation));
+  wrap.appendChild(document.createTextNode(' '));
 
   const restore = document.createElement('button');
   restore.type = 'button';
