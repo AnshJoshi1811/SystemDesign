@@ -2,7 +2,7 @@
 
 **[Try the live demo →](https://anshjoshi1811.github.io/SystemDesign/)**
 
-Interactive, hands-on labs for practicing system design interview concepts. Each chapter pairs a short explanation with a small live simulation you can poke at — read one idea, try it, answer a quick check, move on.
+An interactive companion to Alex Xu's *System Design* book. Each chapter pairs a short explanation with a live simulation you can poke at — read one idea, try it, answer a quick check, move on.
 
 Built with React + Vite + TypeScript + Tailwind, loosely following the structure of *System Design Interview* by Alex Xu (see [References](#references) — no copyrighted material is redistributed here).
 
