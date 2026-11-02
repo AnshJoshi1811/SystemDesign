@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Languages, Maximize2, Zap, Loader2 } from 'lucide-react';
+import { Languages, Maximize2, Zap, Loader2, X } from 'lucide-react';
 
 const WORKER_URL = 'https://sd-ai-proxy.anshsjoshi07.workers.dev';
 const MIN_SELECTION_LEN = 3;
@@ -87,6 +87,7 @@ export const SelectionAssistant: React.FC<{ chapter?: string }> = ({ chapter }) 
   const [selection, setSelection] = useState<Selection | null>(null);
   const [loading, setLoading] = useState<Mode | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [briefResult, setBriefResult] = useState<{ text: string; cached: boolean } | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Pick up selections made inside lesson content only, so UI chrome never triggers it.
@@ -112,6 +113,7 @@ export const SelectionAssistant: React.FC<{ chapter?: string }> = ({ chapter }) 
 
       setSelection({ text, range, x: rect.left + rect.width / 2 + window.scrollX, y: rect.top + window.scrollY });
       setError(null);
+      setBriefResult(null);
     };
 
     document.addEventListener('mouseup', onSelectionEnd);
@@ -130,6 +132,7 @@ export const SelectionAssistant: React.FC<{ chapter?: string }> = ({ chapter }) 
       if (e.type === 'mousedown' && containerRef.current?.contains(e.target as Node)) return;
       setSelection(null);
       setError(null);
+      setBriefResult(null);
     };
     document.addEventListener('mousedown', dismiss);
     document.addEventListener('keydown', dismiss);
@@ -157,7 +160,12 @@ export const SelectionAssistant: React.FC<{ chapter?: string }> = ({ chapter }) 
         return;
       }
 
-      // Swap the paragraph in place, then clear the selection and the pill.
+      // Brief shows as a card above the selection, as before. Hinglish/Elaborate swap the paragraph in place.
+      if (mode === 'brief') {
+        setBriefResult({ text: data.explanation.trim(), cached: !!data.cached });
+        return;
+      }
+
       if (!selection.range.startContainer.isConnected) {
         setError('This text changed — select it again.');
         return;
@@ -173,6 +181,35 @@ export const SelectionAssistant: React.FC<{ chapter?: string }> = ({ chapter }) 
   }, [selection, chapter]);
 
   if (!selection) return null;
+
+  if (briefResult) {
+    return (
+      <div
+        ref={containerRef}
+        style={{ position: 'absolute', left: selection.x, top: selection.y - 10, transform: 'translate(-50%, -100%)', zIndex: 60 }}
+      >
+        <div
+          className="w-72 rounded-xl p-3.5 text-sm leading-relaxed"
+          style={{ background: 'var(--surface-solid)', border: '1px solid var(--header-border)', boxShadow: 'var(--shadow-float)', color: 'var(--text-base)' }}
+        >
+          <div className="flex items-center justify-between mb-2">
+            <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--text-subtle)' }}>
+              <Zap className="w-3 h-3" /> Brief
+              <span className="font-normal normal-case opacity-60">{briefResult.cached ? '· instant' : '· generated'}</span>
+            </span>
+            <button
+              onClick={() => { setBriefResult(null); setSelection(null); window.getSelection()?.removeAllRanges(); }}
+              className="opacity-50 hover:opacity-100 transition-opacity"
+              aria-label="Close"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+          {briefResult.text}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div
